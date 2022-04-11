@@ -1,5 +1,5 @@
 import sys,PySimpleGUI as sg
-sys.path.append('../automtest/assets')
+sys.path.append('../AutomTest/assets')
 
 from components import Method, TestSet, Parameter, ParamRange
 from generator import *
