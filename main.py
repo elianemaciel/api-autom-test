@@ -4,6 +4,7 @@ sys.path.append('../AutomTest/assets')
 from components import Method, TestSet, Parameter, ParamRange
 from generator import *
 import layout, procedures as p
+from convertStories import *
 
 sg.theme('SystemDefault1')
 
@@ -12,6 +13,7 @@ MUT = Method()
 #MUT = p.testStartup()
 home = sg.Window('AutomTest', layout.home, finalize=True, element_justification='center')
 win2_active=False
+
 
 home['B1'].update(disabled=True)
 home['B3'].update(disabled=True)
@@ -233,6 +235,23 @@ while (True):
 				win2_active = False
 				home.UnHide()
 				break
+	
+	# Botão 6 - Adicionar histórias de usuário
+	if (ev1 == 'B6' and not(win2_active)):
+		win2_active = True
+		home.Hide()
+		win2 = sg.Window('Upload User stories', layout.newUserStorie(), finalize=True, element_justification='center')
+		#disable_minimize=True,#disable_close=True,
+		while (True):
+			ev2, vals2 = win2.Read()
+			if (ev2 is None or ev2 == 'Cancel'):
+				win2.Close()
+				win2_active = False
+				home.UnHide()
+				break
+			elif(ev2 == 'Next'):
+				defineTestsFromStories(vals2)
+				
 
 print('\n******************** Data ********************\n')
 print(MUT)

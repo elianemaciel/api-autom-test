@@ -12,5 +12,9 @@ sudo apt install python3-tk
 
 pip3 install pysimplegui
 
+pip3 install spacy
+
+python3 -m spacy download pt_core_news_sm
+
 ### Para executar no Linux:
 python3 main.py
