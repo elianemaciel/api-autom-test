@@ -1,7 +1,9 @@
 from cmath import log
 from enum import Enum
-from itertools import chain, islice, tee
-import spacy
+from itertools import tee
+from sre_constants import FAILURE, SUCCESS
+from unidecode import unidecode
+from turtle import xcor
 import pt_core_news_sm
 import re
 
@@ -9,10 +11,15 @@ nlp = pt_core_news_sm.load()
 
 testCases = []
 
-class classTestCase:
+class TestCase:
     def __init__(self, classMethod, method, parameters):
         self.classMethod = classMethod
         self.method = method
+        self.parameters = parameters
+
+class Acceptance:
+    def __init__(self, premiss,parameters):
+        self.premiss = premiss
         self.parameters = parameters
 
 
@@ -27,15 +34,19 @@ class TagsAcceptance(Enum):
     WHEN = 2
     THEN = 3
 
-def validateContent(vals):
-    if(len(vals) >=1 and vals[0] != ''):
+def validateContent(returnedStorie):
+    if(len(returnedStorie) >=1 and returnedStorie[0] != ''):
         return True
     return False
 
-def defineTestsFromStories(vals):
-    if(validateContent(vals)):
-        storie = createArrayStorie(vals[0])
-        return definePartsStorie(storie)
+def defineTestsFromStories(returnedStorie):
+    if(validateContent(returnedStorie)):
+        descriptionStorie,acceptanceCriterias = definePartsStorie(createArrayStorie(returnedStorie[0]))
+        if acceptanceCriterias:
+            defineTestsFromAcceptanceCritereas(acceptanceCriterias)
+        for test in testCases:
+            print(test.method, test.parameters)
+    return testCases
 
 
 def createArrayStorie(storie):
@@ -43,22 +54,47 @@ def createArrayStorie(storie):
 
 def defineTestsFromAcceptanceCritereas(acceptanceCriterias):
     for a in acceptanceCriterias:
-        if re.match("Deve",a.given):
-            addPremissToTest(a)
+        if a.given:
+            addPremissToTest(a.given.premiss)
+            addParameterToTest(a.given.premiss,a.given.parameters)
+        if a.when:
+            addPremissToTest(a.when.premiss)
+            if a.when.parameters:
+                for x in a.when.parameters:
+                    addParameterToTest(x,a.given.premiss if a.when.premiss == None else a.when.premiss)
+        if a.then:
+                addPremissToTest(a.then.premiss)
+                if a.then.parameters:
+                    for x in a.then.parameters:
+                        addParameterToTest(x,a.then.premiss if a.when.premiss != None else a.when.premiss if a.when.premiss != None else a.given.premiss)
+    return None
 
 
 def addPremissToTest(a):
+    if a == None: return 
     for t in testCases:
         if t.method == a:
             return None
-    
+    testCases.append(TestCase(None,a,None))
+
+def addParameterToTest(parameter, premiss):
+    if len(premiss) == 0: return SUCCESS
+    for itr,x in enumerate(testCases):
+        if x.method == premiss:
+            if testCases[itr].parameters == None:
+                testCases[itr].parameters = [parameter]
+            else:
+                if parameter not in testCases[itr].parameters:
+                    testCases[itr].parameters.append(parameter)
+            return SUCCESS
+    return FAILURE
 
 
 def definePartsStorie(storie):
     descriptionStorie = getRoleFeatureReason(storie)
     storie = getStorieWithoutDescription(storie)
     acceptanceCriterias = getAcceptanceCriterias(storie)
-    return defineTestsFromAcceptanceCritereas(acceptanceCriterias)
+    return descriptionStorie,acceptanceCriterias
 
 
 def getStorieWithoutDescription(storie):
@@ -73,71 +109,128 @@ def getAcceptanceCriterias(storie):
     tag = TagsAcceptance.GIVEN
     given,when,then = "","",""
     for itr, line in enumerate(storie):
-        if "dado que" in line.lower() or (tag == TagsAcceptance.GIVEN and re.match("e\s", line.lower())):
+        if re.match("dado que",line.lower()):
             tag = TagsAcceptance.GIVEN
             given = definePremise(storie,itr)
-        elif "quando" in line.lower() or (tag == TagsAcceptance.WHEN and re.match("e\s", line.lower())):
+        elif re.match("quando",line.lower()):
             tag = TagsAcceptance.WHEN
             when = defineAction(storie,itr)
-        elif "então" in line.lower():
+        elif re.match("então",line.lower()):
             tag = TagsAcceptance.THEN
             then = defineOutcome(storie,itr)
             acceptanceCriterias.append(AcceptanceCriteria(given, when, then))    
     return acceptanceCriterias
 
 def definePremise(storie,itr):
-    phrase = searchKeyGiven(storie[itr])
+    return Acceptance(createTestTitle(verifyImperative(storie[itr])), getLinesField(storie[itr:]))
+
+def verifyImperative(phrase):
+    phrase = searchKeyGiven(phrase)
     doc = nlp(phrase)
-    for word in doc:
-        if word.pos_ == 'VERB':
+    for itr,word in enumerate(doc):
+        if word.pos_ == 'AUX':
+            if doc[itr+1].pos_ != 'VERB':
+                phrase = createImperative(word.lemma_, word.text,phrase)
+                break
+        if word.pos_ in ['VERB']:
             phrase = createImperative(word.lemma_, word.text,phrase)
             break
         elif word.text.lower() == "logado":
             phrase = createImperative("logar",word.text,phrase)
             break
-    return createTestTitle(phrase)
-
+        elif word.text.lower() == "selecione":
+            phrase = createImperative("selecionar",word.text,phrase)
+            break
+    return phrase
 
 def createImperative(lemma,text,phrase):
     return "{} {}".format(lemma,re.search("(?<={}\s).*".format(text),phrase).group())
 
 def defineAction(storie,itr):
     doc = nlp(storie[itr])
-    if (validateRegisterScenario(doc)): 
-        return treatWhen(storie[itr], doc)
+    return Acceptance(treatWhen(storie[itr], doc) if validateRegisterScenario(doc) else None, getLinesField(storie[itr:]))
 
 
 def defineOutcome(storie,itr):
-    fields = []
-    phrase = searchKeyThen(storie[itr])
-    doc = nlp(storie[itr])
-    if(verifyFields(doc)):
-        return getLinesField(storie[(itr+1):])
+    return Acceptance(None,getLinesField(storie[(itr):]))
 
-def verifyFields(doc):
-     if 'campo' in [word.lemma_ for word in doc]:
+def verifyFields(field):
+    doc = nlp(field)
+    if getVerbAndTagsFields(doc) or verifyTagField(doc) or validateRegisterScenario(doc):
         return True
+
+def verifyTagField(doc):
+    for word in doc:
+        if word.lemma_ == 'campo':
+            return True
 
 
 def getLinesField(storie):
+    if not verifyFields(storie[0]): return None
     fields = []
-    for x in storie:
-        if x.lower() in ['','cenário','scenario','dado']:
+    for iter,x in enumerate(storie):
+        if x == '': return fields
+        TratedFields = treatField(x)
+        if TratedFields:
+            fields.extend(TratedFields)
+        if len(storie) > iter+1 and validateEndOfBlock(storie[iter+1]):
             break
-        fields.append(x)
-    return [treatField(field) for field in fields]
+    return fields
+
+def validateEndOfBlock(line):
+    if line.strip() == '':
+        return True 
+    startBlocks = ['cenário','scenario','dado que',"então","quando"] 
+    for s in startBlocks:
+        if(re.match(s,line.lower())):
+            return True
+    return None
 
 def treatField(field):
     if re.match("\"",field):
-        return re.search("(?<=\")[A-z|\s|\-]+(?=\(([^)]+)\)|\")",field).group().strip().title()
+        return [re.search("(?<=\")[A-z|\s|\-]+(?=\(([^)]+)\)|\")",field).group().strip().title()]
     elif re.search("(?<=campo\s\").*",field):
         word = re.search("campo.*",field).group()
-        return re.search("(?<=\")[A-z|\s|\-]+(?=\(([^)]+)\)|\")",word).group().strip().title()
-    elif re.search("(?<=campo\s).*",field):
-        doc = nlp(field)
-        for word in doc:
-           print(word.text,word.lemma)
+        return [re.search("(?<=\")[A-z|\s|\-]+(?=\(([^)]+)\)|\")",word).group().strip().title()]
+    elif "operação" in field:
+        return None
+    else:
+        return getFieldWidthoutTags(field)
     return None
+
+def getFieldWidthoutTags(field):
+    doc = nlp(field)
+    verbAndtag = getVerbAndTagsFields(doc)
+    if verbAndtag:
+        textAfterVerbAndTag = re.search("(?<=\s{}).*".format(verbAndtag),field.lower()).group().strip()
+        if existsMultipleFieldsBetweenComma(textAfterVerbAndTag,doc):
+            return getMultipleFieldsBetweenComma(textAfterVerbAndTag)
+        else: 
+            return [s.strip() for s in re.findall("(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndtag),field)] 
+    elif re.match("e\s",field.lower()):
+        return getFieldWithoutVerb(field,doc)
+    return None
+
+def getFieldWithoutVerb(field,doc):
+    if doc[0].pos_ == "CCONJ" and doc[1].pos_ in["DET","NUM"]:
+        return [re.search("(?<={}\s)[\w\/]+\s?[\w\/ ]+".format(doc[1].text),unidecode(field.lower())).group().strip()]
+    else:
+        return None
+
+def existsMultipleFieldsBetweenComma(field,doc):
+    if "," in field or re.search("\se\s",field):
+        return True
+
+def getVerbAndTagsFields(doc):    
+    for itr,word in enumerate(doc):
+        #é necessário colocar o selecione po uma limitação do spacy
+        if(word.lemma_) in ["enviar","preencher","salvar", "selecionar", "selecione", "informar","cadastrar","digitar"]:
+            if len(doc) > itr+1 and doc[itr+1].pos_ in ["NOUN","PRON","DET"]:
+                return "{} {}".format(word.text,doc[itr+1].text)
+    return None
+
+def getMultipleFieldsBetweenComma(field):
+    return [''.join(s) for s in re.findall("([\w\/]+\s?[\w\/ ]+(?=\,|\se\s))|(((?<=e\s)[\w\/]+\s?[\w\/\s]+)|(?<=\,\s)[\w\/]+\s?[\w\/\s]+)",field)]
 
 def searchKeyGiven(phrase):
     return re.search("(?<=dado que\s).*|(?<=e\s).*",phrase.lower()).group().strip()
@@ -152,18 +245,21 @@ def searchKeyThen(phrase):
 
 def treatWhen(phrase, doc):
     phrase = searchKeyWhen(phrase)
+    if validateOperationAction(phrase): return None
     for word in doc:
-        if word.pos_ == 'VERB':
-            if word.lemma_ in ['desejar','estiver']:
-                phrase = re.search("(?<=desejar\s).*|(?<=estiver\s).*",phrase.lower()).group().strip()
+        if word.pos_ in ['VERB','AUX']:
+            if word.lemma_ in ['desejar','estar',"dever"]:
+                phrase = re.search("(?<=desejar\s).*|(?<=estiver\s).*|(?<=deve\s).*",phrase.lower()).group().strip()
             else:
                 phrase = phrase.replace(word.text,word.lemma_,1).title()
     return createTestTitle(phrase)
 
 
 def createTestTitle(phrase):
-    return 'Deve{}'.format(''.join([str(p) for p in phrase.title() if p.isalpha() or p.isalnum()]))
+    return unidecode('Deve{}'.format(''.join([str(p) for p in phrase.title() if p.isalpha() or p.isalnum()])))
 
+def validateOperationAction(phrase):
+    return "operação" in phrase
 
 def searchKeyAuxWhen(phrase):
     return re.search("(?<=desejar\s).*|(?<=estiver\s).*",phrase.lower()).group().strip()
@@ -171,8 +267,8 @@ def searchKeyAuxWhen(phrase):
 
 def validateRegisterScenario(doc):
     for word in doc:
-        if word.pos_ == "VERB":
-            if word.lemma_  in ['cadastrar','inserir']:
+        if word.pos_ in ["VERB", "NOUN"] :
+            if word.lemma_  in ['cadastrar',"registrar",'inserir']:
                 return True
     return False
 
@@ -181,8 +277,6 @@ def getRoleFeatureReason(storie):
     role = defineRole(storie)
     feature = defineFeature(storie)
     reason = defineReason(storie)
-
-    print(role, feature, reason)
     return {'role': role, 'feature': feature, 'reason': reason}
 
 def defineRole(description):
@@ -208,7 +302,7 @@ def removeKeysRole(line):
 
 
 def searchKeysRole(line):
-    return re.match("(como\s)|(enquanto\s)",line.lower())
+    return re.match("(como\s)|(enquanto\s|eu como\s)",line.lower())
         
 
 def defineFeature(description):
@@ -221,11 +315,11 @@ def defineFeature(description):
 
 def removeKeysFeature(line):
     if searchKeysFeature(line):
-        return re.search("(?<=quero\s).*|(?<=preciso\s).*",line.lower()).group()
+        return re.search("(?<=quero\s).*|(?<=preciso\s).*|(?<=desejo\s).*",line.lower()).group()
 
 
 def searchKeysFeature(line):
-    return re.match("(quero\s)|(preciso\s)",line.lower())
+    return re.match("(quero\s)|(preciso\s)|(desejo\s)",line.lower())
 
 
 def nlpFeature(phrase):

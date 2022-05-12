@@ -16,5 +16,7 @@ pip3 install spacy
 
 python3 -m spacy download pt_core_news_sm
 
+pip install Unidecode
+
 ### Para executar no Linux:
 python3 main.py
