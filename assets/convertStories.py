@@ -40,6 +40,23 @@ class TagsAcceptance(Enum):
     WHEN = 2
     THEN = 3
 
+def getAcceptanceCriterias(storie):
+    acceptanceCriterias = []
+    tag = TagsAcceptance.GIVEN
+    given,when,then = "","",""
+    for itr, line in enumerate(storie):
+        if re.match("dado que",line.lower()):
+            tag = TagsAcceptance.GIVEN
+            given = definePremise(storie,itr)
+        elif re.match("quando",line.lower()):
+            tag = TagsAcceptance.WHEN
+            when = defineAction(storie,itr)
+        elif re.match("então",line.lower()):
+            tag = TagsAcceptance.THEN
+            then = defineOutcome(storie,itr)
+            acceptanceCriterias.append(AcceptanceCriteria(given, when, then))    
+    return acceptanceCriterias
+
 def validateContent(returnedStorie):
     if(len(returnedStorie) >=1 and returnedStorie[0] != ''):
         return True
@@ -65,6 +82,7 @@ def defineClassForTests(feature):
     return testCases
 
 def treatFeature(feature):
+    if feature is None or feature == '': return None
     return createTestTitle(feature)
 
 def createArrayStorie(storie):
@@ -122,22 +140,6 @@ def getStorieWithoutDescription(storie):
             linesToRemove.append(line)    
     return [s for s in storie if s not in linesToRemove]
 
-def getAcceptanceCriterias(storie):
-    acceptanceCriterias = []
-    tag = TagsAcceptance.GIVEN
-    given,when,then = "","",""
-    for itr, line in enumerate(storie):
-        if re.match("dado que",line.lower()):
-            tag = TagsAcceptance.GIVEN
-            given = definePremise(storie,itr)
-        elif re.match("quando",line.lower()):
-            tag = TagsAcceptance.WHEN
-            when = defineAction(storie,itr)
-        elif re.match("então",line.lower()):
-            tag = TagsAcceptance.THEN
-            then = defineOutcome(storie,itr)
-            acceptanceCriterias.append(AcceptanceCriteria(given, when, then))    
-    return acceptanceCriterias
 
 def definePremise(storie,itr):
     return Acceptance(createTestTitle(verifyImperative(storie[itr])), getLinesField(storie[itr:]))
@@ -150,7 +152,7 @@ def verifyImperative(phrase):
             if doc[itr+1].pos_ != 'VERB':
                 phrase = createImperative(word.lemma_, word.text,phrase)
                 break
-        if word.pos_ in ['VERB']:
+        elif word.pos_ in ['VERB']:
             phrase = createImperative(word.lemma_, word.text,phrase)
             break
         elif word.text.lower() == "logado":
@@ -165,8 +167,7 @@ def createImperative(lemma,text,phrase):
     return "{} {}".format(lemma,re.search("(?<={}\s).*".format(text),phrase).group())
 
 def defineAction(storie,itr):
-    doc = nlp(storie[itr])
-    return Acceptance(treatWhen(storie[itr], doc) if validateRegisterScenario(doc) else None, getLinesField(storie[itr:]))
+    return Acceptance(treatWhen(storie[itr]), getLinesField(storie[itr:]))
 
 
 def defineOutcome(storie,itr):
@@ -210,8 +211,6 @@ def treatField(field):
     elif re.search("(?<=campo\s\").*",field):
         word = re.search("campo.*",field).group()
         return [re.search("(?<=\")[A-z|\s|\-]+(?=\(([^)]+)\)|\")",word).group().strip().title()]
-    elif "operação" in field:
-        return None
     else:
         return getFieldWidthoutTags(field)
 
@@ -241,13 +240,13 @@ def existsMultipleFieldsBetweenComma(field):
 def getVerbAndTagsFields(doc):    
     for itr,word in enumerate(doc):
         #é necessário colocar o selecione po uma limitação do spacy
-        if(word.lemma_) in ["enviar","preencher","salvar", "selecionar", "selecione", "informar","digitar"]:
+        if(word.lemma_) in ["enviar","preencher","salvar", "selecionar", "selecione", "informar","digitar","guardar"]:
             if len(doc) > itr+1 and doc[itr+1].pos_ in ["NOUN","PRON","DET","NUM"]:
                 return "{} {}".format(word.text,doc[itr+1].text)
     return None
 
 def getMultipleFieldsBetweenComma(field):
-    return [''.join(s) for s in re.findall("([\w\/]+\s?[\w\/ ]+(?=\,|\se\s))|(((?<=e\s)[\w\/]+\s?[\w\/\s]+)|(?<=\,\s)[\w\/]+\s?[\w\/\s]+)",unidecode(field))]
+    return [''.join(s) for s in re.findall("([\w\/]+\s?[\w\/ ]+(?=\,|\se\s))|(?:((?<=e\s)[\w\/]+\s?[\w\/\s]+)|(?<=\,\s)[\w\/]+\s?[\w\/\s]+)",unidecode(field))]
 
 def searchKeyGiven(phrase):
     return re.search("(?<=dado que\s).*|(?<=e\s).*",phrase.lower()).group().strip()
@@ -260,9 +259,32 @@ def searchKeyThen(phrase):
     return re.search("(?<=então\s).*|(?<=e\s).*",phrase.lower()).group().strip()
 
 
-def treatWhen(phrase, doc):
-    phrase = searchKeyWhen(phrase)
-    if validateOperationAction(phrase): return None
+def treatWhen(phrase):
+    doc = nlp(phrase)
+    if validateRegisterScenario(doc):
+        return createMethodRegisterScenario(doc)
+    elif validateValidatorCenario(doc):
+        return createMethodValidateScenario(doc)
+    
+    return None
+
+def validateValidatorCenario(doc):
+        return len([word.lemma_ for word in doc if word.lemma_ in ["válido","inválido","incorreto","vazio"]]) > 0 or hasNegativeValidation(doc)
+
+def hasNegativeValidation(doc):
+    verbAndTag = getVerbAndTagsFields(doc)
+    if verbAndTag:
+        return "não" in re.search(".*(?=\s{})".format(verbAndTag),doc.text).group().lower()
+
+def createMethodValidateScenario(doc):
+    verbAndTag = getVerbAndTagsFields(doc)
+    if verbAndTag:
+        field = [s.strip() for s in re.findall("(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndTag),unidecode(doc.text.lower()))]
+        return createTestTitle("Validar {}".format(field[0]))
+    return None
+
+def createMethodRegisterScenario(doc):
+    phrase = searchKeyWhen(doc.text)
     for word in doc:
         if word.pos_ in ['VERB','AUX']:
             if word.lemma_ in ['desejar','estar',"dever"]:
@@ -271,12 +293,9 @@ def treatWhen(phrase, doc):
                 phrase = phrase.replace(word.text,word.lemma_,1).title()
     return createTestTitle(phrase)
 
-
 def createTestTitle(phrase):
+    if phrase is None or phrase == '': return None
     return unidecode('Deve{}'.format(''.join([str(p) for p in phrase.title() if p.isalpha() or p.isalnum()])))
-
-def validateOperationAction(phrase):
-    return "operação" in phrase
 
 def searchKeyAuxWhen(phrase):
     return re.search("(?<=desejar\s).*|(?<=estiver\s).*",phrase.lower()).group().strip()
