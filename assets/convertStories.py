@@ -17,6 +17,12 @@ class TestCase:
         self.method = method
         self.parameters = parameters
 
+class DescriptionStorie:
+    def __init__(self, role,feature,reason):
+        self.role = role
+        self.feature = feature
+        self.reason = reason
+
 class Acceptance:
     def __init__(self, premiss,parameters):
         self.premiss = premiss
@@ -44,10 +50,22 @@ def defineTestsFromStories(returnedStorie):
         descriptionStorie,acceptanceCriterias = definePartsStorie(createArrayStorie(returnedStorie[0]))
         if acceptanceCriterias:
             defineTestsFromAcceptanceCritereas(acceptanceCriterias)
+        if descriptionStorie:
+            defineClassForTests(descriptionStorie.feature)
         for test in testCases:
-            print(test.method, test.parameters)
+            print(test.classMethod, test.method, test.parameters)
     return testCases
 
+
+def defineClassForTests(feature):
+    feature = treatFeature(feature)
+    for itr,test in enumerate(testCases):
+        if test.classMethod is None:
+            testCases[itr].classMethod = feature
+    return testCases
+
+def treatFeature(feature):
+    return createTestTitle(feature)
 
 def createArrayStorie(storie):
     return str.split(storie,"\n")
@@ -55,7 +73,7 @@ def createArrayStorie(storie):
 def defineTestsFromAcceptanceCritereas(acceptanceCriterias):
     for a in acceptanceCriterias:
         if a.given:
-            addPremissToTest(a.given.premiss)
+            addPremissToTest(a.given.premiss) 
             addParameterToTest(a.given.premiss,a.given.parameters)
         if a.when:
             addPremissToTest(a.when.premiss)
@@ -66,7 +84,7 @@ def defineTestsFromAcceptanceCritereas(acceptanceCriterias):
                 addPremissToTest(a.then.premiss)
                 if a.then.parameters:
                     for x in a.then.parameters:
-                        addParameterToTest(x,a.then.premiss if a.when.premiss != None else a.when.premiss if a.when.premiss != None else a.given.premiss)
+                        addParameterToTest(x,a.then.premiss if a.then.premiss != None else a.when.premiss if a.when.premiss != None else a.given.premiss)
     return None
 
 
@@ -78,7 +96,7 @@ def addPremissToTest(a):
     testCases.append(TestCase(None,a,None))
 
 def addParameterToTest(parameter, premiss):
-    if len(premiss) == 0: return SUCCESS
+    if premiss is None: return SUCCESS
     for itr,x in enumerate(testCases):
         if x.method == premiss:
             if testCases[itr].parameters == None:
@@ -166,10 +184,9 @@ def verifyTagField(doc):
 
 
 def getLinesField(storie):
-    if not verifyFields(storie[0]): return None
     fields = []
     for iter,x in enumerate(storie):
-        if x == '': return fields
+        if not verifyFields(x) and not re.match("e",x.lower()): continue
         TratedFields = treatField(x)
         if TratedFields:
             fields.extend(TratedFields)
@@ -187,6 +204,7 @@ def validateEndOfBlock(line):
     return None
 
 def treatField(field):
+    if field == '': return None
     if re.match("\"",field):
         return [re.search("(?<=\")[A-z|\s|\-]+(?=\(([^)]+)\)|\")",field).group().strip().title()]
     elif re.search("(?<=campo\s\").*",field):
@@ -196,17 +214,16 @@ def treatField(field):
         return None
     else:
         return getFieldWidthoutTags(field)
-    return None
 
 def getFieldWidthoutTags(field):
     doc = nlp(field)
     verbAndtag = getVerbAndTagsFields(doc)
     if verbAndtag:
         textAfterVerbAndTag = re.search("(?<=\s{}).*".format(verbAndtag),field.lower()).group().strip()
-        if existsMultipleFieldsBetweenComma(textAfterVerbAndTag,doc):
+        if existsMultipleFieldsBetweenComma(textAfterVerbAndTag):
             return getMultipleFieldsBetweenComma(textAfterVerbAndTag)
         else: 
-            return [s.strip() for s in re.findall("(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndtag),field)] 
+            return [s.strip() for s in re.findall("(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndtag),unidecode(field.lower()))] 
     elif re.match("e\s",field.lower()):
         return getFieldWithoutVerb(field,doc)
     return None
@@ -217,20 +234,20 @@ def getFieldWithoutVerb(field,doc):
     else:
         return None
 
-def existsMultipleFieldsBetweenComma(field,doc):
+def existsMultipleFieldsBetweenComma(field):
     if "," in field or re.search("\se\s",field):
         return True
 
 def getVerbAndTagsFields(doc):    
     for itr,word in enumerate(doc):
         #é necessário colocar o selecione po uma limitação do spacy
-        if(word.lemma_) in ["enviar","preencher","salvar", "selecionar", "selecione", "informar","cadastrar","digitar"]:
-            if len(doc) > itr+1 and doc[itr+1].pos_ in ["NOUN","PRON","DET"]:
+        if(word.lemma_) in ["enviar","preencher","salvar", "selecionar", "selecione", "informar","digitar"]:
+            if len(doc) > itr+1 and doc[itr+1].pos_ in ["NOUN","PRON","DET","NUM"]:
                 return "{} {}".format(word.text,doc[itr+1].text)
     return None
 
 def getMultipleFieldsBetweenComma(field):
-    return [''.join(s) for s in re.findall("([\w\/]+\s?[\w\/ ]+(?=\,|\se\s))|(((?<=e\s)[\w\/]+\s?[\w\/\s]+)|(?<=\,\s)[\w\/]+\s?[\w\/\s]+)",field)]
+    return [''.join(s) for s in re.findall("([\w\/]+\s?[\w\/ ]+(?=\,|\se\s))|(((?<=e\s)[\w\/]+\s?[\w\/\s]+)|(?<=\,\s)[\w\/]+\s?[\w\/\s]+)",unidecode(field))]
 
 def searchKeyGiven(phrase):
     return re.search("(?<=dado que\s).*|(?<=e\s).*",phrase.lower()).group().strip()
@@ -277,7 +294,7 @@ def getRoleFeatureReason(storie):
     role = defineRole(storie)
     feature = defineFeature(storie)
     reason = defineReason(storie)
-    return {'role': role, 'feature': feature, 'reason': reason}
+    return DescriptionStorie(role,feature,reason)
 
 def defineRole(description):
     for des in description:

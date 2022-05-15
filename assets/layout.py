@@ -8,7 +8,7 @@ home = [
 	[sg.Button('Set method information', size=(40, 3), font='Default 12 bold', key='B2')],
 	[sg.Button('Specify equivalence classes', size=(40, 3), font='Default 12 bold', key='B3')],
 	[sg.Button('Generate tests', size=(40, 3), font='Default 12 bold', key='B4')],
-	[sg.Button('Convert User Storie to Test Case', size=(40, 3), font='Default 12 bold', key='B6')],
+	[sg.Button('Convert User Story to Test Case', size=(40, 3), font='Default 12 bold', key='B6')],
 	[sg.Button('About AutomTest', size=(40, 3), font='Default 12 bold', key='B5')]
 ]
 
@@ -32,10 +32,10 @@ def newLayoutInfoMetodo(MUT):
 	]
 	return content
 
-def newUserStorie():
+def newUserStory():
 
 	content = [
-		[sg.Text('User Storie', size=(16, 1)), sg.Multiline("",size=(40, 16))],
+		[sg.Text('User Story', size=(16, 1)), sg.Multiline("",size=(40, 16))],
 		[sg.Text('')], #quebra de linha
 		[sg.Button("Next", key='Next'), sg.Button("Cancel")]
 	]

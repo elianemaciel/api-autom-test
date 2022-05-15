@@ -240,7 +240,7 @@ while (True):
 	if (ev1 == 'B6' and not(win2_active)):
 		win2_active = True
 		home.Hide()
-		win2 = sg.Window('Upload User stories', layout.newUserStorie(), finalize=True, element_justification='center')
+		win2 = sg.Window('Upload User stories', layout.newUserStory(), finalize=True, element_justification='center')
 		#disable_minimize=True,#disable_close=True,
 		while (True):
 			ev2, vals2 = win2.Read()
@@ -250,9 +250,9 @@ while (True):
 				home.UnHide()
 				break
 			elif(ev2 == 'Next'):
-				defineTestsFromStories(vals2)
+				testCases = defineTestsFromStories(vals2)
+					
 				
-
 print('\n******************** Data ********************\n')
 print(MUT)
 #sg.SystemTray.notify(MUT.class_name+'Test.java','Successfully generated tests.')
