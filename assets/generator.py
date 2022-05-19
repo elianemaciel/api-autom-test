@@ -1,6 +1,5 @@
 import os,io,sys,random,string
-sys.path.append('../automtest/assets')
-import procedures as p
+import assets.procedures as p
 
 
 def generate_String(value, qtd):

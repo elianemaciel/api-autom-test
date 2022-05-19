@@ -42,19 +42,16 @@ class TagsAcceptance(Enum):
 
 def getAcceptanceCriterias(storie):
     acceptanceCriterias = []
-    tag = TagsAcceptance.GIVEN
     given,when,then = "","",""
     for itr, line in enumerate(storie):
         if re.match("dado que",line.lower()):
-            tag = TagsAcceptance.GIVEN
             given = definePremise(storie,itr)
         elif re.match("quando",line.lower()):
-            tag = TagsAcceptance.WHEN
             when = defineAction(storie,itr)
         elif re.match("então",line.lower()):
-            tag = TagsAcceptance.THEN
             then = defineOutcome(storie,itr)
-            acceptanceCriterias.append(AcceptanceCriteria(given, when, then))    
+            acceptanceCriterias.append(AcceptanceCriteria(given, when, then))
+            given,when,then = "","",""
     return acceptanceCriterias
 
 def validateContent(returnedStorie):
@@ -83,7 +80,7 @@ def defineClassForTests(feature):
 
 def treatFeature(feature):
     if feature is None or feature == '': return None
-    return createTestTitle(feature)
+    return ''.join([str(p) for p in unidecode(feature.title()) if p.isalpha() or p.isalnum()])
 
 def createArrayStorie(storie):
     return str.split(storie,"\n")
@@ -142,7 +139,15 @@ def getStorieWithoutDescription(storie):
 
 
 def definePremise(storie,itr):
-    return Acceptance(createTestTitle(verifyImperative(storie[itr])), getLinesField(storie[itr:]))
+    return Acceptance(getPremiseFromPhrase(storie[itr]), getLinesField(storie[itr:]))
+
+
+def getPremiseFromPhrase(phrase):
+    doc = nlp(phrase)
+    if validateValidatorScenario(doc):
+        return createMethodValidateScenario(doc)
+    else: 
+        return createTestTitle(verifyImperative(phrase))
 
 def verifyImperative(phrase):
     phrase = searchKeyGiven(phrase)
@@ -188,12 +193,12 @@ def getLinesField(storie):
     fields = []
     for iter,x in enumerate(storie):
         if not verifyFields(x) and not re.match("e",x.lower()): continue
-        TratedFields = treatField(x)
+        TratedFields = getArrayFields(x)
         if TratedFields:
             fields.extend(TratedFields)
         if len(storie) > iter+1 and validateEndOfBlock(storie[iter+1]):
             break
-    return fields
+    return treatFields(fields)
 
 def validateEndOfBlock(line):
     if line.strip() == '':
@@ -204,13 +209,18 @@ def validateEndOfBlock(line):
             return True
     return None
 
-def treatField(field):
+def treatFields(fields):
+    fields = [unidecode(''.join([str(p) for p in field.title() if p.isalpha() or p.isalnum()])) for field in fields]
+    return [field[0].lower() + field[1:]  for field in fields]
+
+
+def getArrayFields(field):
     if field == '': return None
     if re.match("\"",field):
-        return [re.search("(?<=\")[A-z|\s|\-]+(?=\(([^)]+)\)|\")",field).group().strip().title()]
+        return [unidecode(re.search("(?<=\")[A-z|\s|\-]+(?=\(([^)]+)\)|\")",field).group().strip())]
     elif re.search("(?<=campo\s\").*",field):
         word = re.search("campo.*",field).group()
-        return [re.search("(?<=\")[A-z|\s|\-]+(?=\(([^)]+)\)|\")",word).group().strip().title()]
+        return [unidecode(re.search("(?<=\")[A-z|\s|\-]+(?=\(([^)]+)\)|\")",word).group().strip())]
     else:
         return getFieldWidthoutTags(field)
 
@@ -224,12 +234,12 @@ def getFieldWidthoutTags(field):
         else: 
             return [s.strip() for s in re.findall("(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndtag),unidecode(field.lower()))] 
     elif re.match("e\s",field.lower()):
-        return getFieldWithoutVerb(field,doc)
+        return getFieldWithoutVerb(doc)
     return None
 
-def getFieldWithoutVerb(field,doc):
+def getFieldWithoutVerb(doc):
     if doc[0].pos_ == "CCONJ" and doc[1].pos_ in["DET","NUM"]:
-        return [re.search("(?<={}\s)[\w\/]+\s?[\w\/ ]+".format(doc[1].text),unidecode(field.lower())).group().strip()]
+        return [unidecode(re.search("(?<={}\s)[\w\/]+\s?[\w\/ ]+".format(doc[1].text),doc.text.lower()).group().strip())]
     else:
         return None
 
@@ -246,7 +256,18 @@ def getVerbAndTagsFields(doc):
     return None
 
 def getMultipleFieldsBetweenComma(field):
-    return [''.join(s) for s in re.findall("([\w\/]+\s?[\w\/ ]+(?=\,|\se\s))|(?:((?<=e\s)[\w\/]+\s?[\w\/\s]+)|(?<=\,\s)[\w\/]+\s?[\w\/\s]+)",unidecode(field))]
+    return removeConnectives([''.join(s) for s in re.findall("([\w\/]+\s?[\w\/ ]+(?=\,|\se\s))|(?:((?<=e\s)[\w\/]+\s?[\w\/\s]+)|(?<=\,\s)[\w\/]+\s?[\w\/\s]+)",unidecode(field))])
+
+def removeConnectives(fields):
+    newFields = []
+    for itr, field in enumerate(fields):
+        doc = nlp(field)
+        newField = ''
+        for word in doc:
+            if word.pos_ != "DET":
+                newField += " " + word.text
+        newFields.append(newField.strip())
+    return newFields
 
 def searchKeyGiven(phrase):
     return re.search("(?<=dado que\s).*|(?<=e\s).*",phrase.lower()).group().strip()
@@ -263,13 +284,25 @@ def treatWhen(phrase):
     doc = nlp(phrase)
     if validateRegisterScenario(doc):
         return createMethodRegisterScenario(doc)
-    elif validateValidatorCenario(doc):
+    elif validateValidatorScenario(doc):
         return createMethodValidateScenario(doc)
-    
+    elif validateUniquenessScenario(doc):
+        return createMethodUniquenessScenario(doc)
     return None
 
-def validateValidatorCenario(doc):
-        return len([word.lemma_ for word in doc if word.lemma_ in ["válido","inválido","incorreto","vazio"]]) > 0 or hasNegativeValidation(doc)
+def validateValidatorScenario(doc):
+    return len([word.lemma_ for word in doc if word.lemma_ in ["válido","inválido","incorreto","vazio"]]) > 0
+
+def createMethodUniquenessScenario(doc):
+    verbAndTag = getVerbAndTagsFields(doc)
+    if verbAndTag:
+        field = [s.strip() for s in re.findall("(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndTag),unidecode(doc.text.lower()))]
+        return createTestTitle("Validar unicidade{}".format(field[0]))
+    return None
+
+def validateUniquenessScenario(doc):
+    expressions = ["já associado","previamente associado","duplicado","já cadastrado","previamente cadastrado","já existente","já informado"]
+    return len([s for s in expressions if s in expressions]) > 0
 
 def hasNegativeValidation(doc):
     verbAndTag = getVerbAndTagsFields(doc)
@@ -280,7 +313,7 @@ def createMethodValidateScenario(doc):
     verbAndTag = getVerbAndTagsFields(doc)
     if verbAndTag:
         field = [s.strip() for s in re.findall("(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndTag),unidecode(doc.text.lower()))]
-        return createTestTitle("Validar {}".format(field[0]))
+        return createTestTitle("Validar{}".format(field[0]))
     return None
 
 def createMethodRegisterScenario(doc):

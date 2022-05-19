@@ -1,10 +1,8 @@
-import sys,PySimpleGUI as sg
-sys.path.append('../AutomTest/assets')
-
-from components import Method, TestSet, Parameter, ParamRange
-from generator import *
-import layout, procedures as p
-from convertStories import *
+import PySimpleGUI as sg
+from assets.components import Method, TestSet, Parameter, ParamRange
+from assets.generator import *
+import assets.layout as layout, assets.procedures as p
+from assets.convertStories import *
 
 sg.theme('SystemDefault1')
 
@@ -150,7 +148,7 @@ while (True):
 				else: # int / double / float / Date
 					ppp = ParamRange(par,vals2[3],vals2[4],vals2[5])
 
-				if ( p.telaInicialConjTesteCorreta(vals2[2],vals2[3]) and p.entradaTipoCorreta(MUT.output_type,vals2[4],vals2[5],vals2[6])):
+				if (p.telaInicialConjTesteCorreta(vals2[2],vals2[3]) and p.entradaTipoCorreta(MUT.output_type,vals2[4],vals2[5],'')):
 					test = TestSet(vals2[2], int(vals2[3]),ppp)
 					win3_active = True
 					win2.Hide()

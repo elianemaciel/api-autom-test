@@ -1,7 +1,6 @@
-import sys,PySimpleGUI as sg
-sys.path.append('../automtest/assets')
-import layout, random, procedures as p
-from components import TestSet
+import PySimpleGUI as sg
+import random, assets.procedures as p
+from assets.components import TestSet
 
 home = [      
 	[sg.Button('View input data', size=(40, 3), font='Default 12 bold', key='B1')],
