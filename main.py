@@ -139,12 +139,12 @@ while (True):
 			elif (ev2 == 'Params'): # Vai para janela de Especificar Parâmetros
 				par = Parameter("expected_output", MUT.params[x].type_name)
 				if (MUT.output_type == 'boolean' or MUT.output_type == 'char'):
-					ppp = ParamRange(par,vals2[3])
-					vals2[4] = ''
+					ppp = ParamRange(par,vals2[4])
 					vals2[5] = ''
+					vals2[6] = ''
 				elif (MUT.output_type == 'String'):
-					ppp = ParamRange(par,vals2[3],vals2[4])
-					vals2[5] = ''
+					ppp = ParamRange(par,vals2[4],vals2[5])
+					vals2[6] = ''
 				else: # int / double / float / Date
 					ppp = ParamRange(par,vals2[3],vals2[4],vals2[5])
 
