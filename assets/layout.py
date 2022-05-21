@@ -82,7 +82,6 @@ def newLayoutTipo( tipo ):
 	elif (tipo == 'Date'):
 		content += [
 			[sg.Text('From'),sg.InputText('', size=(10, 1)),sg.Text('to'),sg.InputText('', size=(10, 1))],
-			[sg.Text('Include:'),sg.InputText('', size=(10, 1))],
 		]
 	else: # int / float / double
 		content += [
