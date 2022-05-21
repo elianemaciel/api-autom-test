@@ -1,9 +1,8 @@
 import os,io,sys,PySimpleGUI as sg
-sys.path.append('../assets')
 import webbrowser,random,datetime
 from PIL import Image
 #from components import Parameter, TestSet
-from components import Method, TestSet, Parameter, ParamRange
+from assets.components import Method, TestSet, Parameter, ParamRange
 
 def open(url):
     webbrowser.open_new(url)

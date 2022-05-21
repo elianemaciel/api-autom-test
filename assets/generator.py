@@ -1,6 +1,6 @@
 import os,io,sys,random,string
 sys.path.append('../assets')
-import procedures as p
+import assets.procedures as p
 import datetime, random
 
 def get_YearMonthDay_from_Date(date):
@@ -34,8 +34,6 @@ def generate_Date(v1, v2, v3):
 	else:
 		print("Data não foi preenchida corretamente.")
 		return False
-
-
 def generate_String(value, qtd):
 	
 	if (qtd.find('~') == -1):

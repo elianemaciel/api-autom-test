@@ -1,13 +1,13 @@
-import sys,PySimpleGUI as sg
-sys.path.append('../assets')
-import layout, random, procedures as p
-from components import TestSet
+import PySimpleGUI as sg
+import random, assets.procedures as p
+from assets.components import TestSet
 
 home = [      
 	[sg.Button('View input data', size=(40, 3), font='Default 12 bold', key='B1')],
 	[sg.Button('Set method information', size=(40, 3), font='Default 12 bold', key='B2')],
 	[sg.Button('Specify equivalence classes', size=(40, 3), font='Default 12 bold', key='B3')],
 	[sg.Button('Generate tests', size=(40, 3), font='Default 12 bold', key='B4')],
+	[sg.Button('Convert User Story to Test Case', size=(40, 3), font='Default 12 bold', key='B6')],
 	[sg.Button('About AutomTest', size=(40, 3), font='Default 12 bold', key='B5')]
 ]
 
@@ -26,6 +26,15 @@ def newLayoutInfoMetodo(MUT):
 		[sg.Text('Parameters *', size=(16, 1)), sg.InputText(all_params, size=(30, 1))],
 		[sg.Text('Output type *', size=(16, 1)),
 			sg.InputCombo(['int', 'String', 'float', 'double', 'char', 'boolean', 'Date'], size=(28, 1), key='Tipo', enable_events=True, readonly='True')],
+		[sg.Text('')], #quebra de linha
+		[sg.Button("Next", key='Next'), sg.Button("Cancel")]
+	]
+	return content
+
+def newUserStory():
+
+	content = [
+		[sg.Text('User Story', size=(16, 1)), sg.Multiline("",size=(40, 16))],
 		[sg.Text('')], #quebra de linha
 		[sg.Button("Next", key='Next'), sg.Button("Cancel")]
 	]

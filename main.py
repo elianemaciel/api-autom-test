@@ -1,9 +1,8 @@
-import sys,PySimpleGUI as sg
-sys.path.append('../AutomTest/assets')
-
-from components import Method, TestSet, Parameter, ParamRange
-from generator import *
-import layout, procedures as p
+import PySimpleGUI as sg
+from assets.components import Method, TestSet, Parameter, ParamRange
+from assets.generator import *
+import assets.layout as layout, assets.procedures as p
+from assets.convertStories import *
 
 sg.theme('SystemDefault1')
 
@@ -12,6 +11,7 @@ MUT = Method()
 #MUT = p.testStartup()
 home = sg.Window('AutomTest', layout.home, finalize=True, element_justification='center')
 win2_active=False
+
 
 home['B1'].update(disabled=True)
 home['B3'].update(disabled=True)
@@ -149,7 +149,7 @@ while (True):
 					ppp = ParamRange(par,vals2[4],vals2[5],vals2[6])
 					
 
-				if ( p.telaInicialConjTesteCorreta(vals2[2],vals2[3]) and p.entradaTipoCorreta(MUT.output_type,vals2[4],vals2[5],vals2[6])):
+				if (p.telaInicialConjTesteCorreta(vals2[2],vals2[3]) and p.entradaTipoCorreta(MUT.output_type,vals2[4],vals2[5],'')):
 					test = TestSet(vals2[2], int(vals2[3]),ppp)
 					win3_active = True
 					win2.Hide()
@@ -234,7 +234,24 @@ while (True):
 				win2_active = False
 				home.UnHide()
 				break
-
+	
+	# Botão 6 - Adicionar histórias de usuário
+	if (ev1 == 'B6' and not(win2_active)):
+		win2_active = True
+		home.Hide()
+		win2 = sg.Window('Upload User stories', layout.newUserStory(), finalize=True, element_justification='center')
+		#disable_minimize=True,#disable_close=True,
+		while (True):
+			ev2, vals2 = win2.Read()
+			if (ev2 is None or ev2 == 'Cancel'):
+				win2.Close()
+				win2_active = False
+				home.UnHide()
+				break
+			elif(ev2 == 'Next'):
+				testCases = defineTestsFromStories(vals2)
+					
+				
 print('\n******************** Data ********************\n')
 print(MUT)
 #sg.SystemTray.notify(MUT.class_name+'Test.java','Successfully generated tests.')
