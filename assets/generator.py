@@ -1,10 +1,4 @@
 import os,io,sys,random,string
-<<<<<<< HEAD
-import assets.procedures as p
-
-
-=======
-sys.path.append('../assets')
 import assets.procedures as p
 import datetime, random
 
@@ -39,7 +33,6 @@ def generate_Date(v1, v2, v3):
 	else:
 		print("Data não foi preenchida corretamente.")
 		return False
->>>>>>> 412d08f87658ff6bb6f87591683003d7be0f4ff6
 def generate_String(value, qtd):
 	
 	if (qtd.find('~') == -1):

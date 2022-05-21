@@ -5,23 +5,8 @@ https://dl.acm.org/doi/10.1145/3439961.3440002
 ## Requisitos:
 PySimpleGUI
 
-## Instalações:
-sudo apt install python3-pip
-
-sudo apt install python3-tk
-
-<<<<<<< HEAD
-pip3 install pysimplegui
-
-pip3 install spacy
-
-python3 -m spacy download pt_core_news_sm
-
-pip install Unidecode
-
 ### Para executar no Linux:
 python3 main.py
-=======
   1. ```sudo apt install python3-pip```
   2. ```sudo apt install python3-tk``` (Tkinter)
   3. ```pip3 install pysimplegui``` (PySimpleGUI)
@@ -80,4 +65,3 @@ pip3 install --upgrade requests
 ```
 
 Reference: <https://stackoverflow.com/questions/56155627/requestsdependencywarning-urllib3-1-25-2-or-chardet-3-0-4-doesnt-match-a-s>
->>>>>>> 412d08f87658ff6bb6f87591683003d7be0f4ff6
