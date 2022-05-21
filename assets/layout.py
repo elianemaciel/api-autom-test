@@ -1,13 +1,6 @@
-<<<<<<< HEAD
 import PySimpleGUI as sg
 import random, assets.procedures as p
 from assets.components import TestSet
-=======
-import sys,PySimpleGUI as sg
-sys.path.append('../assets')
-import layout, random, procedures as p
-from components import TestSet
->>>>>>> origin/HEAD
 
 home = [      
 	[sg.Button('View input data', size=(40, 3), font='Default 12 bold', key='B1')],
@@ -89,6 +82,7 @@ def newLayoutTipo( tipo ):
 	elif (tipo == 'Date'):
 		content += [
 			[sg.Text('From'),sg.InputText('', size=(10, 1)),sg.Text('to'),sg.InputText('', size=(10, 1))],
+			[sg.Text('Include:'),sg.InputText('', size=(10, 1))],
 		]
 	else: # int / float / double
 		content += [

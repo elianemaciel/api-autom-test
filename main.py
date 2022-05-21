@@ -146,8 +146,7 @@ while (True):
 					ppp = ParamRange(par,vals2[4],vals2[5])
 					vals2[6] = ''
 				else: # int / double / float / Date
-					ppp = ParamRange(par,vals2[4],vals2[5],vals2[6])
-					
+					ppp = ParamRange(par,vals2[3],vals2[4],vals2[5])
 
 				if (p.telaInicialConjTesteCorreta(vals2[2],vals2[3]) and p.entradaTipoCorreta(MUT.output_type,vals2[4],vals2[5],'')):
 					test = TestSet(vals2[2], int(vals2[3]),ppp)
