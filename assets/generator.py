@@ -1,7 +1,45 @@
 import os,io,sys,random,string
+<<<<<<< HEAD
 import assets.procedures as p
 
 
+=======
+sys.path.append('../assets')
+import assets.procedures as p
+import datetime, random
+
+def get_YearMonthDay_from_Date(date):
+	#ymd = []
+	if (date.find('/') > 0):
+		ymd = date.split('/')
+		
+	elif(date.find('-') > 0):
+		ymd = date.split('-')
+		
+	return ymd
+
+
+def generate_Date(v1, v2, v3):
+
+	if (v1!='' and v2!=''):
+
+		ymd1 = get_YearMonthDay_from_Date(v1)
+		ymd2 = get_YearMonthDay_from_Date(v2)
+
+		start_date = datetime.date(int(ymd1[0]), int(ymd1[1]), int(ymd1[2]))
+		end_date = datetime.date(int(ymd2[0]), int(ymd2[1]), int(ymd2[2]))
+
+		time_between_dates = end_date - start_date
+		days_between_dates = time_between_dates.days
+		random_number_of_days = random.randrange(days_between_dates)
+		random_date = start_date + datetime.timedelta(days=random_number_of_days)
+		
+		return str(random_date)
+
+	else:
+		print("Data não foi preenchida corretamente.")
+		return False
+>>>>>>> 412d08f87658ff6bb6f87591683003d7be0f4ff6
 def generate_String(value, qtd):
 	
 	if (qtd.find('~') == -1):
