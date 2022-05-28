@@ -214,8 +214,16 @@ def test_content( MUT, test_set_name, cont, testset_position ):
 
 
 def generate_tests(MUT):
-	testfile = open(MUT.class_name + 'Test.java', 'w')
-	testfile.write( header_content( MUT ) )
+	testfile = open(MUT.class_name + 'Test.java', 'a+')
+	testfile.seek(0)
+	previous = testfile.readlines()
+
+	if len(previous) == 0:
+		testfile.write( header_content( MUT ) )
+	else:
+		testfile.seek(0)
+		testfile.truncate()
+		testfile.write(''.join([a for a in previous[:-1]]))
 
 	for i in range(0, len(MUT.testsets)):
 		for j in range(0, MUT.testsets[i].number_of_cases):

@@ -20,10 +20,10 @@ def newLayoutInfoMetodo(MUT):
 			all_params += ','+MUT.params[x].name
 
 	content = [
-		[sg.Text('Classe name *', size=(16, 1)), sg.InputText(MUT.class_name, size=(30, 1))],
-		[sg.Text('Package name', size=(16, 1)), sg.InputText(MUT.package_name, size=(30, 1))],
-		[sg.Text('Method name *', size=(16, 1)), sg.InputText(MUT.name, size=(30, 1))],
-		[sg.Text('Parameters *', size=(16, 1)), sg.InputText(all_params, size=(30, 1))],
+		[sg.Text('Classe name *', size=(16, 1)), sg.InputText(MUT.class_name, size=(30, 1), key='className')],
+		[sg.Text('Package name', size=(16, 1)), sg.InputText(MUT.package_name, size=(30, 1), key='packageName')],
+		[sg.Text('Method name *', size=(16, 1)), sg.InputText(MUT.name, size=(30, 1), key = "methodName")],
+		[sg.Text('Parameters *', size=(16, 1)), sg.InputText(all_params, size=(30, 1),key = "parameters")],
 		[sg.Text('Output type *', size=(16, 1)),
 			sg.InputCombo(['int', 'String', 'float', 'double', 'char', 'boolean', 'Date'], size=(28, 1), key='Tipo', enable_events=True, readonly='True')],
 		[sg.Text('')], #quebra de linha
@@ -113,7 +113,34 @@ def newLayoutConjuntosTeste(MUT):
 	col2 += newLayoutTipo(MUT.output_type)
 	col2 += [sg.Text(' ')],[sg.Button("Specify parameters", key='Params'),sg.Button("Back")]
 
-	return [[sg.Column(col),sg.VerticalSeparator(pad=None),sg.Column(col2)]] #divisor vertical
+	return [[sg.Text(MUT.name,font='Default 12 bold', justification='left')],[sg.Column(col),sg.VerticalSeparator(pad=None),sg.Column(col2)]] #divisor vertical
+
+def line_frame(index,test):
+    frame_layout = [
+        [sg.Text('Method: {}'.format(test.method))],
+		[sg.Text('Parameters: {}'.format(', '.join(p for p in test.parameters) if test.parameters is not None else '-'))],
+    ]
+	
+    layout = [
+		[sg.Checkbox('', enable_events=True, key=f'{test.method}', default=True),
+        sg.Frame('', frame_layout, pad=((0, 5), (0, 10)), border_width=0, relief=sg.RELIEF_FLAT,)],
+    ]
+    return sg.Frame('', layout, pad=((0, 5), 0,), border_width=0)
+
+def newConvertedStory(testCases):
+	column_layout = [
+		[line_frame(i+1, test)]
+			for i, test in enumerate(testCases)
+	]
+	
+	content = [
+		[sg.Text('The story has been converted successfully ✓')],
+		[sg.Text('')],
+		[sg.Text('{} method suggestions were generated:'.format(len(testCases)))],
+		[sg.Column(column_layout, scrollable=True, vertical_scroll_only=True)],
+		[sg.Button("Confirm", key='Confirm'),sg.Button("Back", key='Back')]
+	]
+	return content
 
 def newLayoutEspecificarParam(MUT,nome_conj_teste):
 

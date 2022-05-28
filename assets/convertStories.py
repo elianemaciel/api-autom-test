@@ -12,8 +12,8 @@ nlp = pt_core_news_sm.load()
 testCases = []
 
 class TestCase:
-    def __init__(self, classMethod, method, parameters):
-        self.classMethod = classMethod
+    def __init__(self, className, method, parameters):
+        self.className = className
         self.method = method
         self.parameters = parameters
 
@@ -67,15 +67,15 @@ def defineTestsFromStories(returnedStorie):
         if descriptionStorie:
             defineClassForTests(descriptionStorie.feature)
         for test in testCases:
-            print(test.classMethod, test.method, test.parameters)
+            print(test.className, test.method, test.parameters)
     return testCases
 
 
 def defineClassForTests(feature):
     feature = treatFeature(feature)
     for itr,test in enumerate(testCases):
-        if test.classMethod is None:
-            testCases[itr].classMethod = feature
+        if test.className is None:
+            testCases[itr].className = feature
     return testCases
 
 def treatFeature(feature):
@@ -297,7 +297,7 @@ def createMethodUniquenessScenario(doc):
     verbAndTag = getVerbAndTagsFields(doc)
     if verbAndTag:
         field = [s.strip() for s in re.findall("(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndTag),unidecode(doc.text.lower()))]
-        return createTestTitle("Validar unicidade{}".format(field[0]))
+        return createTestTitle("Validar unicidade {}".format(field[0]))
     return None
 
 def validateUniquenessScenario(doc):
@@ -313,7 +313,7 @@ def createMethodValidateScenario(doc):
     verbAndTag = getVerbAndTagsFields(doc)
     if verbAndTag:
         field = [s.strip() for s in re.findall("(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndTag),unidecode(doc.text.lower()))]
-        return createTestTitle("Validar{}".format(field[0]))
+        return createTestTitle("Validar {}".format(field[0]))
     return None
 
 def createMethodRegisterScenario(doc):
@@ -328,7 +328,7 @@ def createMethodRegisterScenario(doc):
 
 def createTestTitle(phrase):
     if phrase is None or phrase == '': return None
-    return unidecode('Deve{}'.format(''.join([str(p) for p in phrase.title() if p.isalpha() or p.isalnum()])))
+    return unidecode('{}'.format(''.join([str(p) for p in phrase.title() if p.isalpha() or p.isalnum()])))
 
 def searchKeyAuxWhen(phrase):
     return re.search("(?<=desejar\s).*|(?<=estiver\s).*",phrase.lower()).group().strip()
