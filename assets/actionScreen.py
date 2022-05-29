@@ -37,7 +37,6 @@ def desactivateFristScreen(home):
 
 def activateFirstScreen(win,home):
 	win.Close()
-	win2_active = False
 	home.UnHide()
 
 def validateMethodInformation(vals2):
