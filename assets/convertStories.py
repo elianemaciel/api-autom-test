@@ -1,10 +1,10 @@
 import re
 from enum import Enum
 
-import pt_core_news_sm
+import pt_core_news_md
 from unidecode import unidecode
 
-nlp = pt_core_news_sm.load()
+nlp = pt_core_news_md.load()
 
 testCases = []
 
@@ -295,7 +295,7 @@ def createMethodUniquenessScenario(doc):
     verbAndTag = getVerbAndTagsFields(doc)
     if verbAndTag:
         field = [s.strip() for s in re.findall(r"(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndTag),unidecode(doc.text.lower()))]
-        return createTestTitle("Validar unicidade {}".format(field[0]))
+        return createTestTitle("Validar{}".format(field[0]))
     return None
 
 def validateUniquenessScenario(doc):

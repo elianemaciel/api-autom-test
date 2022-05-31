@@ -1,4 +1,4 @@
-from unittest import TestCase
+
 import PySimpleGUI as sg
 from assets.actionScreen import filltestsMUT, MethodInformation, activateFirstScreen
 import assets.layout as layout

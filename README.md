@@ -11,7 +11,7 @@ python3 main.py
   2. ```sudo apt install python3-tk``` (Tkinter)
   3. ```pip3 install pysimplegui``` (PySimpleGUI)
   4. ```pip3 install spacy``` (Spacy)
-  5. ```python3 -m spacy download pt_core_news_sm```
+  5. ```python3 -m spacy download pt_core_news_md```
   6. ```pip install Unidecode```
 
 ### Para executar no Linux:
