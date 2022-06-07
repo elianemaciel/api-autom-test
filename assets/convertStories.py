@@ -14,7 +14,7 @@ class TestCase:
         self.method = method
         self.parameters = parameters
 
-class DescriptionStorie:
+class DescriptionStory:
     def __init__(self, role,feature,reason):
         self.role = role
         self.feature = feature
@@ -37,32 +37,32 @@ class TagsAcceptance(Enum):
     WHEN = 2
     THEN = 3
 
-def getAcceptanceCriterias(storie):
+def getAcceptanceCriterias(story):
     acceptanceCriterias = []
     given,when,then = "","",""
-    for itr, line in enumerate(storie):
+    for itr, line in enumerate(story):
         if re.match(r"dado que",line.lower()):
-            given = definePremise(storie,itr)
+            given = definePremise(story,itr)
         elif re.match(r"quando",line.lower()):
-            when = defineAction(storie,itr)
+            when = defineAction(story,itr)
         elif re.match(r"então",line.lower()):
-            then = defineOutcome(storie,itr)
+            then = defineOutcome(story,itr)
             acceptanceCriterias.append(AcceptanceCriteria(given, when, then))
             given,when,then = "","",""
     return acceptanceCriterias
 
-def validateContent(returnedStorie):
-    if(len(returnedStorie) >=1 and returnedStorie[0] != ''):
+def validateContent(returnedStory):
+    if(len(returnedStory) >=1 and returnedStory[0] != ''):
         return True
     return False
 
-def defineTestsFromStories(returnedStorie):
-    if validateContent(returnedStorie):
-        descriptionStorie,acceptanceCriterias = definePartsStorie(createArrayStorie(returnedStorie[0]))
+def defineTestsFromStories(returnedStory):
+    if validateContent(returnedStory):
+        descriptionStory,acceptanceCriterias = definePartsStory(createArrayStory(returnedStory[0]))
         if acceptanceCriterias:
             defineTestsFromAcceptanceCritereas(acceptanceCriterias)
-        if descriptionStorie:
-            defineClassForTests(descriptionStorie.feature)
+        if descriptionStory:
+            defineClassForTests(descriptionStory.feature)
         for test in testCases:
             print(test.className, test.method, test.parameters)
     return testCases
@@ -79,8 +79,8 @@ def treatFeature(feature):
     if feature is None or feature == '': return None
     return ''.join([str(p) for p in unidecode(feature.title()) if p.isalpha() or p.isalnum()])
 
-def createArrayStorie(storie):
-    return str.split(storie,"\n")
+def createArrayStory(story):
+    return str.split(story,"\n")
 
 def defineTestsFromAcceptanceCritereas(acceptanceCriterias):
     for a in acceptanceCriterias:
@@ -122,23 +122,23 @@ def addParameterToTest(parameter, premiss):
     return False
 
 
-def definePartsStorie(storie):
-    descriptionStorie = getRoleFeatureReason(storie)
-    storie = getStorieWithoutDescription(storie)
-    acceptanceCriterias = getAcceptanceCriterias(storie)
-    return descriptionStorie,acceptanceCriterias
+def definePartsStory(story):
+    descriptionStory = getRoleFeatureReason(story)
+    story = getStoryWithoutDescription(story)
+    acceptanceCriterias = getAcceptanceCriterias(story)
+    return descriptionStory,acceptanceCriterias
 
 
-def getStorieWithoutDescription(storie):
+def getStoryWithoutDescription(story):
     linesToRemove = []
-    for line in storie:
+    for line in story:
         if searchKeysRole(line) or searchKeysFeature(line) or searchKeysReason(line):
             linesToRemove.append(line)
-    return [s for s in storie if s not in linesToRemove]
+    return [s for s in story if s not in linesToRemove]
 
 
-def definePremise(storie,itr):
-    return Acceptance(getPremiseFromPhrase(storie[itr]), getLinesField(storie[itr:]))
+def definePremise(story,itr):
+    return Acceptance(getPremiseFromPhrase(story[itr]), getLinesField(story[itr:]))
 
 
 def getPremiseFromPhrase(phrase):
@@ -169,12 +169,12 @@ def verifyImperative(phrase):
 def createImperative(lemma,text,phrase):
     return "{} {}".format(lemma,re.search(r"(?<={}\s).*".format(text),phrase).group())
 
-def defineAction(storie,itr):
-    return Acceptance(treatWhen(storie[itr]), getLinesField(storie[itr:]))
+def defineAction(story,itr):
+    return Acceptance(treatWhen(story[itr]), getLinesField(story[itr:]))
 
 
-def defineOutcome(storie,itr):
-    return Acceptance(None,getLinesField(storie[(itr):]))
+def defineOutcome(story,itr):
+    return Acceptance(None,getLinesField(story[(itr):]))
 
 def verifyFields(field):
     doc = nlp(field)
@@ -188,15 +188,15 @@ def verifyTagField(doc):
     return None
 
 
-def getLinesField(storie):
+def getLinesField(story):
     fields = []
-    for iter,x in enumerate(storie):
+    for iter,x in enumerate(story):
         if (not verifyFields(x) and not re.match("e",x.lower())):
             continue
         TratedFields = getArrayFields(x)
         if TratedFields:
             fields.extend(TratedFields)
-        if len(storie) > iter+1 and validateEndOfBlock(storie[iter+1]):
+        if len(story) > iter+1 and validateEndOfBlock(story[iter+1]):
             break
     return treatFields(fields)
 
@@ -340,11 +340,11 @@ def validateRegisterScenario(doc):
     return False
 
 
-def getRoleFeatureReason(storie):
-    role = defineRole(storie)
-    feature = defineFeature(storie)
-    reason = defineReason(storie)
-    return DescriptionStorie(role,feature,reason)
+def getRoleFeatureReason(story):
+    role = defineRole(story)
+    feature = defineFeature(story)
+    reason = defineReason(story)
+    return DescriptionStory(role,feature,reason)
 
 def defineRole(description):
     for des in description:
