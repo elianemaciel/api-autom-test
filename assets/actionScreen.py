@@ -4,7 +4,7 @@ import PySimpleGUI as sg
 
 class MethodInformation:
 
-    def __init__(self, className='', packageName='', method='', parameters='', outputType=''):
+    def __init__(self, _className='', _packageName='', _method='', _parameters='', _outputType=''):
         self.className = className
         self.packageName = packageName
         self.method = method
