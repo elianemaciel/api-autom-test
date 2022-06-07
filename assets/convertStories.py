@@ -295,7 +295,7 @@ def createMethodUniquenessScenario(doc):
     verbAndTag = getVerbAndTagsFields(doc)
     if verbAndTag:
         field = [s.strip() for s in re.findall(r"(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndTag),unidecode(doc.text.lower()))]
-        return createTestTitle("Validar{}".format(field[0]))
+        return createTestTitle("Validar {}".format(field[0]))
     return None
 
 def validateUniquenessScenario(doc):

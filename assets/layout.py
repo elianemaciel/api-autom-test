@@ -1,6 +1,5 @@
 import PySimpleGUI as sg
 import random, assets.procedures as p
-from assets.components import TestSet
 
 home = [      
 	[sg.Button('View input data', size=(40, 3), font='Default 12 bold', key='B1')],
@@ -161,7 +160,7 @@ def newLayoutEspecificarParam(MUT,nome_conj_teste):
 
 def newLayoutSobre():
 	content = [
-		[sg.Image(data=p.get_img_data('../automtest/assets/img/logo.jpg', first=True))],
+		[sg.Image(data=p.get_img_data('../AutomTest/assets/img/logo.jpg', first=True))],
 		[sg.Text('AutomTest', font='Default 12 bold')],
 		[sg.Text('')], #quebra de linha
 		[sg.Text('Test case generator for JUnit based on\nfunctional requirements specifications.', font='Default 12')],

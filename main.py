@@ -175,5 +175,5 @@ while True:
                     home['B6'].update(disabled=True)
                 break
 
-print('\n******************** Data ********************\n')
-print(MUT)
+#print('\n******************** Data ********************\n')
+#print(MUT)

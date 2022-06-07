@@ -29,16 +29,19 @@ def defineTestsFromExtractedStories(MUT, testCases, home, testeAtual, totalTeste
 def iterateMethods(testCases, home, testeAtual, totalTestes):
     MUT = generateTest(testCases[0],home)
     del testCases[0]
-    home['B4'].update('Generate tests ({}/{})'.format(testeAtual,totalTestes))
-    if testeAtual < totalTestes:
-        testeAtual = testeAtual + 1
-
+    
     home['B1'].update(disabled=True)
-    home['B2'].update('Set method information')
+    home['B2'].update('Set method information ({}/{})'.format(testeAtual,totalTestes))
     home['B3'].update(disabled=True)
-    home['B3'].update('Specify equivalence classes')
+    home['B3'].update('Specify equivalence classes({}/{})'.format(testeAtual,totalTestes))
     home['B4'].update(disabled=True)
     home['B4'].update(button_color=('white','#283b5b'))
+
+    if testeAtual < totalTestes:
+        home['B4'].update('Define Next Tests ({}/{})'.format(testeAtual,totalTestes))
+        testeAtual = testeAtual + 1
+    elif testeAtual == totalTestes:
+        home['B4'].update('Generate tests ({}/{})'.format(testeAtual,totalTestes))
 
     return MUT, testCases, testeAtual
 
