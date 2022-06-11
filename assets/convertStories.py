@@ -6,8 +6,6 @@ from unidecode import unidecode
 
 nlp = pt_core_news_md.load()
 
-testCases = []
-
 class TestCase:
     def __init__(self, className, method, parameters):
         self.className = className
@@ -39,7 +37,7 @@ class TagsAcceptance(Enum):
 
 def getAcceptanceCriterias(story):
     acceptanceCriterias = []
-    given,when,then = "","",""
+    given,when,then = None, None,None
     for itr, line in enumerate(story):
         if re.match(r"dado que",line.lower()):
             given = definePremise(story,itr)
@@ -48,7 +46,7 @@ def getAcceptanceCriterias(story):
         elif re.match(r"então",line.lower()):
             then = defineOutcome(story,itr)
             acceptanceCriterias.append(AcceptanceCriteria(given, when, then))
-            given,when,then = "","",""
+            given,when,then = None, None,None
     return acceptanceCriterias
 
 def validateContent(returnedStory):
@@ -57,18 +55,19 @@ def validateContent(returnedStory):
     return False
 
 def defineTestsFromStories(returnedStory):
+    testCases = []
     if validateContent(returnedStory):
         descriptionStory,acceptanceCriterias = definePartsStory(createArrayStory(returnedStory[0]))
         if acceptanceCriterias:
-            defineTestsFromAcceptanceCritereas(acceptanceCriterias)
+            testCases = defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias)
         if descriptionStory:
-            defineClassForTests(descriptionStory.feature)
+            testCases = defineClassForTests(testCases, descriptionStory.feature)
         for test in testCases:
             print(test.className, test.method, test.parameters)
     return testCases
 
 
-def defineClassForTests(feature):
+def defineClassForTests(testCases, feature):
     feature = treatFeature(feature)
     for itr,test in enumerate(testCases):
         if test.className is None:
@@ -82,35 +81,36 @@ def treatFeature(feature):
 def createArrayStory(story):
     return str.split(story,"\n")
 
-def defineTestsFromAcceptanceCritereas(acceptanceCriterias):
+def defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias):
     for a in acceptanceCriterias:
         if a.given:
-            addPremissToTest(a.given.premiss)
-            addParameterToTest(a.given.premiss,a.given.parameters)
+            testCases = addPremissToTest(testCases, a.given.premiss)
+            testCases = addParameterToTest(testCases, a.given.parameters,a.given.premiss)
         if a.when:
-            addPremissToTest(a.when.premiss)
+            testCases = addPremissToTest(testCases, a.when.premiss)
             if a.when.parameters:
-                for x in a.when.parameters:
-                    addParameterToTest(x,a.given.premiss if a.when.premiss is None else a.when.premiss)
+                for parameter in a.when.parameters:
+                    testCases = addParameterToTest(testCases, parameter,a.given.premiss if a.when.premiss is None else a.when.premiss)
         if a.then:
-            addPremissToTest(a.then.premiss)
+            testCases = addPremissToTest(testCases, a.then.premiss)
             if a.then.parameters:
-                for x in a.then.parameters:
-                    addParameterToTest(x,a.then.premiss if a.then.premiss != None else a.when.premiss if a.when.premiss != None else a.given.premiss)
-    return None
+                for parameter in a.then.parameters:
+                    testCases = addParameterToTest(testCases, parameter,a.then.premiss if a.then.premiss != None else a.when.premiss if a.when.premiss != None else a.given.premiss)
+    return testCases
 
 
-def addPremissToTest(a):
-    if a is None:
-        return
-    for t in testCases:
-        if t.method == a:
-            return None
-    testCases.append(TestCase(None,a,None))
-
-def addParameterToTest(parameter, premiss):
+def addPremissToTest(testCases, premiss):
     if premiss is None:
-        return True
+        return testCases
+    for t in testCases:
+        if t.method == premiss:
+            return testCases
+    testCases.append(TestCase(None,premiss,None))
+    return testCases
+
+def addParameterToTest(testCases, parameter, premiss):
+    if premiss is None or len(parameter) == 0:
+        return testCases
     for itr,x in enumerate(testCases):
         if x.method == premiss:
             if testCases[itr].parameters is None:
@@ -118,8 +118,8 @@ def addParameterToTest(parameter, premiss):
             else:
                 if parameter not in testCases[itr].parameters:
                     testCases[itr].parameters.append(parameter)
-            return True
-    return False
+            return testCases
+    return testCases
 
 
 def definePartsStory(story):
@@ -231,7 +231,11 @@ def getFieldWidthoutTags(field):
         if existsMultipleFieldsBetweenComma(textAfterVerbAndTag):
             return getMultipleFieldsBetweenComma(textAfterVerbAndTag)
         else:
-            return [s.strip() for s in re.findall(r"(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndtag),unidecode(field.lower()))]
+            field = getNounAfterVerbFeature(nlp(textAfterVerbAndTag))
+            if field is None or field == '':
+                return [s.strip() for s in re.findall(r"(?<={}\s)[A-zÀ-ú-\/]+".format(verbAndtag),unidecode(field.lower()))]
+            else:
+                return [field]
     elif re.match(r"e\s",field.lower()):
         return getFieldWithoutVerb(doc)
     return None
@@ -248,7 +252,7 @@ def existsMultipleFieldsBetweenComma(field):
 def getVerbAndTagsFields(doc):
     for itr,word in enumerate(doc):
         #é necessário colocar o selecione po uma limitação do spacy
-        if word.lemma_ in ["enviar","preencher","salvar", "selecionar", "selecione", "informar","digitar","guardar"]:
+        if word.lemma_ in ["enviar","preencher","salvar", "selecionar", "selecione", "informar","digitar","guardar","inserir"]:
             if len(doc) > itr+1 and doc[itr+1].pos_ in ["NOUN","PRON","DET","NUM"]:
                 return "{} {}".format(word.text,doc[itr+1].text)
     return None
@@ -280,12 +284,12 @@ def searchKeyThen(phrase):
 
 def treatWhen(phrase):
     doc = nlp(phrase)
-    if validateRegisterScenario(doc):
-        return createMethodRegisterScenario(doc)
     if validateValidatorScenario(doc):
         return createMethodValidateScenario(doc)
     if validateUniquenessScenario(doc):
         return createMethodUniquenessScenario(doc)
+    if validateRegisterScenario(doc):
+        return createMethodRegisterScenario(doc)
     return None
 
 def validateValidatorScenario(doc):
@@ -391,13 +395,22 @@ def searchKeysFeature(line):
 
 def nlpFeature(phrase):
     doc = nlp(phrase)
-    for word in doc:
+    for itr,word in enumerate(doc):
         if word.pos_ == 'VERB':
-            return re.search(r"(^{}).*".format(word.text),phrase).group()
-        if word.pos_ in ['ADP','AUX','CCONJ','DET','NUM','PART','PRON','SCONJ']:
-            phrase = re.sub(word.text,"",phrase,1).strip()
+            return getNounAfterVerbFeature(doc[itr:])
     return phrase.strip()
 
+def getNounAfterVerbFeature(doc):
+    nouns = ''
+    for word in doc:
+        if word.pos_ in ['NOUN', 'ADJ']:
+            if word.lemma_ not in ["válido","inválido","incorreto","vazio"]:
+                nouns = nouns + ' ' + word.text
+        elif word.pos_ in ["DET"]:
+            continue
+        elif nouns != '':
+            return nouns
+    return nouns.strip()
 
 def defineReason(description):
     for des in description:

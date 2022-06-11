@@ -19,7 +19,7 @@ def newLayoutInfoMetodo(MUT):
 			all_params += ','+MUT.params[x].name
 
 	content = [
-		[sg.Text('Classe name *', size=(16, 1)), sg.InputText(MUT.class_name, size=(30, 1), key='className')],
+		[sg.Text('Class name *', size=(16, 1)), sg.InputText(MUT.class_name, size=(30, 1), key='className')],
 		[sg.Text('Package name', size=(16, 1)), sg.InputText(MUT.package_name, size=(30, 1), key='packageName')],
 		[sg.Text('Method name *', size=(16, 1)), sg.InputText(MUT.name, size=(30, 1), key = "methodName")],
 		[sg.Text('Parameters *', size=(16, 1)), sg.InputText(all_params, size=(30, 1),key = "parameters")],

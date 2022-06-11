@@ -14,8 +14,12 @@ def defineTestsFromExtractedStories(MUT, testCases, home, testeAtual, totalTeste
     win3 = sg.Window('Select Tests From Extrated Methods', layout.newConvertedStory(testCases), finalize=True, element_justification='center')
     while (True):
         ev3, vals3 = win3.Read()
-        if (ev3 is None or ev3 == 'Back'):
+        if (ev3 is None):
             activateFirstScreen(win3,home)
+            break
+        elif(ev3 == 'Back'):
+            activateFirstScreen(win3,home)
+            testCases = []
             break
         elif(ev3 == 'Confirm'):
             if vals3:
