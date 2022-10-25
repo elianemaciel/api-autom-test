@@ -20,6 +20,7 @@ home['B1'].update(disabled=True)
 home['B3'].update(disabled=True)
 home['B4'].update(disabled=True)
 
+testCases = []
 while True:
     win2_active=False
     ev1, vals1 = home.Read()

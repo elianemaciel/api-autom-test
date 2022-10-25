@@ -330,6 +330,10 @@ def createMethodRegisterScenario(doc):
 
 def createTestTitle(phrase):
     if phrase is None or phrase == '': return None
+    doc = nlp(phrase)
+    for word in doc:
+        if word.pos_ in ["DET","NUM", "ADP"]:
+            phrase = re.sub(r"\b{}\b\s+".format(word.text),"",phrase)
     return unidecode('{}'.format(''.join([str(p) for p in phrase.title() if p.isalpha() or p.isalnum()])))
 
 def searchKeyAuxWhen(phrase):
