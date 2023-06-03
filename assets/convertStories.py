@@ -1,8 +1,11 @@
 import re
+import warnings
 from enum import Enum
 
 import pt_core_news_md
 from unidecode import unidecode
+
+from assets.AutomTestException import AutomTestException
 
 nlp = pt_core_news_md.load()
 
@@ -36,43 +39,52 @@ class TagsAcceptance(Enum):
     THEN = 3
 
 def getAcceptanceCriterias(story):
-    acceptanceCriterias = []
-    given,when,then = None, None,None
-    for itr, line in enumerate(story):
-        if re.match(r"dado que",line.lower()):
-            given = definePremise(story,itr)
-        elif re.match(r"quando",line.lower()):
-            when = defineAction(story,itr)
-        elif re.match(r"então",line.lower()):
-            then = defineOutcome(story,itr)
-            acceptanceCriterias.append(AcceptanceCriteria(given, when, then))
-            given,when,then = None, None,None
-    return acceptanceCriterias
+    try:
+        acceptanceCriterias = []
+        given,when,then = None, None,None
+        for itr, line in enumerate(story):
+            if re.match(r"dado que",line.lower()):
+                given = definePremise(story,itr)
+            elif re.match(r"quando",line.lower()):
+                when = defineAction(story,itr)
+            elif re.match(r"então",line.lower()):
+                then = defineOutcome(story,itr)
+                acceptanceCriterias.append(AcceptanceCriteria(given, when, then))
+                given,when,then = None, None,None
+        return acceptanceCriterias
+    except Exception as e:
+        raise AutomTestException(e, "Unable to get acceptance criteria in user story")
 
 def validateContent(returnedStory):
     if(len(returnedStory) >=1 and returnedStory[0] != ''):
         return True
     return False
 
-def defineTestsFromStories(returnedStory):
+def defineTestsFromStories(returnedStory):#TODO: este método, ao invés de levantar uma exception, trata a exception e retorna uma mensagem
     testCases = []
+    warnings = []
     if validateContent(returnedStory):
-        descriptionStory,acceptanceCriterias = definePartsStory(createArrayStory(returnedStory[0]))
+        descriptionStory, acceptanceCriterias = definePartsStory(createArrayStory(returnedStory[0])) //ok
         if acceptanceCriterias:
-            testCases = defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias)
+            testCases, warnings = defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias)//ok
         if descriptionStory:
             testCases = defineClassForTests(testCases, descriptionStory.feature)
         for test in testCases:
             print(test.className, test.method, test.parameters)
-    return testCases
+    else:
+        raise AutomTestException(message="Please insert the user story first")
+    return testCases, warnings
 
 
 def defineClassForTests(testCases, feature):
-    feature = treatFeature(feature)
-    for itr,test in enumerate(testCases):
-        if test.className is None:
-            testCases[itr].className = feature
-    return testCases
+    try:
+        feature = treatFeature(feature)
+        for itr,test in enumerate(testCases):
+            if test.className is None:
+                testCases[itr].className = feature
+        return testCases
+    except Exception as e:
+        raise AutomTestException(e, "Error when defining class for tests")
 
 def treatFeature(feature):
     if feature is None or feature == '': return None
@@ -82,21 +94,28 @@ def createArrayStory(story):
     return str.split(story,"\n")
 
 def defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias):
+    successTestCases = []#TODO: implementar e testar substituir o param
+    errorAccCriteria = []
     for a in acceptanceCriterias:
-        if a.given:
-            testCases = addPremissToTest(testCases, a.given.premiss)
-            testCases = addParameterToTest(testCases, a.given.parameters,a.given.premiss)
-        if a.when:
-            testCases = addPremissToTest(testCases, a.when.premiss)
-            if a.when.parameters:
-                for parameter in a.when.parameters:
-                    testCases = addParameterToTest(testCases, parameter,a.given.premiss if a.when.premiss is None else a.when.premiss)
-        if a.then:
-            testCases = addPremissToTest(testCases, a.then.premiss)
-            if a.then.parameters:
-                for parameter in a.then.parameters:
-                    testCases = addParameterToTest(testCases, parameter,a.then.premiss if a.then.premiss != None else a.when.premiss if a.when.premiss != None else a.given.premiss)
-    return testCases
+        try:
+            if a.given:
+                testCases = addPremissToTest(testCases, a.given.premiss)
+                testCases = addParameterToTest(testCases, a.given.parameters,a.given.premiss)
+            if a.when:
+                testCases = addPremissToTest(testCases, a.when.premiss)
+                if a.when.parameters:
+                    for parameter in a.when.parameters:
+                        testCases = addParameterToTest(testCases, parameter,a.given.premiss if a.when.premiss is None else a.when.premiss)
+            if a.then:
+                testCases = addPremissToTest(testCases, a.then.premiss)
+                if a.then.parameters:
+                    for parameter in a.then.parameters:
+                        testCases = addParameterToTest(testCases, parameter,a.then.premiss if a.then.premiss != None else a.when.premiss if a.when.premiss != None else a.given.premiss)
+        except Exception as e:
+            error_message = "Error when extracting data from the following acceptance criterion: " + a
+            warnings.warn(error_message + e)
+            errorAccCriteria.append(error_message)
+    return testCases, errorAccCriteria
 
 
 def addPremissToTest(testCases, premiss):
@@ -130,11 +149,14 @@ def definePartsStory(story):
 
 
 def getStoryWithoutDescription(story):
-    linesToRemove = []
-    for line in story:
-        if searchKeysRole(line) or searchKeysFeature(line) or searchKeysReason(line):
-            linesToRemove.append(line)
-    return [s for s in story if s not in linesToRemove]
+    try:
+        linesToRemove = []
+        for line in story:
+            if searchKeysRole(line) or searchKeysFeature(line) or searchKeysReason(line):
+                linesToRemove.append(line)
+        return [s for s in story if s not in linesToRemove]
+    except Exception as e:
+        raise AutomTestException(e, "Unable to get user story after removing description")
 
 
 def definePremise(story,itr):
@@ -349,10 +371,19 @@ def validateRegisterScenario(doc):
 
 
 def getRoleFeatureReason(story):
-    role = defineRole(story)
-    feature = defineFeature(story)
-    reason = defineReason(story)
-    return DescriptionStory(role,feature,reason)
+    try:
+        role = defineRole(story)
+    except Exception as e:
+        raise AutomTestException(e, "Unable to get role defined in user story")
+    try:
+        feature = defineFeature(story) #TODO: esse carinha tem um espaço em branco
+    except Exception as e:
+        raise AutomTestException(e, "Unable to get user story feature")
+    try:
+        reason = defineReason(story)
+    except Exception as e:
+        raise AutomTestException(e, "Unable to get user story reason")
+    return DescriptionStory(role, feature, reason)
 
 def defineRole(description):
     for des in description:
@@ -377,7 +408,7 @@ def removeKeysRole(line):
 
 
 def searchKeysRole(line):
-    return re.match(r"(como\s)|(enquanto\s)|(eu como\s)|(eu, como\s)",line.lower())
+    return re.match(r"(como\s)|(como um\s)|(enquanto\s)|(enquanto um\s)|(eu como\s)|(eu como um\s)|(eu, como\s)|(eu, como um\s)",line.lower())
 
 def defineFeature(description):
     for des in description:
