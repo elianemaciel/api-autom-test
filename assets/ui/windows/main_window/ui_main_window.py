@@ -156,5 +156,5 @@ class UI_MainWindow(object):
         for btn in self.menu_buttons:
             btn.toggle_active(btn.id == id_button)
 
-    def set_logo_visibility(self, visible):
-        self.logo.setVisible(visible)
+    def set_logo_visibility(self, is_visible):
+        self.logo.setVisible(is_visible)
