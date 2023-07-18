@@ -1,0 +1,39 @@
+from PySide6.QtWidgets import QHBoxLayout, QCheckBox, QLabel
+
+
+class MethodChoice(QHBoxLayout):
+    def __init__(self,
+                 method,
+                 is_active=True
+                 ):
+        super().__init__()
+        self.is_active = is_active
+        # checkbox
+        self.item_checkbox = QCheckBox()
+        self.item_checkbox.setChecked(True)
+        self.item_checkbox.setObjectName("self.item_checkbox")
+        self.item_checkbox.setFixedWidth(20)
+        self.method_info = method
+        self.addWidget(self.item_checkbox)
+        # Text label with info
+        item_description = QLabel(
+            "<html><b>Método:</b> " + self.method_info + "<br> <b>Parâmetros:</b>" + "disciplina, periodoLetivo, "
+                                                                           "turma, notas, desistentes" + " </html>")
+        item_description.setStyleSheet("""
+                               QLabel {
+                                   border-radius: 10px; 
+                                   background-color: white; 
+                                   padding:10px;
+                                   font-family: Arial; 
+                                   font-size: 14px;
+                               }
+                               """)
+        item_description.setWordWrap(True)
+        self.addWidget(item_description)
+
+    def is_checkbox_selected(self):
+        return self.item_checkbox.isChecked()
+
+    def get_method_info(self):
+        return self.method_info
+

@@ -62,18 +62,18 @@ def validateContent(returnedStory):
 
 def defineTestsFromStories(returnedStory):#TODO: este método, ao invés de levantar uma exception, trata a exception e retorna uma mensagem
     testCases = []
-    warnings = []
+    warningsFromAccCriteria = []
     if validateContent(returnedStory):
-        descriptionStory, acceptanceCriterias = definePartsStory(createArrayStory(returnedStory[0])) //ok
+        descriptionStory, acceptanceCriterias = definePartsStory(createArrayStory(returnedStory[0]))
         if acceptanceCriterias:
-            testCases, warnings = defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias)//ok
+            testCases, warningsFromAccCriteria = defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias)
         if descriptionStory:
             testCases = defineClassForTests(testCases, descriptionStory.feature)
         for test in testCases:
             print(test.className, test.method, test.parameters)
     else:
         raise AutomTestException(message="Please insert the user story first")
-    return testCases, warnings
+    return testCases, warningsFromAccCriteria
 
 
 def defineClassForTests(testCases, feature):

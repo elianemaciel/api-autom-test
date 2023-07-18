@@ -12,6 +12,7 @@ class AtMenuButton(QPushButton):
             text="",
             height=50,
             minimum_width=50,
+            maximum_width=None,
             text_padding=55,
             text_color=color.MENU_BUTTON_TEXT,
             btn_color=color.MENU_BUTTON_BACKGROUND,
@@ -27,6 +28,8 @@ class AtMenuButton(QPushButton):
         self.setMaximumHeight(height)
         self.setMinimumHeight(height),
         self.setMinimumWidth(minimum_width)
+        if maximum_width is not None:
+            self.setMaximumWidth(maximum_width)
         self.setCursor(Qt.PointingHandCursor)
         self.clicked.connect(  # //lambda: (
             do_when_clicked  # ,
@@ -34,6 +37,7 @@ class AtMenuButton(QPushButton):
             # )
         )
         self.id = id
+        # self.text_padding = 20
 
         # Custom parameters
         self.minimum_width = minimum_width

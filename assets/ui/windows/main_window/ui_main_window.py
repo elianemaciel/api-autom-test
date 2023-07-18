@@ -1,4 +1,5 @@
 from assets.qt_core import *
+from assets.ui.page_manager import PageManager
 from assets.ui.util import color, style
 from assets.ui.widgets.menu_button import AtMenuButton
 import os
@@ -14,8 +15,11 @@ from assets.ui.windows.user_story_page import InsertUserStoryWidget
 
 class UI_MainWindow(object):
 
+    instance = None
+
     def __init__(self):
         self.menu_buttons = []
+        self.instance = self
 
     def setup_ui(self, parent):
         if not parent.objectName():
@@ -66,6 +70,10 @@ class UI_MainWindow(object):
         return content
 
     def setupLeftMenu(self):
+
+        #setup Page manager
+        PageManager(self)
+
         self.left_menu = QFrame()
         self.left_menu.setStyleSheet("background-color: " + color.MENU_AREA)
         self.left_menu.setMaximumWidth(250)
@@ -86,7 +94,7 @@ class UI_MainWindow(object):
         self.logo.setPixmap(scaled_pixmap)
         self.logo.resize(scaled_pixmap.width(), scaled_pixmap.height())
         self.logo.setAlignment(Qt.AlignCenter)
-        self.set_logo_visibility(False)
+        PageManager.set_logo_visibility(False)
         left_menu_layout.addWidget(self.logo)
 
 
@@ -105,7 +113,7 @@ class UI_MainWindow(object):
         btn_add_user_story = AtMenuButton(
             id="USER_STORY",
             text="Inserir uma História\nde Usuário",
-            do_when_clicked=lambda: self.show_page(InsertUserStoryWidget.position, "USER_STORY")
+            do_when_clicked=lambda: PageManager.show_page(InsertUserStoryWidget.position, "USER_STORY")
         )
         # q_font = QFont()
         # q_font.setFamily("Arial")
@@ -114,27 +122,27 @@ class UI_MainWindow(object):
         btn_add_methods_info = AtMenuButton(
             id="INSERT_INFO",
             text="Inserir Informações\ndos Métodos",
-            do_when_clicked=lambda: self.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
+            do_when_clicked=lambda: PageManager.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
         )
         btn_read_data = AtMenuButton(
             id="CHECK_DATA",
             text="Ver Dados Inseridos",
-            do_when_clicked=lambda: self.show_page(CheckInsertedDataWidget.position, "CHECK_DATA")
+            do_when_clicked=lambda: PageManager.show_page(CheckInsertedDataWidget.position, "CHECK_DATA")
         )
         btn_equiv_classes = AtMenuButton(
             id="EQUIV_CLASSES",
             text="Especificar Classes\nde Equivalência",
-            do_when_clicked=lambda: self.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES")
+            do_when_clicked=lambda: PageManager.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES")
         )
         btn_generate_tests = AtMenuButton(
             id="TESTS",
             text="Gerar Testes",
-            do_when_clicked=lambda: self.show_page(GenerateTestsWidget.position, "TESTS")
+            do_when_clicked=lambda: PageManager.show_page(GenerateTestsWidget.position, "TESTS")
         )
         btn_about = AtMenuButton(
             id="ABOUT",
             text="Sobre o AutomTest",
-            do_when_clicked=lambda: self.show_page(AboutPageWidget.position, "ABOUT")
+            do_when_clicked=lambda: PageManager.show_page(AboutPageWidget.position, "ABOUT")
         )
 
         # Add buttons to layout
@@ -150,11 +158,3 @@ class UI_MainWindow(object):
         # Add to layout
         left_menu_layout.addWidget(left_menu_top_frame)
 
-    def show_page(self, position, id_button):
-        self.set_logo_visibility(True)
-        self.all_pages.setCurrentIndex(position)
-        for btn in self.menu_buttons:
-            btn.toggle_active(btn.id == id_button)
-
-    def set_logo_visibility(self, is_visible):
-        self.logo.setVisible(is_visible)
