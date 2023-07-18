@@ -88,34 +88,31 @@ class InsertMethodsInfoWidget:
         return widget
 
     @staticmethod
-    def remove_other_contents():
-        # Remove os contents
-        if InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX != -1:
-            converting_success_widget = InsertMethodsInfoWidget.content.widget(
-                InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX)
-            InsertMethodsInfoWidget.content.removeWidget(converting_success_widget)
-
+    def show_add_extra_data(methods):
+        # if the content already exists, remove to add it again
         if InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX != -1:
             extra_data_widget = InsertMethodsInfoWidget.content.widget(
                 InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX)
             InsertMethodsInfoWidget.content.removeWidget(extra_data_widget)
-
-    @staticmethod
-    def show_add_extra_data(methods):
-        InsertMethodsInfoWidget.remove_other_contents()
-
+        # initialize the content
         widget = InsertMethodsInfoWidget.add_extra_data_content_widget(methods)
         InsertMethodsInfoWidget.content.addWidget(widget)
         InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
+        # set as active content
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX)
 
     @staticmethod
     def show_converting_success(methods):
-        InsertMethodsInfoWidget.remove_other_contents()
-
+        # if the content already exists, remove to add it again
+        if InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX != -1:
+            converting_success_widget = InsertMethodsInfoWidget.content.widget(
+                InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX)
+            InsertMethodsInfoWidget.content.removeWidget(converting_success_widget)
+        # initialize the content
         widget = InsertMethodsInfoWidget.success_content_widget(methods)
         InsertMethodsInfoWidget.content.addWidget(widget)
         InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
+        # set as active content
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX)
 
     @staticmethod
