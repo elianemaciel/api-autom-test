@@ -7,6 +7,8 @@ from assets.ui.widgets.menu_button import AtMenuButton
 class MethodCrud(QHBoxLayout):
     def __init__(self,
                  method,
+                 do_when_edit_is_clicked=None,
+                 do_when_remove_is_clicked=None,
                  is_active=True
                  ):
         super().__init__()
@@ -34,7 +36,8 @@ class MethodCrud(QHBoxLayout):
             height=40,
             minimum_width=70,
             maximum_width=70,
-            btn_color=color.EDIT_BUTTON
+            btn_color=color.EDIT_BUTTON,
+            do_when_clicked=do_when_edit_is_clicked
         )
         self.addWidget(edit_bttn)
 
@@ -44,7 +47,8 @@ class MethodCrud(QHBoxLayout):
             height=40,
             minimum_width=80,
             maximum_width=80,
-            btn_color=color.REMOVE_BUTTON
+            btn_color=color.REMOVE_BUTTON,
+            do_when_clicked=do_when_remove_is_clicked
         )
         self.addWidget(remove_bttn)
 

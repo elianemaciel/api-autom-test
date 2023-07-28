@@ -1,10 +1,13 @@
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QStackedWidget, QHBoxLayout, \
-    QCheckBox, QScrollArea
+    QCheckBox, QScrollArea, QTextEdit, QLineEdit, QComboBox
 import os
 
+from assets.components import Method
 from assets.ui.util import style, color
+from assets.ui.widgets.combo_box import CustomComboBox
+from assets.ui.widgets.dialog.set_method_params_dialog import MethodParamsDialog
 from assets.ui.widgets.menu_button import AtMenuButton
 from assets.ui.widgets.method_choice import MethodChoice
 from assets.ui.widgets.method_crud import MethodCrud
@@ -14,6 +17,7 @@ class InsertMethodsInfoWidget:
     BASIC_CONTENT_INDEX = 0
     SUCCESS_ON_CONVERTING_CONTENT_INDEX = -1
     ADD_EXTRA_DATA_CONTENT_INDEX = -1
+    CREATE_OR_EDIT_METHOD_CONTENT_INDEX = -1
 
     position = None
     instance = None
@@ -116,6 +120,173 @@ class InsertMethodsInfoWidget:
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX)
 
     @staticmethod
+    def show_create_or_edit_method(method=None):
+        # if the content already exists, remove to add it again
+        if InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX != -1:
+            widget = InsertMethodsInfoWidget.content.widget(
+                InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX)
+            InsertMethodsInfoWidget.content.removeWidget(widget)
+        # initialize the content
+        method = Method(name="addClientExtraInfo", class_name='ClientManagement',
+                        package_name='com.test.client.management', output_type='Boolean')
+        method.add_param_by_arg('clientId', 'Integer')
+        method.add_param_by_arg('clientPostCode', 'Integer')
+        method.add_param_by_arg('clientAddress', 'String')
+        method.add_param_by_arg('clientCity', 'String')
+        method.add_param_by_arg('clientState', 'String')
+        method.add_param_by_arg('clientCountry', 'String')
+        widget = InsertMethodsInfoWidget.create_or_edit_method_content_widget(method)
+        InsertMethodsInfoWidget.content.addWidget(widget)
+        InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
+        # set as active content
+        InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX)
+
+    @staticmethod
+    def create_or_edit_method_content_widget(method=None):  # todo: params should be an attribute of method class
+        widget = QWidget()
+        content_layout = QVBoxLayout()
+        # Set spacing
+        spacing = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        content_layout.addItem(spacing)
+        # Set header
+        header = QLabel("Edit method:" if method is not None else "Create method:")
+        header.setStyleSheet(style.BASIC_APPLICATION_TEXT)
+        header.setWordWrap(True)
+        content_layout.addWidget(header)
+
+        # Set spacing
+        spacing = QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        content_layout.addItem(spacing)
+
+        # Stylesheets for future use
+        label_stylesheet = "padding:10px; font-size: 16px; font-weight: bold;"
+        text_edit_stylesheet = "QLineEdit {border-radius: 10px; background-color: white}"
+
+        # Package name-----------------------------------------------------------------------------
+        pkg_name = QHBoxLayout()
+        label = QLabel("Package name:")
+        label.setStyleSheet(label_stylesheet)
+        pkg_name.addWidget(label)
+        pkg_name.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        text_edit = QLineEdit()
+        text_edit.setStyleSheet(text_edit_stylesheet)
+        text_edit.setFixedHeight(40)
+        text_edit.setFixedWidth(500)
+        pkg_name.addWidget(text_edit)
+        content_layout.addLayout(pkg_name)
+
+        # Class name-----------------------------------------------------------------------------
+        class_name = QHBoxLayout()
+        label = QLabel("Class name*:")
+        label.setStyleSheet(label_stylesheet)
+        class_name.addWidget(label)
+        class_name.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        text_edit = QLineEdit()
+        text_edit.setStyleSheet(text_edit_stylesheet)
+        text_edit.setFixedHeight(40)
+        text_edit.setFixedWidth(500)
+        class_name.addWidget(text_edit)
+        content_layout.addLayout(class_name)
+
+        # Method name-----------------------------------------------------------------------------
+        method_name = QHBoxLayout()
+        label = QLabel("Method name*:")
+        label.setStyleSheet(label_stylesheet)
+        method_name.addWidget(label)
+        method_name.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        text_edit = QLineEdit()
+        text_edit.setStyleSheet(text_edit_stylesheet)
+        text_edit.setFixedWidth(500)
+        text_edit.setFixedHeight(40)
+        method_name.addWidget(text_edit)
+        content_layout.addLayout(method_name)
+
+        # Params-----------------------------------------------------------------------------
+        params = QHBoxLayout()
+
+        label = QLabel("parameters*:")
+        label.setStyleSheet(label_stylesheet)
+        params.addWidget(label)
+        params.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        scroll = QScrollArea()
+        scroll.setFixedHeight(117)
+        scroll.setFixedWidth(420)
+        params.addWidget(scroll)
+        scroll.setWidgetResizable(True)
+        scrollContent = QWidget(scroll)
+        scrollContent.setFixedHeight(100)
+        scrollLayout = QHBoxLayout(scrollContent)
+        scroll.setWidget(scrollContent)
+        scroll.setStyleSheet("border: none;")
+        for param in method.params:
+            param_widget = QWidget()
+            param_widget.setFixedHeight(70)
+            param_widget.setStyleSheet("border-radius: 10px; background-color: white;")
+
+            param_layout = QVBoxLayout()
+            param_layout.setAlignment(Qt.AlignCenter)
+
+            # name
+            label = QLabel(param.name)
+            label.setStyleSheet("padding:2px; font-family: Arial; font-size: 14px; font-weight: 600;")
+            label.setAlignment(Qt.AlignCenter)
+            param_layout.addWidget(label)
+
+            # type
+            label = QLabel(param.type_name)
+            label.setStyleSheet("padding:2px; font-family: Arial; font-size: 14px; color: gray;")
+            label.setAlignment(Qt.AlignCenter)
+            param_layout.addWidget(label)
+
+            param_widget.setLayout(param_layout)
+            scrollLayout.addWidget(param_widget)
+
+        # Set spacing
+        spacing = QSpacerItem(10, 10, QSizePolicy.Fixed, QSizePolicy.Fixed)
+        params.addItem(spacing)
+
+        edit_button_layout = QVBoxLayout()
+        edit_button_layout.addItem(QSpacerItem(15, 15, QSizePolicy.Fixed, QSizePolicy.Fixed))
+        edit_button_layout.addWidget(AtMenuButton(
+            text="Edit",
+            minimum_width=70,
+            maximum_width=70,
+            height=70,
+            do_when_clicked=lambda: (MethodParamsDialog(method.params, method.name).exec_())
+        ))
+        edit_button_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        params.addLayout(edit_button_layout)
+
+        content_layout.addLayout(params)
+
+        #Return type-----------------------------------------------------------------------------
+        method_name = QHBoxLayout()
+        label = QLabel("Return type*:")
+        label.setStyleSheet(label_stylesheet)
+        method_name.addWidget(label)
+        method_name.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+        combo_box = CustomComboBox()
+        combo_box.addItem("Integer")
+        combo_box.addItem("String")
+        combo_box.addItem("Boolean")
+        # combo_box.setStyleSheet(text_edit_stylesheet)
+        combo_box.setFixedWidth(500)
+        combo_box.setFixedHeight(40)
+        method_name.addWidget(combo_box)
+        content_layout.addLayout(method_name)
+
+        # Set spacing----------------------------------------------------------------------------
+        spacing = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        content_layout.addItem(spacing)
+
+        # Bottom bar-----------------------------------------------------------------------------
+        content_layout.addLayout(InsertMethodsInfoWidget.setup_create_or_edit_method_content_bottom_buttons())
+
+        widget.setLayout(content_layout)
+        return widget
+
+    @staticmethod
     def add_extra_data_content_widget(methods):
         widget = QWidget()
         content_layout = QVBoxLayout()
@@ -148,7 +319,8 @@ class InsertMethodsInfoWidget:
         scrollLayout.addWidget(AtMenuButton(
             text="Add a New Method",
             height=40,
-            btn_color=color.ADD_NEW_METHOD_BUTTON
+            btn_color=color.ADD_NEW_METHOD_BUTTON,
+            do_when_clicked=lambda: InsertMethodsInfoWidget.show_create_or_edit_method()
         ))
 
         # Set spacing
@@ -229,7 +401,11 @@ class InsertMethodsInfoWidget:
 
     @staticmethod
     def get_crud_method_item(method):
-        method_crud = MethodCrud(method)
+        method_crud = MethodCrud(
+            method,
+            do_when_edit_is_clicked=lambda: InsertMethodsInfoWidget.show_create_or_edit_method(method),
+            # TODO: remover e atualizar lista de métodos. do_when_remove_is_clicked= InsertMethodsInfoWidget.
+        )
         InsertMethodsInfoWidget.methods_crud.append(method_crud)
         return method_crud
 
@@ -243,7 +419,7 @@ class InsertMethodsInfoWidget:
             AtMenuButton(
                 text="Go Back",
                 # height=30,
-                minimum_width=100,#TODO: implementar botão voltar
+                minimum_width=100,  # TODO: implementar botão voltar
                 do_when_clicked=lambda: print("Voltando para onde estávamos antes"),
                 btn_color=color.BOTTOM_NAVIGATION_BACKWARD
             )
@@ -254,8 +430,7 @@ class InsertMethodsInfoWidget:
                 # height=30,
                 minimum_width=170,
                 do_when_clicked=lambda: (
-                    # InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.get_selected_methods()),
-                    # TODO: carregar próxima página
+                    # TODO: carregar specify_equiv_classes
                 ),
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD
             )
@@ -284,6 +459,45 @@ class InsertMethodsInfoWidget:
                 text="Continue With\nSelected Methods",
                 # height=30,
                 minimum_width=170,
+                do_when_clicked=lambda: (
+                    InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.get_selected_methods()),
+                    # self.close() TODO: voltar esta linha à ativa
+                ),
+                btn_color=color.BOTTOM_NAVIGATION_FORWARD
+            )
+        )
+        end_spacing = QSpacerItem(10, 10, QSizePolicy.Fixed, QSizePolicy.Minimum)
+        bottom_button_bar_layout.addItem(end_spacing)
+        return bottom_button_bar_layout
+
+
+    @staticmethod
+    def setup_create_or_edit_method_content_bottom_buttons():
+        # Bottom button bar
+        bottom_button_bar_layout = QHBoxLayout()
+        # spacing = QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        # bottom_button_bar_layout.addItem(spacing)
+        bottom_button_bar_layout.addWidget(
+            AtMenuButton(
+                text="List all methods",
+                minimum_width=170,
+                do_when_clicked=lambda: print("Listando todos os métodos novamente"),
+                btn_color=color.BOTTOM_NAVIGATION_LIST_ALL
+            )
+        )
+        bottom_button_bar_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        bottom_button_bar_layout.addWidget(
+            AtMenuButton(
+                text="Go Back",
+                minimum_width=100,
+                do_when_clicked=lambda: print("Voltando para onde estávamos antes"),
+                btn_color=color.BOTTOM_NAVIGATION_BACKWARD
+            )
+        )
+        bottom_button_bar_layout.addWidget(
+            AtMenuButton(
+                text="Save",
+                minimum_width=100,
                 do_when_clicked=lambda: (
                     InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.get_selected_methods()),
                     # self.close() TODO: voltar esta linha à ativa

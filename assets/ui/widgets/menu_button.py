@@ -25,8 +25,9 @@ class AtMenuButton(QPushButton):
 
         # set default params
         self.setText(text)
-        self.setMaximumHeight(height)
-        self.setMinimumHeight(height),
+        if height is not None:
+            self.setMaximumHeight(height)
+            self.setMinimumHeight(height)
         self.setMinimumWidth(minimum_width)
         if maximum_width is not None:
             self.setMaximumWidth(maximum_width)

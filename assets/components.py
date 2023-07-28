@@ -1,10 +1,13 @@
 # Paramenter < ParamRange < TestSet < Method
+import uuid
+
 
 class Parameter:
 
-	def __init__(self, name, type_name=''):
+	def __init__(self, name, type_name='', identifier=None):
 		self.name = name
 		self.type_name = type_name
+		self.identifier = uuid.uuid4() if identifier is None else identifier
 
 	def __str__(self):
 		return self.name + " (" +self.type_name + ")"
