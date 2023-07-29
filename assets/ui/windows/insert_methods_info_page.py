@@ -1,8 +1,9 @@
+import os
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QStackedWidget, QHBoxLayout, \
-    QCheckBox, QScrollArea, QTextEdit, QLineEdit, QComboBox
-import os
+    QScrollArea, QLineEdit
 
 from assets.components import Method
 from assets.ui.util import style, color
@@ -11,6 +12,7 @@ from assets.ui.widgets.dialog.set_method_params_dialog import MethodParamsDialog
 from assets.ui.widgets.menu_button import AtMenuButton
 from assets.ui.widgets.method_choice import MethodChoice
 from assets.ui.widgets.method_crud import MethodCrud
+from assets.ui.windows.bottom_buttons_for_add_extra_data import BottomButtonsForAddExtraData
 
 
 class InsertMethodsInfoWidget:
@@ -41,7 +43,7 @@ class InsertMethodsInfoWidget:
         if InsertMethodsInfoWidget.position is not None:
             return InsertMethodsInfoWidget.instance
         InsertMethodsInfoWidget.position = position
-        InsertMethodsInfoWidget.instance = InsertMethodsInfoWidget._setup_basic_content()
+        InsertMethodsInfoWidget.instance = InsertMethodsInfoWidget._setup_basic_content(lambda: None)
         InsertMethodsInfoWidget.methods_choice = []
         InsertMethodsInfoWidget.methods_crud = []
         return InsertMethodsInfoWidget.instance
@@ -51,9 +53,9 @@ class InsertMethodsInfoWidget:
     #     if InsertMethodsInfoWidget.visible_content == 0:
 
     @staticmethod
-    def _setup_basic_content():
+    def _setup_basic_content(do_to_show_next_page):
         InsertMethodsInfoWidget.content.addWidget(InsertMethodsInfoWidget.get_basic_content())
-        content_widget = InsertMethodsInfoWidget.success_content_widget([])
+        content_widget = InsertMethodsInfoWidget.success_content_widget([], do_to_show_next_page)
         InsertMethodsInfoWidget.content.addWidget(content_widget)
         InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(
             content_widget)
@@ -92,35 +94,35 @@ class InsertMethodsInfoWidget:
         return widget
 
     @staticmethod
-    def show_add_extra_data(methods):
+    def show_add_extra_data(methods, do_to_show_next_page):
         # if the content already exists, remove to add it again
         if InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX != -1:
             extra_data_widget = InsertMethodsInfoWidget.content.widget(
                 InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX)
             InsertMethodsInfoWidget.content.removeWidget(extra_data_widget)
         # initialize the content
-        widget = InsertMethodsInfoWidget.add_extra_data_content_widget(methods)
+        widget = InsertMethodsInfoWidget.add_extra_data_content_widget(methods, do_to_show_next_page)
         InsertMethodsInfoWidget.content.addWidget(widget)
         InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
         # set as active content
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX)
 
     @staticmethod
-    def show_converting_success(methods):
+    def show_converting_success(methods, do_to_show_next_page):
         # if the content already exists, remove to add it again
         if InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX != -1:
             converting_success_widget = InsertMethodsInfoWidget.content.widget(
                 InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX)
             InsertMethodsInfoWidget.content.removeWidget(converting_success_widget)
         # initialize the content
-        widget = InsertMethodsInfoWidget.success_content_widget(methods)
+        widget = InsertMethodsInfoWidget.success_content_widget(methods, do_to_show_next_page)
         InsertMethodsInfoWidget.content.addWidget(widget)
         InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
         # set as active content
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX)
 
     @staticmethod
-    def show_create_or_edit_method(method=None):
+    def show_create_or_edit_method(do_to_show_next_page):
         # if the content already exists, remove to add it again
         if InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX != -1:
             widget = InsertMethodsInfoWidget.content.widget(
@@ -135,14 +137,14 @@ class InsertMethodsInfoWidget:
         method.add_param_by_arg('clientCity', 'String')
         method.add_param_by_arg('clientState', 'String')
         method.add_param_by_arg('clientCountry', 'String')
-        widget = InsertMethodsInfoWidget.create_or_edit_method_content_widget(method)
+        widget = InsertMethodsInfoWidget.create_or_edit_method_content_widget(do_to_show_next_page, method)
         InsertMethodsInfoWidget.content.addWidget(widget)
         InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
         # set as active content
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX)
 
     @staticmethod
-    def create_or_edit_method_content_widget(method=None):  # todo: params should be an attribute of method class
+    def create_or_edit_method_content_widget(do_to_show_next_page, method=None):
         widget = QWidget()
         content_layout = QVBoxLayout()
         # Set spacing
@@ -281,13 +283,13 @@ class InsertMethodsInfoWidget:
         content_layout.addItem(spacing)
 
         # Bottom bar-----------------------------------------------------------------------------
-        content_layout.addLayout(InsertMethodsInfoWidget.setup_create_or_edit_method_content_bottom_buttons())
+        content_layout.addLayout(InsertMethodsInfoWidget.setup_create_or_edit_method_content_bottom_buttons(do_to_show_next_page))
 
         widget.setLayout(content_layout)
         return widget
 
     @staticmethod
-    def add_extra_data_content_widget(methods):
+    def add_extra_data_content_widget(methods, do_to_show_next_page):
         widget = QWidget()
         content_layout = QVBoxLayout()
         # Set spacing
@@ -313,14 +315,14 @@ class InsertMethodsInfoWidget:
 
         # add item into the scrollable-list
         for method in methods:
-            scrollLayout.addLayout(InsertMethodsInfoWidget.get_crud_method_item(method))
+            scrollLayout.addLayout(InsertMethodsInfoWidget.get_crud_method_item(method, do_to_show_next_page))
 
         # add a button at the end of scrollable list
         scrollLayout.addWidget(AtMenuButton(
             text="Add a New Method",
             height=40,
             btn_color=color.ADD_NEW_METHOD_BUTTON,
-            do_when_clicked=lambda: InsertMethodsInfoWidget.show_create_or_edit_method()
+            do_when_clicked=lambda: InsertMethodsInfoWidget.show_create_or_edit_method(do_to_show_next_page)
         ))
 
         # Set spacing
@@ -332,13 +334,13 @@ class InsertMethodsInfoWidget:
         content_layout.addItem(spacing)
 
         # Bottom bar
-        content_layout.addLayout(InsertMethodsInfoWidget.setup_add_extra_data_content_bottom_buttons())
-
+        # content_layout.addLayout(InsertMethodsInfoWidget.setup_add_extra_data_content_bottom_buttons())
+        content_layout.addLayout(BottomButtonsForAddExtraData(do_to_show_next_page))
         widget.setLayout(content_layout)
         return widget
 
     @staticmethod
-    def success_content_widget(methods):
+    def success_content_widget(methods, do_to_show_next_page):
         widget = QWidget()
         content_layout = QVBoxLayout()
         # Set spacing
@@ -380,7 +382,7 @@ class InsertMethodsInfoWidget:
         content_layout.addItem(spacing)
 
         # Bottom bar
-        content_layout.addLayout(InsertMethodsInfoWidget.setup_success_content_bottom_buttons())
+        content_layout.addLayout(InsertMethodsInfoWidget.setup_success_content_bottom_buttons(do_to_show_next_page))
 
         widget.setLayout(content_layout)
         return widget
@@ -400,10 +402,10 @@ class InsertMethodsInfoWidget:
         return method_choice
 
     @staticmethod
-    def get_crud_method_item(method):
+    def get_crud_method_item(method, do_to_show_next_page):
         method_crud = MethodCrud(
             method,
-            do_when_edit_is_clicked=lambda: InsertMethodsInfoWidget.show_create_or_edit_method(method),
+            do_when_edit_is_clicked=lambda: InsertMethodsInfoWidget.show_create_or_edit_method(do_to_show_next_page),
             # TODO: remover e atualizar lista de métodos. do_when_remove_is_clicked= InsertMethodsInfoWidget.
         )
         InsertMethodsInfoWidget.methods_crud.append(method_crud)
@@ -440,7 +442,7 @@ class InsertMethodsInfoWidget:
         return bottom_button_bar_layout
 
     @staticmethod
-    def setup_success_content_bottom_buttons():
+    def setup_success_content_bottom_buttons(do_to_show_next_page):
         # Bottom button bar
         bottom_button_bar_layout = QHBoxLayout()
         spacing = QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -460,7 +462,10 @@ class InsertMethodsInfoWidget:
                 # height=30,
                 minimum_width=170,
                 do_when_clicked=lambda: (
-                    InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.get_selected_methods()),
+                    InsertMethodsInfoWidget.show_add_extra_data(
+                        InsertMethodsInfoWidget.get_selected_methods(),
+                        do_to_show_next_page
+                    ),
                     # self.close() TODO: voltar esta linha à ativa
                 ),
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD
@@ -472,7 +477,7 @@ class InsertMethodsInfoWidget:
 
 
     @staticmethod
-    def setup_create_or_edit_method_content_bottom_buttons():
+    def setup_create_or_edit_method_content_bottom_buttons(do_to_show_next_page):
         # Bottom button bar
         bottom_button_bar_layout = QHBoxLayout()
         # spacing = QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -499,7 +504,7 @@ class InsertMethodsInfoWidget:
                 text="Save",
                 minimum_width=100,
                 do_when_clicked=lambda: (
-                    InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.get_selected_methods()),
+                    InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.get_selected_methods(), do_to_show_next_page),
                     # self.close() TODO: voltar esta linha à ativa
                 ),
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD
