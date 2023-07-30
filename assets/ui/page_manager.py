@@ -22,6 +22,11 @@ class PageManager:
         PageManager.instance.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES")
 
     @staticmethod
+    def show_specify_equiv_classes_create_equiv_class_page():
+        PageManager.instance.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES")
+        SpecifyEquivClassesWidget.show_create_equiv_class_content()
+
+    @staticmethod
     def show_insert_methods_info():
         PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
 
