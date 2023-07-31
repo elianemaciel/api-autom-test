@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QL
 
 from assets.ui.util import style, color
 from assets.ui.widgets.combo_box import CustomComboBox
+from assets.ui.widgets.dialog.set_equiv_class_params_dialog import EquivalenceClassParamsDialog
 from assets.ui.widgets.menu_button import AtMenuButton
 
 
@@ -213,7 +214,7 @@ class SpecifyEquivClassesWidget:
             text="Specify Parameters",
             height=40,
             btn_color=color.ADD_NEW_METHOD_BUTTON,
-            do_when_clicked=lambda: print('open popup to specify parameters') #TODO: open popup
+            do_when_clicked=lambda: (EquivalenceClassParamsDialog(param_list=["Age"], equiv_class_name="valid_input").exec_())
         ))
 
         # Expected return values-----------------------------------------------------------------------------

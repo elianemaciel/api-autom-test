@@ -14,6 +14,7 @@ class AtMenuButton(QPushButton):
             minimum_width=50,
             maximum_width=None,
             text_padding=55,
+            font_size=12,
             text_color=color.MENU_BUTTON_TEXT,
             btn_color=color.MENU_BUTTON_BACKGROUND,
             btn_hover=color.MENU_BUTTON_HOVER,
@@ -38,6 +39,7 @@ class AtMenuButton(QPushButton):
             # )
         )
         self.id = id
+        self.font_size = font_size
         # self.text_padding = 20
 
         # Custom parameters
@@ -55,6 +57,7 @@ class AtMenuButton(QPushButton):
             self.btn_color,
             self.btn_hover,
             self.btn_pressed,
+            self.font_size,
             self.is_active
         )
 
@@ -67,6 +70,7 @@ class AtMenuButton(QPushButton):
             self.btn_color,
             self.btn_hover,
             self.btn_pressed,
+            self.font_size,
             self.is_active
         )
 
@@ -77,13 +81,14 @@ class AtMenuButton(QPushButton):
             btn_color=color.MENU_BUTTON_BACKGROUND,
             btn_hover=color.MENU_BUTTON_HOVER,
             btn_pressed=color.MENU_BUTTON_PRESSED,
+            font_size=12,
             is_active=False
     ):
         style = f"""
         QPushButton {{
             color: {text_color};
             background-color: {btn_color};
-            font-size: 12pt;
+            font-size: {font_size}pt;
             text-align: center;
             border: none;
             border-radius: 10;

@@ -1,5 +1,6 @@
 # Paramenter < ParamRange < TestSet < Method
 import uuid
+import re
 
 
 class Parameter:
@@ -21,6 +22,21 @@ class ParamRange:
 		self.v1 = v1
 		self.v2 = v2
 		self.v3 = v3
+
+	def get_range_by_index(self, index):
+		pattern = r'\[([^\]]+)\]'
+		matches = re.findall(pattern, self.v1)
+		if index < len(matches):
+			return_substr = matches[index]
+		else:
+			return None
+		matches = re.findall(pattern, self.v2)
+		if index < len(matches):
+			return return_substr, matches[index]
+		return return_substr
+
+	def amount_of_elements(self):
+		return self.v1.count("[")
 
 	def __str__(self):
 		output = self.param.__str__()
