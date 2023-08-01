@@ -1,7 +1,8 @@
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QStackedWidget, \
-    QLineEdit
+    QLineEdit, QScrollArea
 
+from assets.components import Method
 from assets.ui.util import style, color
 from assets.ui.widgets.combo_box import CustomComboBox
 from assets.ui.widgets.dialog.set_equiv_class_params_dialog import EquivalenceClassParamsDialog
@@ -11,6 +12,7 @@ from assets.ui.widgets.menu_button import AtMenuButton
 class SpecifyEquivClassesWidget:
     HELP_CONTENT_INDEX = 0
     CREATE_EQUIV_CLASS_CONTENT_INDEX = -1
+    LIST_EQUIV_CLASS_CONTENT_INDEX = -1
 
     content = None
     position = None
@@ -33,19 +35,34 @@ class SpecifyEquivClassesWidget:
         return SpecifyEquivClassesWidget.instance
 
     @staticmethod
-    def show_create_equiv_class_content():
+    def show_create_equiv_class_content(method):
         # if the content already exists, remove to add it again
         if SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX != -1:
             content_widget = SpecifyEquivClassesWidget.content.widget(
                 SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX)
             SpecifyEquivClassesWidget.content.removeWidget(content_widget)
         # initialize the content
-        widget = SpecifyEquivClassesWidget._create_equiv_class_content_widget()
+        widget = SpecifyEquivClassesWidget._create_equiv_class_content_widget(method)
         SpecifyEquivClassesWidget.content.addWidget(widget)
         SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX = SpecifyEquivClassesWidget.content.indexOf(widget)
         # set as active content
         SpecifyEquivClassesWidget.content.setCurrentIndex(SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX)
         print("definido show_create_equiv_class_content com sucesso. Index:" + str(SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX))
+
+    @staticmethod
+    def show_list_equiv_class_content():
+        # if the content already exists, remove to add it again
+        if SpecifyEquivClassesWidget.LIST_EQUIV_CLASS_CONTENT_INDEX != -1:
+            content_widget = SpecifyEquivClassesWidget.content.widget(
+                SpecifyEquivClassesWidget.LIST_EQUIV_CLASS_CONTENT_INDEX)
+            SpecifyEquivClassesWidget.content.removeWidget(content_widget)
+        # initialize the content
+        widget = SpecifyEquivClassesWidget._list_equiv_class_content_widget()
+        SpecifyEquivClassesWidget.content.addWidget(widget)
+        SpecifyEquivClassesWidget.LIST_EQUIV_CLASS_CONTENT_INDEX = SpecifyEquivClassesWidget.content.indexOf(widget)
+        # set as active content
+        SpecifyEquivClassesWidget.content.setCurrentIndex(SpecifyEquivClassesWidget.LIST_EQUIV_CLASS_CONTENT_INDEX)
+        print("definido show_list_equiv_class_content com sucesso. Index:" + str(SpecifyEquivClassesWidget.LIST_EQUIV_CLASS_CONTENT_INDEX))
 
     @staticmethod
     def show_help_content():
@@ -129,7 +146,7 @@ class SpecifyEquivClassesWidget:
                 # height=30,
                 maximum_width=170,
                 minimum_width=170,
-                do_when_clicked=lambda: print("Voltando para onde estávamos antes"),
+                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_list_equiv_class_content(),
                 btn_color=color.BOTTOM_NAVIGATION_LIST_ALL
             )
         )
@@ -139,7 +156,7 @@ class SpecifyEquivClassesWidget:
             AtMenuButton(
                 text="Add",
                 minimum_width=220,
-                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_create_equiv_class_content(),
+                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_create_equiv_class_content(None),
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD
             )
         )
@@ -149,7 +166,7 @@ class SpecifyEquivClassesWidget:
         return about_page
 
     @staticmethod
-    def _create_equiv_class_content_widget():
+    def _create_equiv_class_content_widget(method):
         about_page = QWidget()
         content_layout = QVBoxLayout()
 
@@ -173,6 +190,8 @@ class SpecifyEquivClassesWidget:
         method_name_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
         combo_box = CustomComboBox()
+        if method is not None:
+            combo_box.addItem(method.name)
         combo_box.addItem("hasTeacherProfile")
         combo_box.addItem("isLegalAge")
         combo_box.addItem("makeRoomReservation")
@@ -268,7 +287,7 @@ class SpecifyEquivClassesWidget:
                 # height=30,
                 maximum_width=170,
                 minimum_width=170,
-                do_when_clicked=lambda: print("Voltando para onde estávamos antes"),
+                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_list_equiv_class_content(),
                 btn_color=color.BOTTOM_NAVIGATION_LIST_ALL
             )
         )
@@ -296,6 +315,142 @@ class SpecifyEquivClassesWidget:
         about_page.setLayout(content_layout)
         return about_page
 
+
+    @staticmethod
+    def _list_equiv_class_content_widget():
+        page = QWidget()
+        content_layout = QVBoxLayout()
+
+        # Set spacing
+        spacing = QSpacerItem(20, 20, QSizePolicy.Fixed, QSizePolicy.Fixed)
+        content_layout.addItem(spacing)
+
+        # Set header-------------------------------------------------------------------------------
+        title = QLabel()
+        title.setText("List of Equivalence Classes")
+        title.setStyleSheet(style.BASIC_APPLICATION_TEXT)
+        title.setAlignment(Qt.AlignCenter)
+        title.setWordWrap(True)
+        content_layout.addWidget(title)
+
+        # set scroll layout
+
+        scroll = QScrollArea()
+        content_layout.addWidget(scroll)
+        scroll.setWidgetResizable(True)
+        scrollContent = QWidget(scroll)
+        scrollLayout = QVBoxLayout(scrollContent)
+        scroll.setWidget(scrollContent)
+        scroll.setStyleSheet("border: none;")
+
+        # add item into the scrollable-list
+        equivClassesAndMethods = [
+            ["invalid_input",
+             Method("addClientExtraInfo", 'ClientManagement', 'com.test.client.management', 'Boolean')],
+            ["invalid_input",
+             Method("removeClientPermission", 'ClientManagement', 'com.test.client.management', 'String')],
+            ["invalid_input",
+             Method("updateClientExtraInfo", 'ClientManagement', 'com.test.client.management', 'String')],
+            ["invalid_input",
+             Method("getAllPossibleChanges", 'ClientManagement', 'com.test.client.management', 'Boolean')],
+            ["invalid_input",
+             Method("selectValidClients", 'ClientManagement', 'com.test.client.management', 'Integer')],
+            ["invalid_input",
+             Method("configureFirstAttendance", 'ClientManagement', 'com.test.client.management', 'Date')],
+        ]
+        for item in equivClassesAndMethods:
+
+            item_widget = QWidget()
+            # item_widget.setFixedHeight(70)
+            item_widget.setStyleSheet("border-radius: 10px; background-color: white;")
+
+            item_layout = QVBoxLayout()
+
+            method_layout = QHBoxLayout()
+            label = QLabel("Method:")
+            label.setFixedHeight(40)
+            label.setFixedWidth(170)
+            label.setStyleSheet("padding:10px; font-family: Arial;  font-size: 14px; font-weight: bold;")
+            method_layout.addWidget(label)
+            label = QLabel(item[1].name)
+            label.setFixedHeight(40)
+            label.setStyleSheet("""
+                border-radius: 10px; 
+                background-color: """ + color.LIGHT_GRAY + """; 
+                padding:10px;
+                font-family: Arial; 
+                font-size: 14px;
+            """)
+            method_layout.addWidget(label)
+            method_layout.addWidget(AtMenuButton(
+                text="Edit",
+                height=40,
+                minimum_width=100,
+                maximum_width=100,
+                btn_color=color.EDIT_BUTTON,
+                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_create_equiv_class_content(item[1])
+            ))
+            item_layout.addLayout(method_layout)
+
+            equiv_class_layout = QHBoxLayout()
+            label = QLabel("Equivalence class:")
+            label.setFixedHeight(40)
+            label.setFixedWidth(170)
+            label.setStyleSheet("padding:10px; font-family: Arial;  font-size: 14px; font-weight: bold;")
+            equiv_class_layout.addWidget(label)
+            label = QLabel(item[0])
+            label.setFixedHeight(40)
+            label.setStyleSheet("""
+                border-radius: 10px; 
+                background-color: """ + color.LIGHT_GRAY + """; 
+                padding:10px;
+                font-family: Arial; 
+                font-size: 14px;
+            """)
+            equiv_class_layout.addWidget(label)
+            equiv_class_layout.addWidget(AtMenuButton(
+                text="Remove",
+                height=40,
+                minimum_width=100,
+                maximum_width=100,
+                btn_color=color.REMOVE_BUTTON
+            ))
+            item_layout.addLayout(equiv_class_layout)
+
+            item_widget.setLayout(item_layout)
+            scrollLayout.addWidget(item_widget)
+
+        scrollLayout.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+        # bottom buttons--------------------------------------------------------------------------------
+
+        # Set spacing
+        content_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
+
+        bottom_layout = QHBoxLayout()
+        bottom_layout.addWidget(
+            AtMenuButton(
+                text="Help",
+                # height=30,
+                maximum_width=170,
+                minimum_width=170,
+                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_help_content(),
+                btn_color=color.BOTTOM_NAVIGATION_LIST_ALL
+            )
+        )
+        bottom_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+        bottom_layout.addWidget(
+            AtMenuButton(
+                text="Add another",
+                minimum_width=170,
+                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_create_equiv_class_content(),
+                btn_color=color.BOTTOM_NAVIGATION_FORWARD
+            )
+        )
+        content_layout.addLayout(bottom_layout)
+
+        page.setLayout(content_layout)
+        return page
 
 def show_next_content():
     # TODO: implement

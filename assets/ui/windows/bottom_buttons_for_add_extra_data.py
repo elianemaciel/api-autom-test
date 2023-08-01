@@ -5,7 +5,7 @@ from assets.ui.widgets.menu_button import AtMenuButton
 
 
 class BottomButtonsForAddExtraData(QHBoxLayout):
-    def __init__(self, do_to_show_next_page):
+    def __init__(self, do_to_show_next_page, do_to_go_back):
         super().__init__()
 
         spacing = QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -15,7 +15,7 @@ class BottomButtonsForAddExtraData(QHBoxLayout):
                 text="Go Back",
                 # height=30,
                 minimum_width=100,  # TODO: implementar botão voltar
-                do_when_clicked=lambda: print("Voltando para onde estávamos antes"),
+                do_when_clicked=do_to_go_back,
                 btn_color=color.BOTTOM_NAVIGATION_BACKWARD
             )
         )

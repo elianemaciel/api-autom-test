@@ -28,6 +28,7 @@ class InsertMethodsInfoWidget:
     success_on_converting_content = None
     methods_choice = []
     methods_crud = []
+    methods = []
     content = None
 
     @staticmethod
@@ -95,6 +96,7 @@ class InsertMethodsInfoWidget:
 
     @staticmethod
     def show_add_extra_data(methods, do_to_show_next_page):
+        InsertMethodsInfoWidget.methods = methods
         # if the content already exists, remove to add it again
         if InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX != -1:
             extra_data_widget = InsertMethodsInfoWidget.content.widget(
@@ -172,6 +174,7 @@ class InsertMethodsInfoWidget:
         pkg_name.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         text_edit = QLineEdit()
         text_edit.setStyleSheet(text_edit_stylesheet)
+        text_edit.setText(method.package_name)
         text_edit.setFixedHeight(40)
         text_edit.setFixedWidth(500)
         pkg_name.addWidget(text_edit)
@@ -185,6 +188,7 @@ class InsertMethodsInfoWidget:
         class_name.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         text_edit = QLineEdit()
         text_edit.setStyleSheet(text_edit_stylesheet)
+        text_edit.setText(method.class_name)
         text_edit.setFixedHeight(40)
         text_edit.setFixedWidth(500)
         class_name.addWidget(text_edit)
@@ -198,6 +202,7 @@ class InsertMethodsInfoWidget:
         method_name.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         text_edit = QLineEdit()
         text_edit.setStyleSheet(text_edit_stylesheet)
+        text_edit.setText(method.name)
         text_edit.setFixedWidth(500)
         text_edit.setFixedHeight(40)
         method_name.addWidget(text_edit)
@@ -272,6 +277,12 @@ class InsertMethodsInfoWidget:
         combo_box.addItem("Integer")
         combo_box.addItem("String")
         combo_box.addItem("Boolean")
+        if method.output_type == "Integer":
+            combo_box.setCurrentIndex(0)
+        elif method.output_type == "String":
+            combo_box.setCurrentIndex(1)
+        else:
+            combo_box.setCurrentIndex(2)
         # combo_box.setStyleSheet(text_edit_stylesheet)
         combo_box.setFixedWidth(500)
         combo_box.setFixedHeight(40)
@@ -335,7 +346,10 @@ class InsertMethodsInfoWidget:
 
         # Bottom bar
         # content_layout.addLayout(InsertMethodsInfoWidget.setup_add_extra_data_content_bottom_buttons())
-        content_layout.addLayout(BottomButtonsForAddExtraData(do_to_show_next_page))
+        content_layout.addLayout(BottomButtonsForAddExtraData(
+            do_to_show_next_page,
+            lambda: InsertMethodsInfoWidget.show_converting_success(methods, do_to_show_next_page)
+        ))
         widget.setLayout(content_layout)
         return widget
 
@@ -504,7 +518,8 @@ class InsertMethodsInfoWidget:
                 text="Save",
                 minimum_width=100,
                 do_when_clicked=lambda: (
-                    InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.get_selected_methods(), do_to_show_next_page),
+                    # InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.get_selected_methods(), do_to_show_next_page),
+                    InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.methods, do_to_show_next_page),
                     # self.close() TODO: voltar esta linha à ativa
                 ),
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD

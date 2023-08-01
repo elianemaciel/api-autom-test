@@ -32,7 +32,10 @@ class MethodChoice(QHBoxLayout):
         self.addWidget(item_description)
 
     def is_checkbox_selected(self):
-        return self.item_checkbox.isChecked()
+        try:
+            return self.item_checkbox.isChecked()
+        except:
+            return False
 
     def get_method_info(self):
         return self.method_info
