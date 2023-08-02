@@ -82,7 +82,7 @@ class GenerateTestsWidget:
             # maximum_width=300,
             # minimum_width=300,
             btn_color=color.ADD_NEW_METHOD_BUTTON,
-            do_when_clicked=lambda: print("Generating tests")
+            do_when_clicked=lambda: GenerateTestsWidget.generate_tests(name_text_edit.toPlainText())
         ))
         # btn_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
         content_layout.addLayout(btn_layout)
@@ -93,6 +93,13 @@ class GenerateTestsWidget:
 
         about_page.setLayout(content_layout)
         return about_page
+
+    @staticmethod
+    def generate_tests(location):
+        if location is None or location == "":
+            print("Invalid Location")
+        else:
+            print("Generating tests in selected location")
 
     @staticmethod
     def select_location(about_page):
