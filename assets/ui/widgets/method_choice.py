@@ -17,7 +17,7 @@ class MethodChoice(QHBoxLayout):
         self.addWidget(self.item_checkbox)
         # Text label with info
         item_description = QLabel(
-            "<html><b>Método:</b> " + self.method_info + "<br> <b>Parâmetros:</b>" + "disciplina, periodoLetivo, "
+            "<html><b>Método:</b> " + self.method_info.method + "<br> <b>Parâmetros:</b>" + "disciplina, periodoLetivo, "
                                                                            "turma, notas, desistentes" + " </html>")
         item_description.setStyleSheet("""
                                QLabel {

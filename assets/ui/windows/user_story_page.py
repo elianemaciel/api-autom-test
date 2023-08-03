@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QL
 
 from assets import StandardPlnRepository
 from assets.AutomTestException import AutomTestException
+from assets.ui.page_manager import PageManager
 from assets.ui.util import style
 from assets.ui.widgets.menu_button import AtMenuButton
 from assets.ui.widgets.dialog.warning_errors_list_dialog import WarningErrorsListDialog
@@ -38,7 +39,7 @@ class InsertUserStoryWidget:
 
         # Set description if textFiled
         program_description = QLabel()
-        program_description.setText("Cole abaixo a história de usuário que você deseja converter:")
+        program_description.setText("Paste below the User Story you want to convert:")
         program_description.setStyleSheet(style.BASIC_APPLICATION_TEXT)
         program_description.setWordWrap(True)
         content_layout.addWidget(program_description)
@@ -56,7 +57,7 @@ class InsertUserStoryWidget:
 
         # Set button bar
         button = AtMenuButton(
-            text="Submeter História",
+            text="Submit Story",
             height=30,
             minimum_width=170,
             do_when_clicked=lambda: submit_user_story(user_story_text_edit.toPlainText())
@@ -79,39 +80,41 @@ def submit_user_story(user_story_data):
     # E, em seguida, passamos para um repository responsável por enviar pro backend processar esse dado
     try:
         methods, warnings = StandardPlnRepository.send_user_story(user_story_data)
-        warnings = [
-            "This is the second warning, in which several things might have happened and must be treated"
-            "First warning. Unable to retrieve the correct data from Given",
-            "This is the second warning, in which several things might have happened and must be treated",
-            "First warning. Unable to retrieve the correct data from Given",
-            "This is the second warning, in which several things might have happened and must be treated",
-            "First warning. Unable to retrieve the correct data from Given",
-            "This is the second warning, in which several things might have happened and must be treated",
-        ]
-        methods = [#TODO: adicionar dados dentro do methods e ver a UO como confi
-            "errorWhenClassAlreadyExists",
-            "invalidClassName",
-            "invalidClassNumber"
-            "validClassNumber",
-            "validClassName",
-            "successWhenClassDoesNotExist",
-            "classNameDefinitionSuccess",
-            "interestOnClassName",
-            "errorWhenClassAlreadyExists",
-            "invalidClassName",
-            "invalidClassNumber"
-            "validClassNumber",
-            "validClassName",
-            "successWhenClassDoesNotExist",
-            "classNameDefinitionSuccess",
-            "interestOnClassName"
-        ]
+        # warnings = [
+        #     "This is the second warning, in which several things might have happened and must be treated"
+        #     "First warning. Unable to retrieve the correct data from Given",
+        #     "This is the second warning, in which several things might have happened and must be treated",
+        #     "First warning. Unable to retrieve the correct data from Given",
+        #     "This is the second warning, in which several things might have happened and must be treated",
+        #     "First warning. Unable to retrieve the correct data from Given",
+        #     "This is the second warning, in which several things might have happened and must be treated",
+        # ]
+        # methods = [#TODO: adicionar dados dentro do methods e ver a UO como confi
+        #     "errorWhenClassAlreadyExists",
+        #     "invalidClassName",
+        #     "invalidClassNumber"
+        #     "validClassNumber",
+        #     "validClassName",
+        #     "successWhenClassDoesNotExist",
+        #     "classNameDefinitionSuccess",
+        #     "interestOnClassName",
+        #     "errorWhenClassAlreadyExists",
+        #     "invalidClassName",
+        #     "invalidClassNumber"
+        #     "validClassNumber",
+        #     "validClassName",
+        #     "successWhenClassDoesNotExist",
+        #     "classNameDefinitionSuccess",
+        #     "interestOnClassName"
+        # ]
         if bool(warnings):
             cd = WarningErrorsListDialog(warnings, methods)
             cd.exec_()
         else:
             #Não aconteceram warnings. Ir para tela de resultado
-            print("no warning. Complete success")
+            PageManager.show_insert_methods_info_success(methods)
+            print("no warning. Methods:")
+            print(methods)
         # case continue, send to next screen: insert Methods info page
     except AutomTestException as e:
         # Show error message in popup

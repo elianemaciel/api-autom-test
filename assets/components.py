@@ -80,13 +80,21 @@ class TestSet:
 
 class Method:
 
-	def __init__(self, name='', class_name='', package_name='', output_type=''):
+	def __init__(self, name='', class_name='', package_name='', output_type='', identifier=None, params=None):
+		self.identifier = uuid.uuid4() if identifier is None else identifier
 		self.name = name
 		self.class_name = class_name
 		self.package_name = package_name
 		self.output_type = output_type
-		self.params = [] # list of Parameters
+		self.params = params if params is not None else [] # list of Parameters
 		self.testsets = [] # list of TestSet
+
+	def __eq__(self, other):
+		if not isinstance(other, Method):
+			return False
+		return self.identifier == other.identifier
+		# return self.name == other.name
+		# and self.class_name == other.class_name and self.package_name = package_name and self.output_type = output_type and self.params = and self.testsets
 
 	def __str__(self):
 		output = ''

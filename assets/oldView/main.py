@@ -4,7 +4,7 @@ import assets.procedures as p
 from assets import layout as layout
 from assets.actionScreen import viewInputDataScreen, desactivateFristScreen, activateFirstScreen, setMethodInformation
 from assets.components import Method, Parameter, ParamRange, TestSet
-from assets.convertStories import defineTestsFromStories
+from assets.convertStories import defineTestsFromStories, createArrayStory
 from assets.fillMethodsAndEquivalenceClass import updateClassOfTestCases, defineTestsFromExtractedStories, iterateMethods
 from assets.generator import generate_tests
 
@@ -168,7 +168,7 @@ while True:
                 activateFirstScreen(win2,home)
                 break
             if ev2 == 'Next':
-                testCases, _ = defineTestsFromStories(vals2) #TODO: Se retornou exception ou retornou nenhum teste, tratar esses dois casos de erro
+                testCases, _ = defineTestsFromStories(vals2[0]) #TODO: Se retornou exception ou retornou nenhum teste, tratar esses dois casos de erro
                 win2.close()
                 MUT, testCases, testeAtual, totalTestes = defineTestsFromExtractedStories(MUT, testCases, home, testeAtual, totalTestes)
                 activateFirstScreen(win2,home)

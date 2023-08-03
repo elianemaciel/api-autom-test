@@ -64,7 +64,7 @@ def defineTestsFromStories(returnedStory):#TODO: este método, ao invés de leva
     testCases = []
     warningsFromAccCriteria = []
     if validateContent(returnedStory):
-        descriptionStory, acceptanceCriterias = definePartsStory(createArrayStory(returnedStory[0]))
+        descriptionStory, acceptanceCriterias = definePartsStory(createArrayStory(returnedStory))
         if acceptanceCriterias:
             testCases, warningsFromAccCriteria = defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias)
         if descriptionStory:

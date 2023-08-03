@@ -13,6 +13,7 @@ class MethodParamsDialog(QDialog):
     def __init__(self, params, method_name, parent=None):
         super().__init__(parent)
 
+        self.updated_parent_param_list = False
         self.current_params_list = params
 
         self.setStyleSheet("background-color: " + color.BACKGROUND + ";")
@@ -26,17 +27,17 @@ class MethodParamsDialog(QDialog):
         self.setFixedWidth(600)
         self.setFixedHeight(300)
 
-        scroll = QScrollArea()
-        self.layout.addWidget(scroll)
-        scroll.setWidgetResizable(True)
-        scrollContent = QWidget(scroll)
+        self.scroll = QScrollArea()
+        self.layout.addWidget(self.scroll)
+        self.scroll.setWidgetResizable(True)
+        scrollContent = QWidget(self.scroll)
         # scrollContent.cl
         scrollLayout = QVBoxLayout(scrollContent)
-        scroll.setWidget(scrollContent)
-        scroll.setStyleSheet("border: none;")
+        self.scroll.setWidget(scrollContent)
+        self.scroll.setStyleSheet("border: none;")
 
         for param in params:
-            scrollLayout.addLayout(self.build_param_item(param, scrollLayout, scrollContent, scroll))
+            scrollLayout.addLayout(self.build_param_item(param))
         # list_example = []#TODO: (1) ver como fazer o botão Remove funcionar (2) salvar estado da lista antes de grandes momentos (cliques em botões)
         # list_example.remove()
         #     __delitem__(param)
@@ -45,7 +46,7 @@ class MethodParamsDialog(QDialog):
             btn_color=color.ADD_NEW_METHOD_BUTTON,
             height=30,
             do_when_clicked=lambda: (self.current_params_list.append(Parameter('', '')),
-                                     self.update_list(scroll))
+                                     self.update_list())
         )
         # scrollLayout.addWidget(add_button)
         self.layout.addWidget(add_button)
@@ -53,9 +54,16 @@ class MethodParamsDialog(QDialog):
         self.setLayout(self.layout)
         self.setup_bottom_buttons(params)
 
-    def update_list(self, scroll):
+    def get_updated_list(self):
+        self.update_list()
+        return self.current_params_list
+
+    def should_update_parent_param_list(self):
+        return self.updated_parent_param_list
+
+    def update_list(self):
         #Save current state of params and remove current elements
-        layout = scroll.widget().layout()
+        layout = self.scroll.widget().layout()
         while layout.count() > 0:
             item = layout.takeAt(0)
             if isinstance(item, ParamEditItem):
@@ -66,21 +74,21 @@ class MethodParamsDialog(QDialog):
                 print(item)
                 item.layout().deleteLater()
 
-        scrollContent = QWidget(scroll)
+        scrollContent = QWidget(self.scroll)
         scrollLayout = QVBoxLayout(scrollContent)
-        scroll.setWidget(scrollContent)
-        scroll.setStyleSheet("border: none;")
+        self.scroll.setWidget(scrollContent)
+        self.scroll.setStyleSheet("border: none;")
 
         for item in self.current_params_list:
-            scrollLayout.addLayout(self.build_param_item(item, scrollLayout, scrollContent, scroll))
+            scrollLayout.addLayout(self.build_param_item(item))
 
-    def build_param_item(self, param, scroll_layout, scrollContent, scroll):
+    def build_param_item(self, param):
         print("Building param:" + param.name)
         return ParamEditItem(
             param,
             do_when_remove_is_clicked=lambda: (
                 self.current_params_list.remove(param),
-                self.update_list(scroll)
+                self.update_list()
             )
         )
 
@@ -96,10 +104,7 @@ class MethodParamsDialog(QDialog):
                 text="Save",
                 height=30,
                 minimum_width=90,
-                do_when_clicked=lambda: (
-                    # PageManager.show_insert_methods_info_success(methods),
-                    self.close()
-                ),
+                do_when_clicked=lambda: self.upon_save(),
                 btn_color=color.POPUP_BOTTOM_BUTTON_OK
             )
         )
@@ -115,3 +120,7 @@ class MethodParamsDialog(QDialog):
         end_spacing = QSpacerItem(10, 10, QSizePolicy.Fixed, QSizePolicy.Minimum)
         bottom_button_bar_layout.addItem(end_spacing)
         self.layout.addLayout(bottom_button_bar_layout)
+
+    def upon_save(self):
+        self.updated_parent_param_list = True
+        self.close()
