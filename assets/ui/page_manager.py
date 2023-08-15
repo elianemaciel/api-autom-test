@@ -18,7 +18,8 @@ class PageManager:
             btn.toggle_active(btn.id == id_button)
 
     @staticmethod
-    def show_specify_equiv_classes_start_page():
+    def show_specify_equiv_classes_start_page(methods):
+        SpecifyEquivClassesWidget.methods = methods
         PageManager.instance.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES")
 
     @staticmethod
@@ -35,7 +36,7 @@ class PageManager:
         PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
         InsertMethodsInfoWidget.show_converting_success(
             methods,
-            lambda: PageManager.show_specify_equiv_classes_start_page()
+            lambda: PageManager.show_specify_equiv_classes_start_page(methods)
         )
 
     @staticmethod
@@ -49,8 +50,8 @@ class PageManager:
     def show_insert_methods_info_add_extra_data(methods):
         PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
         InsertMethodsInfoWidget.show_add_extra_data(
-            methods,
-            lambda: PageManager.show_specify_equiv_classes_start_page()
+            methods,#TODO: estão atualizados?
+            lambda: PageManager.show_specify_equiv_classes_start_page(methods)
         )
 
     @staticmethod

@@ -286,11 +286,12 @@ class InsertMethodsInfoWidget:
         # Set spacing
         spacing = QSpacerItem(10, 10, QSizePolicy.Fixed, QSizePolicy.Fixed)
         params.addItem(spacing)
-
+        if method is None:
+            method = Method()
         edit_button_layout = QVBoxLayout()
         edit_button_layout.addItem(QSpacerItem(15, 15, QSizePolicy.Fixed, QSizePolicy.Fixed))
         edit_button_layout.addWidget(AtMenuButton(
-            text="Edit",
+            text="Edit" if method.params else "Add",
             minimum_width=70,
             maximum_width=70,
             height=70,
@@ -384,8 +385,11 @@ class InsertMethodsInfoWidget:
         if dialog.should_update_parent_param_list():
             method.params = dialog.get_updated_list()
             print(method.params)
-            index = InsertMethodsInfoWidget.methods.index(method)
-            InsertMethodsInfoWidget.methods[index] = method
+            if InsertMethodsInfoWidget.methods.count(method) > 0:
+                index = InsertMethodsInfoWidget.methods.index(method)
+                InsertMethodsInfoWidget.methods[index] = method
+            else:
+                InsertMethodsInfoWidget.methods.append(method)
 
             InsertMethodsInfoWidget.show_create_or_edit_method(do_to_show_next_page, method)
 

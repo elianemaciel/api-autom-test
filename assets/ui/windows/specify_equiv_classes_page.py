@@ -17,6 +17,7 @@ class SpecifyEquivClassesWidget:
     content = None
     position = None
     instance = None
+    methods = []
     visible_content = 0
 
     @staticmethod
@@ -35,7 +36,7 @@ class SpecifyEquivClassesWidget:
         return SpecifyEquivClassesWidget.instance
 
     @staticmethod
-    def show_create_equiv_class_content(method):
+    def show_create_equiv_class_content(method=None):
         # if the content already exists, remove to add it again
         if SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX != -1:
             content_widget = SpecifyEquivClassesWidget.content.widget(
@@ -190,11 +191,9 @@ class SpecifyEquivClassesWidget:
         method_name_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
         combo_box = CustomComboBox()
-        if method is not None:
-            combo_box.addItem(method.name)
-        combo_box.addItem("hasTeacherProfile")
-        combo_box.addItem("isLegalAge")
-        combo_box.addItem("makeRoomReservation")
+        for m in SpecifyEquivClassesWidget.methods:
+            combo_box.addItem(m.method)
+        combo_box.setCurrentIndex(SpecifyEquivClassesWidget.methods.index(method) if method is not None else 0)
         combo_box.setFixedWidth(500)
         combo_box.setFixedHeight(40)
         method_name_layout.addWidget(combo_box)
