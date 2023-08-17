@@ -15,6 +15,7 @@ class AtMenuButton(QPushButton):
             maximum_width=None,
             text_padding=55,
             font_size=12,
+            border_radius=10,
             text_color=color.MENU_BUTTON_TEXT,
             btn_color=color.MENU_BUTTON_BACKGROUND,
             btn_hover=color.MENU_BUTTON_HOVER,
@@ -33,11 +34,7 @@ class AtMenuButton(QPushButton):
         if maximum_width is not None:
             self.setMaximumWidth(maximum_width)
         self.setCursor(Qt.PointingHandCursor)
-        self.clicked.connect(  # //lambda: (
-            do_when_clicked  # ,
-            # self.toggle_active(True),
-            # )
-        )
+        self.setup_on_click(do_when_clicked)
         self.id = id
         self.font_size = font_size
         # self.text_padding = 20
@@ -49,6 +46,7 @@ class AtMenuButton(QPushButton):
         self.btn_color = btn_color
         self.btn_hover = btn_hover
         self.btn_pressed = btn_pressed
+        self.border_radius = border_radius
         self.is_active = is_active
 
         self.set_style(
@@ -58,8 +56,12 @@ class AtMenuButton(QPushButton):
             self.btn_hover,
             self.btn_pressed,
             self.font_size,
+            self.border_radius,
             self.is_active
         )
+
+    def setup_on_click(self, do_when_clicked):
+        self.clicked.connect(do_when_clicked)
 
     def toggle_active(self, is_active):
         self.is_active = is_active
@@ -71,6 +73,7 @@ class AtMenuButton(QPushButton):
             self.btn_hover,
             self.btn_pressed,
             self.font_size,
+            self.border_radius,
             self.is_active
         )
 
@@ -82,6 +85,7 @@ class AtMenuButton(QPushButton):
             btn_hover=color.MENU_BUTTON_HOVER,
             btn_pressed=color.MENU_BUTTON_PRESSED,
             font_size=12,
+            border_radius=10,
             is_active=False
     ):
         style = f"""
@@ -91,7 +95,7 @@ class AtMenuButton(QPushButton):
             font-size: {font_size}pt;
             text-align: center;
             border: none;
-            border-radius: 10;
+            border-radius: {border_radius};
             text-padding: 55;
             font-weight: 600;
         }}

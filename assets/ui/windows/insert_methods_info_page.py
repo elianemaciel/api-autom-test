@@ -204,6 +204,7 @@ class InsertMethodsInfoWidget:
         pkg_name = QHBoxLayout()
         label = QLabel("Package name:")
         label.setStyleSheet(label_stylesheet)
+        label.setStyleSheet(label_stylesheet)
         pkg_name.addWidget(label)
         pkg_name.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         pkg_name_text_edit = QLineEdit()

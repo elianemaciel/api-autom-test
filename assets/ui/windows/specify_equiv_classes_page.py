@@ -2,7 +2,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QStackedWidget, \
     QLineEdit, QScrollArea
 
-from assets.components import Method
+from assets.components import Method, ParamRange
 from assets.ui.util import style, color
 from assets.ui.widgets.combo_box import CustomComboBox
 from assets.ui.widgets.dialog.set_equiv_class_params_dialog import EquivalenceClassParamsDialog
@@ -228,11 +228,19 @@ class SpecifyEquivClassesWidget:
         content_layout.addLayout(expected_retun_layout)
 
         # Specify parameters button-------------------------------------------------------------------------------
+        param_ranges = [
+            ParamRange("Balance", "[-][numbers][.]", "[0~1][1~4][0~1]"),
+            ParamRange("Name", "[letters][-][letters]", "[1~20][0~1][1~20]"),
+            ParamRange("Phone", "[(][numbers][)][numbers]", "[1~1][2~2][1~1][9~9]"),
+            ParamRange("Name", "[letters][-][letters]", "[1~20][0~1][1~20]"),
+            ParamRange("ZipCode", "[-][numbers][.]", "[0~1][1~4][0~1]"),
+            ParamRange("Phone", "[(][numbers][)][numbers]", "[1~1][2~2][1~1][9~9]")
+        ]
         content_layout.addWidget(AtMenuButton(
             text="Specify Parameters",
             height=40,
             btn_color=color.ADD_NEW_METHOD_BUTTON,
-            do_when_clicked=lambda: (EquivalenceClassParamsDialog(param_list=["Age"], equiv_class_name="valid_input").exec_())
+            do_when_clicked=lambda: (EquivalenceClassParamsDialog(param_ranges, equiv_class_name="valid_input").exec_())
         ))
 
         # Expected return values-----------------------------------------------------------------------------
