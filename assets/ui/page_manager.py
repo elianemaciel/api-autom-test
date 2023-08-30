@@ -1,4 +1,4 @@
-from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget
+from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget, get_methods_from_test_cases
 from assets.ui.windows.specify_equiv_classes_page import SpecifyEquivClassesWidget
 
 
@@ -19,7 +19,14 @@ class PageManager:
 
     @staticmethod
     def show_specify_equiv_classes_start_page(methods):
-        SpecifyEquivClassesWidget.methods = methods
+        num_rows = len(methods)
+        num_cols = 2
+        SpecifyEquivClassesWidget.methods = [[0] * num_cols for _ in range(num_rows)]
+        for i in range(0, len(methods)):
+            SpecifyEquivClassesWidget.methods[i][0] = methods[i]
+        print("métodos:")
+        print(methods)
+        print()
         PageManager.instance.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES")
 
     @staticmethod
@@ -32,11 +39,12 @@ class PageManager:
         PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
 
     @staticmethod
-    def show_insert_methods_info_success(methods):
+    def show_insert_methods_info_success(test_cases):
         PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
+        InsertMethodsInfoWidget.methods = get_methods_from_test_cases(test_cases)
         InsertMethodsInfoWidget.show_converting_success(
-            methods,
-            lambda: PageManager.show_specify_equiv_classes_start_page(methods)
+            test_cases,
+            lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.methods)
         )
 
     @staticmethod
@@ -47,11 +55,12 @@ class PageManager:
         )
 
     @staticmethod
-    def show_insert_methods_info_add_extra_data(methods):
+    def show_insert_methods_info_add_extra_data(test_cases):
         PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
+        InsertMethodsInfoWidget.methods = get_methods_from_test_cases(test_cases)
         InsertMethodsInfoWidget.show_add_extra_data(
-            methods,#TODO: estão atualizados?
-            lambda: PageManager.show_specify_equiv_classes_start_page(methods)
+            test_cases,#TODO: estão atualizados?
+            lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.methods)
         )
 
     @staticmethod

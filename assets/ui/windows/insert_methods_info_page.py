@@ -292,7 +292,7 @@ class InsertMethodsInfoWidget:
         edit_button_layout = QVBoxLayout()
         edit_button_layout.addItem(QSpacerItem(15, 15, QSizePolicy.Fixed, QSizePolicy.Fixed))
         edit_button_layout.addWidget(AtMenuButton(
-            text="Edit" if method.params else "Add",
+            text="Fill in data",#todo: if all required fields are set, otherwise "edit data"
             minimum_width=70,
             maximum_width=70,
             height=70,

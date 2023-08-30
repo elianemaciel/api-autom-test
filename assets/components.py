@@ -17,7 +17,7 @@ class Parameter:
 
 class ParamRange:
 
-	def __init__(self, param, v1, v2='', v3=''):
+	def __init__(self, param, v1='', v2='', v3=''):
 		self.param = param
 		self.v1 = v1
 		self.v2 = v2

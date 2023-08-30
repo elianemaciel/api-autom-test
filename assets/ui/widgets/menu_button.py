@@ -1,6 +1,5 @@
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
-from PySide6.QtWidgets import QPushButton, QToolButton
+from PySide6.QtWidgets import QPushButton
 
 from assets.ui.util import color
 
@@ -118,4 +117,3 @@ class AtMenuButton(QPushButton):
         else:
             self.setStyleSheet(style)
 
-        # self.setFont(QFont("Monospace"))

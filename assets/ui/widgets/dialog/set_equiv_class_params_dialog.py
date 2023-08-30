@@ -12,6 +12,7 @@ class EquivalenceClassParamsDialog(QDialog):
     def __init__(self, param_ranges, equiv_class_name, parent=None):
         super().__init__(parent)
 
+        self.horizontal_scroll_layout = None
         self.horizontal_scroll_layouts = []
         self.setFixedWidth(800)
         self.setFixedHeight(500)
@@ -76,7 +77,7 @@ class EquivalenceClassParamsDialog(QDialog):
         for param_range in param_ranges:
 
             full_param_def_layout = QVBoxLayout()
-            label = QLabel("Building parameter range for parameter <b>" + param_range.param + "</b>:")
+            label = QLabel("Building parameter range for parameter <b>" + param_range.param.name + "</b>:")
             # label.setFixedHeight(30)
             label.setStyleSheet("font-family: Arial;  font-size: 14px;")
             full_param_def_layout.addWidget(label)
@@ -89,10 +90,10 @@ class EquivalenceClassParamsDialog(QDialog):
             horizontal_scroll.setWidgetResizable(True)
             horizontal_scroll_content = QWidget(horizontal_scroll)
             horizontal_scroll_content.setFixedHeight(120)
-            horizontal_scroll_layout = QHBoxLayout(horizontal_scroll_content)
+            self.horizontal_scroll_layout = QHBoxLayout(horizontal_scroll_content)
             horizontal_scroll.setWidget(horizontal_scroll_content)
             horizontal_scroll.setStyleSheet("border: none;")
-            self.horizontal_scroll_layouts.append(horizontal_scroll_layout)
+            self.horizontal_scroll_layouts.append(self.horizontal_scroll_layout)
 
 
             param_widget = QWidget()
@@ -127,14 +128,14 @@ class EquivalenceClassParamsDialog(QDialog):
                 curr_range_start = curr_range.split("~")[0]
                 curr_range_end = curr_range.split("~")[1]
 
-                horizontal_scroll_layout.addWidget(self.build_param_range_element(curr_range_end, curr_range_start, curr_substr))
+                self.horizontal_scroll_layout.addWidget(self.build_param_range_element(curr_range_end, curr_range_start, curr_substr))
 
-            horizontal_scroll_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
+            self.horizontal_scroll_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
             param_label_wrapper_layout = QVBoxLayout()
             param_label_wrapper_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Fixed, QSizePolicy.Fixed))
             param_label_wrapper_layout.addWidget(ParamRangeAddButton(
-                id=self.horizontal_scroll_layouts.index(horizontal_scroll_layout),
+                id=self.horizontal_scroll_layouts.index(self.horizontal_scroll_layout),
                 text="Add\nmore",
                 height=100,
                 minimum_width=70,
@@ -161,6 +162,7 @@ class EquivalenceClassParamsDialog(QDialog):
         # type
         type_layout = QHBoxLayout()
         type_combo_box = CustomComboBox()
+        type_combo_box.setObjectName("type_combo_box")
         type_combo_box.addItem("any")
         type_combo_box.addItem("signs")
         type_combo_box.addItem("numbers")
@@ -181,6 +183,7 @@ class EquivalenceClassParamsDialog(QDialog):
         # content
         # for type: ANY
         content_text_edit = QLineEdit()
+        content_text_edit.setObjectName("content_text_edit")
         styleSheet = "border-radius: 5px; background-color: white; padding: 5px;font-family: Arial; font-size: 14px;"
         content_text_edit.setStyleSheet(styleSheet)
         content_text_edit.setText(curr_substr)
@@ -189,6 +192,7 @@ class EquivalenceClassParamsDialog(QDialog):
         # quantity
         quantity_layout = QHBoxLayout()
         start_quantity_text_edit = QLineEdit()
+        start_quantity_text_edit.setObjectName("start_quantity_text_edit")
         start_quantity_text_edit.setStyleSheet(styleSheet)
         start_quantity_text_edit.setAlignment(Qt.AlignCenter)
         start_quantity_text_edit.setText(curr_range_start)
@@ -197,6 +201,7 @@ class EquivalenceClassParamsDialog(QDialog):
         label.setStyleSheet("padding:2px; font-family: Arial; font-size: 14px;")
         quantity_layout.addWidget(label)
         end_quantity_text_edit = QLineEdit()
+        end_quantity_text_edit.setObjectName("end_quantity_text_edit")
         end_quantity_text_edit.setStyleSheet(styleSheet)
         end_quantity_text_edit.setAlignment(Qt.AlignCenter)
         end_quantity_text_edit.setText(curr_range_end)
@@ -236,7 +241,7 @@ class EquivalenceClassParamsDialog(QDialog):
                 height=30,
                 minimum_width=90,
                 do_when_clicked=lambda: (
-                    # PageManager.show_insert_methods_info_success(methods),
+                    self.update_current_param_range_list(),
                     self.close()
                 ),
                 btn_color=color.POPUP_BOTTOM_BUTTON_OK
@@ -245,3 +250,41 @@ class EquivalenceClassParamsDialog(QDialog):
         end_spacing = QSpacerItem(10, 10, QSizePolicy.Fixed, QSizePolicy.Minimum)
         bottom_button_bar_layout.addItem(end_spacing)
         self.layout.addLayout(bottom_button_bar_layout)
+
+    def update_current_param_range_list(self):
+        #TODO: verify data before saving
+
+        for i in range(0, len(self.horizontal_scroll_layouts)):
+            hsl = self.horizontal_scroll_layouts[i]
+            range_content_builder = ""
+            range_quantity_builder = ""
+            for j in range(0, hsl.count()):
+                if not hsl or isinstance(hsl.itemAt(j), QSpacerItem):
+                    continue
+                try:
+                    type_combo_selected = hsl.itemAt(j).widget().layout().itemAt(0).itemAt(0).widget().currentText()
+
+                    content_text = hsl.itemAt(j).widget().layout().itemAt(1).widget().text()
+                    start_value = hsl.itemAt(j).widget().layout().itemAt(2).layout().itemAt(0).widget().text()
+                    end_value = hsl.itemAt(j).widget().layout().itemAt(2).layout().itemAt(2).widget().text()
+                    range_content_builder += "[" + content_text + "]"
+                    range_quantity_builder += "[" + start_value + "~" + end_value + "]"
+                except Exception as e:
+                    print("Failed first, trying second")
+                    try:
+                        type_combo_selected = hsl.itemAt(j).layout().itemAt(0).itemAt(0).widget().currentText()
+
+                        content_text = hsl.itemAt(j).layout().itemAt(1).widget().text()
+                        start_value = hsl.itemAt(j).layout().itemAt(2).layout().itemAt(0).widget().text()
+                        end_value = hsl.itemAt(j).layout().itemAt(2).layout().itemAt(2).widget().text()
+                        range_content_builder += "[" + content_text + "]"
+                        range_quantity_builder += "[" + start_value + "~" + end_value + "]"
+                    except Exception as e:
+                        print("An Error occurred while saving parameter range for the second time. " + self.current_param_range_list[
+                            i].param.name, e)
+
+                #todo: Agora tenho todos os dados, mas preciso descobrir qual é o parametro de que tou tratando
+            #todo: e salvar esse parametro aqui, com todos os "pedacinhos" já definidos: salvar em param_ranges
+            self.current_param_range_list[i].v1 = range_content_builder
+            self.current_param_range_list[i].v2 = range_quantity_builder
+

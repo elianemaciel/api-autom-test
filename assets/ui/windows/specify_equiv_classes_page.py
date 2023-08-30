@@ -2,11 +2,12 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QStackedWidget, \
     QLineEdit, QScrollArea
 
-from assets.components import Method, ParamRange
+from assets.components import ParamRange, TestSet, Parameter
 from assets.ui.util import style, color
 from assets.ui.widgets.combo_box import CustomComboBox
 from assets.ui.widgets.dialog.set_equiv_class_params_dialog import EquivalenceClassParamsDialog
 from assets.ui.widgets.menu_button import AtMenuButton
+from assets.ui.widgets.param_range_add_button import ParamRangeAddButton
 
 
 class SpecifyEquivClassesWidget:
@@ -19,6 +20,7 @@ class SpecifyEquivClassesWidget:
     instance = None
     methods = []
     visible_content = 0
+    combo_box = None
 
     @staticmethod
     def get_or_start(position=None, visible_content=0):
@@ -83,19 +85,6 @@ class SpecifyEquivClassesWidget:
         spacing = QSpacerItem(20, 20, QSizePolicy.Fixed, QSizePolicy.Fixed)
         content_layout.addItem(spacing)
 
-        # # Set application logo
-        # logo = QLabel()
-        # pixmap = QPixmap(os.path.join(os.getcwd(), 'ui/images/automtest-logo.png'))
-        # scaled_pixmap = pixmap.scaledToHeight(64)
-        # logo.setPixmap(scaled_pixmap)
-        # logo.resize(scaled_pixmap.width(), scaled_pixmap.height())
-        # logo.setAlignment(Qt.AlignCenter)
-        # content_layout.addWidget(logo)
-
-        # Set spacing
-        # spacing = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        # content_layout.addItem(spacing)
-
         # Set main content
         title = QLabel()
         title.setText("Equivalence Classes")
@@ -107,14 +96,6 @@ class SpecifyEquivClassesWidget:
         # Set spacing
         spacing = QSpacerItem(20, 20, QSizePolicy.Fixed, QSizePolicy.Fixed)
         content_layout.addItem(spacing)
-
-        # what = QLabel()
-        # what.setText("""
-        #
-        # """)
-        # what.setStyleSheet(style.EXPLANATION_APPLICATION_TEXT)
-        # what.setWordWrap(True)
-        # content_layout.addWidget(what)
 
         an_example = QLabel()
         an_example.setText("""
@@ -168,6 +149,8 @@ class SpecifyEquivClassesWidget:
 
     @staticmethod
     def _create_equiv_class_content_widget(method):
+        if method is None:
+            method = SpecifyEquivClassesWidget.methods[0][0]
         about_page = QWidget()
         content_layout = QVBoxLayout()
 
@@ -190,13 +173,13 @@ class SpecifyEquivClassesWidget:
         method_name_layout.addWidget(label)
         method_name_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
-        combo_box = CustomComboBox()
+        SpecifyEquivClassesWidget.combo_box = CustomComboBox()
         for m in SpecifyEquivClassesWidget.methods:
-            combo_box.addItem(m.method)
-        combo_box.setCurrentIndex(SpecifyEquivClassesWidget.methods.index(method) if method is not None else 0)
-        combo_box.setFixedWidth(500)
-        combo_box.setFixedHeight(40)
-        method_name_layout.addWidget(combo_box)
+            SpecifyEquivClassesWidget.combo_box.addItem(m[0].name)
+        SpecifyEquivClassesWidget.combo_box.setCurrentIndex(SpecifyEquivClassesWidget.find_index_by_method(method))
+        SpecifyEquivClassesWidget.combo_box.setFixedWidth(500)
+        SpecifyEquivClassesWidget.combo_box.setFixedHeight(40)
+        method_name_layout.addWidget(SpecifyEquivClassesWidget.combo_box)
         content_layout.addLayout(method_name_layout)
 
         # Equiv class name-----------------------------------------------------------------------------
@@ -206,11 +189,11 @@ class SpecifyEquivClassesWidget:
         label.setStyleSheet(label_stylesheet)
         expected_retun_layout.addWidget(label)
         expected_retun_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        from_text_edit = QLineEdit()
-        from_text_edit.setStyleSheet(text_edit_stylesheet)
-        from_text_edit.setFixedHeight(40)
-        from_text_edit.setFixedWidth(400)
-        expected_retun_layout.addWidget(from_text_edit)
+        equiv_class_name_line_edit = QLineEdit()
+        equiv_class_name_line_edit.setStyleSheet(text_edit_stylesheet)
+        equiv_class_name_line_edit.setFixedHeight(40)
+        equiv_class_name_line_edit.setFixedWidth(400)
+        expected_retun_layout.addWidget(equiv_class_name_line_edit)
         content_layout.addLayout(expected_retun_layout)
 
         # Number of test cases-----------------------------------------------------------------------------
@@ -220,27 +203,19 @@ class SpecifyEquivClassesWidget:
         label.setStyleSheet(label_stylesheet)
         expected_retun_layout.addWidget(label)
         expected_retun_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
-        from_text_edit = QLineEdit()
-        from_text_edit.setStyleSheet(text_edit_stylesheet)
-        from_text_edit.setFixedHeight(40)
-        from_text_edit.setFixedWidth(400)
-        expected_retun_layout.addWidget(from_text_edit)
+        num_test_cases_line_edit = QLineEdit()
+        num_test_cases_line_edit.setStyleSheet(text_edit_stylesheet)
+        num_test_cases_line_edit.setFixedHeight(40)
+        num_test_cases_line_edit.setFixedWidth(400)
+        expected_retun_layout.addWidget(num_test_cases_line_edit)
         content_layout.addLayout(expected_retun_layout)
 
         # Specify parameters button-------------------------------------------------------------------------------
-        param_ranges = [
-            ParamRange("Balance", "[-][numbers][.]", "[0~1][1~4][0~1]"),
-            ParamRange("Name", "[letters][-][letters]", "[1~20][0~1][1~20]"),
-            ParamRange("Phone", "[(][numbers][)][numbers]", "[1~1][2~2][1~1][9~9]"),
-            ParamRange("Name", "[letters][-][letters]", "[1~20][0~1][1~20]"),
-            ParamRange("ZipCode", "[-][numbers][.]", "[0~1][1~4][0~1]"),
-            ParamRange("Phone", "[(][numbers][)][numbers]", "[1~1][2~2][1~1][9~9]")
-        ]
         content_layout.addWidget(AtMenuButton(
             text="Specify Parameters",
             height=40,
             btn_color=color.ADD_NEW_METHOD_BUTTON,
-            do_when_clicked=lambda: (EquivalenceClassParamsDialog(param_ranges, equiv_class_name="valid_input").exec_())
+            do_when_clicked=lambda: (SpecifyEquivClassesWidget.setup_and_call_param_dialog())
         ))
 
         # Expected return values-----------------------------------------------------------------------------
@@ -311,9 +286,17 @@ class SpecifyEquivClassesWidget:
         content_layout.addLayout(bottom_layout)
         bottom_layout.addWidget(
             AtMenuButton(
-                text="Add another",
+                text="Save",
                 minimum_width=170,
-                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_create_equiv_class_content(),
+                do_when_clicked=lambda: SpecifyEquivClassesWidget.save_and_show_again(
+                    SpecifyEquivClassesWidget.methods[SpecifyEquivClassesWidget.combo_box.currentIndex()][0],
+                    SpecifyEquivClassesWidget.methods[SpecifyEquivClassesWidget.combo_box.currentIndex()][1],
+                    equiv_class_name_line_edit.text(),
+                    num_test_cases_line_edit.text(),
+                    from_text_edit.text(),
+                    to_text_edit.text(),
+                    also_include_text_edit.text()
+                ),
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD
             )
         )
@@ -322,6 +305,49 @@ class SpecifyEquivClassesWidget:
         about_page.setLayout(content_layout)
         return about_page
 
+    @staticmethod
+    def find_index_by_method(method):
+        for i in range(0, len(SpecifyEquivClassesWidget.methods)):
+            if SpecifyEquivClassesWidget.methods[i][0] == method:
+                return i
+
+    @staticmethod
+    def setup_and_call_param_dialog():
+        curr_method_index = SpecifyEquivClassesWidget.combo_box.currentIndex()
+        #TODO: é sempre para um método específico somente
+        if not SpecifyEquivClassesWidget.methods[curr_method_index][1]:
+            param_ranges = []
+            for param in SpecifyEquivClassesWidget.methods[curr_method_index][0].params:
+                #SpecifyEquivClassesWidget.param_ranges.append(ParamRange(param))
+                param_ranges.append(ParamRange(param))
+            SpecifyEquivClassesWidget.methods[curr_method_index][1] = param_ranges
+
+        params_dialog = EquivalenceClassParamsDialog(
+            SpecifyEquivClassesWidget.methods[curr_method_index][1],
+            equiv_class_name="valid_input")
+        params_dialog.exec_()
+        SpecifyEquivClassesWidget.methods[curr_method_index][1] = params_dialog.current_param_range_list
+        params_dialog.deleteLater()
+
+
+    @staticmethod
+    def save_and_show_again(method, equiv_class_param_ranges, equiv_class_name, num_test_cases, return_from, return_to, return_also_include):
+        #todo: verify fields and show popup error in case it's not all set
+
+        # update methods info
+        method_return_values = ParamRange(
+            Parameter('saida_esperada', 'integer'),#TODO: other possible data values
+            return_from, return_to, return_also_include)
+        equiv_class = TestSet(equiv_class_name, num_test_cases, method_return_values)
+        equiv_class.clear_params()
+        for equiv_class_param_range in equiv_class_param_ranges:
+            equiv_class.add_param_range(equiv_class_param_range)#TODO: assert data validity
+        method.add_testset(equiv_class)
+        # update method list
+        index = SpecifyEquivClassesWidget.find_index_by_method(method)
+        SpecifyEquivClassesWidget.methods[index][0] = method
+        # show view to create a new equiv class
+        return SpecifyEquivClassesWidget.show_list_equiv_class_content()
 
     @staticmethod
     def _list_equiv_class_content_widget():
@@ -350,82 +376,71 @@ class SpecifyEquivClassesWidget:
         scroll.setWidget(scrollContent)
         scroll.setStyleSheet("border: none;")
 
-        # add item into the scrollable-list
-        equivClassesAndMethods = [
-            ["invalid_input",
-             Method("addClientExtraInfo", 'ClientManagement', 'com.test.client.management', 'Boolean')],
-            ["invalid_input",
-             Method("removeClientPermission", 'ClientManagement', 'com.test.client.management', 'String')],
-            ["invalid_input",
-             Method("updateClientExtraInfo", 'ClientManagement', 'com.test.client.management', 'String')],
-            ["invalid_input",
-             Method("getAllPossibleChanges", 'ClientManagement', 'com.test.client.management', 'Boolean')],
-            ["invalid_input",
-             Method("selectValidClients", 'ClientManagement', 'com.test.client.management', 'Integer')],
-            ["invalid_input",
-             Method("configureFirstAttendance", 'ClientManagement', 'com.test.client.management', 'Date')],
-        ]
-        for item in equivClassesAndMethods:
+        #dentro de method temos os testsets, q são as classes de equiv que precisamos aqui. Então testamos: se
+        for method in SpecifyEquivClassesWidget.methods:
+            for equiv_class in method[0].testsets:
+                item_widget = QWidget()
+                # item_widget.setFixedHeight(70)
+                item_widget.setStyleSheet("border-radius: 10px; background-color: white;")
 
-            item_widget = QWidget()
-            # item_widget.setFixedHeight(70)
-            item_widget.setStyleSheet("border-radius: 10px; background-color: white;")
+                item_layout = QVBoxLayout()
 
-            item_layout = QVBoxLayout()
+                method_layout = QHBoxLayout()
+                label = QLabel("Method:")
+                label.setFixedHeight(40)
+                label.setFixedWidth(170)
+                label.setStyleSheet("padding:10px; font-family: Arial;  font-size: 14px; font-weight: bold;")
+                method_layout.addWidget(label)
+                label = QLabel(method[0].name)
+                label.setFixedHeight(40)
+                label.setStyleSheet("""
+                    border-radius: 10px; 
+                    background-color: """ + color.LIGHT_GRAY + """; 
+                    padding:10px;
+                    font-family: Arial; 
+                    font-size: 14px;
+                """)
+                method_layout.addWidget(label)
+                method_layout.addWidget(ParamRangeAddButton(
+                    id=SpecifyEquivClassesWidget.find_index_by_method(method[0]),
+                    text="Edit",
+                    height=40,
+                    minimum_width=100,
+                    maximum_width=100,
+                    btn_color=color.EDIT_BUTTON,
+                    do_when_clicked=lambda i: (print(i),
+                                               SpecifyEquivClassesWidget.show_create_equiv_class_content(
+                        SpecifyEquivClassesWidget.methods[i][0]))
+                ))
+                item_layout.addLayout(method_layout)
 
-            method_layout = QHBoxLayout()
-            label = QLabel("Method:")
-            label.setFixedHeight(40)
-            label.setFixedWidth(170)
-            label.setStyleSheet("padding:10px; font-family: Arial;  font-size: 14px; font-weight: bold;")
-            method_layout.addWidget(label)
-            label = QLabel(item[1].name)
-            label.setFixedHeight(40)
-            label.setStyleSheet("""
-                border-radius: 10px; 
-                background-color: """ + color.LIGHT_GRAY + """; 
-                padding:10px;
-                font-family: Arial; 
-                font-size: 14px;
-            """)
-            method_layout.addWidget(label)
-            method_layout.addWidget(AtMenuButton(
-                text="Edit",
-                height=40,
-                minimum_width=100,
-                maximum_width=100,
-                btn_color=color.EDIT_BUTTON,
-                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_create_equiv_class_content(item[1])
-            ))
-            item_layout.addLayout(method_layout)
+                equiv_class_layout = QHBoxLayout()
+                label = QLabel("Equivalence class:")
+                label.setFixedHeight(40)
+                label.setFixedWidth(170)
+                label.setStyleSheet("padding:10px; font-family: Arial;  font-size: 14px; font-weight: bold;")
+                equiv_class_layout.addWidget(label)
+                label = QLabel(equiv_class.name)
+                label.setFixedHeight(40)
+                label.setStyleSheet("""
+                    border-radius: 10px; 
+                    background-color: """ + color.LIGHT_GRAY + """; 
+                    padding:10px;
+                    font-family: Arial; 
+                    font-size: 14px;
+                """)
+                equiv_class_layout.addWidget(label)
+                equiv_class_layout.addWidget(AtMenuButton(
+                    text="Remove",
+                    height=40,
+                    minimum_width=100,
+                    maximum_width=100,
+                    btn_color=color.REMOVE_BUTTON
+                ))
+                item_layout.addLayout(equiv_class_layout)
 
-            equiv_class_layout = QHBoxLayout()
-            label = QLabel("Equivalence class:")
-            label.setFixedHeight(40)
-            label.setFixedWidth(170)
-            label.setStyleSheet("padding:10px; font-family: Arial;  font-size: 14px; font-weight: bold;")
-            equiv_class_layout.addWidget(label)
-            label = QLabel(item[0])
-            label.setFixedHeight(40)
-            label.setStyleSheet("""
-                border-radius: 10px; 
-                background-color: """ + color.LIGHT_GRAY + """; 
-                padding:10px;
-                font-family: Arial; 
-                font-size: 14px;
-            """)
-            equiv_class_layout.addWidget(label)
-            equiv_class_layout.addWidget(AtMenuButton(
-                text="Remove",
-                height=40,
-                minimum_width=100,
-                maximum_width=100,
-                btn_color=color.REMOVE_BUTTON
-            ))
-            item_layout.addLayout(equiv_class_layout)
-
-            item_widget.setLayout(item_layout)
-            scrollLayout.addWidget(item_widget)
+                item_widget.setLayout(item_layout)
+                scrollLayout.addWidget(item_widget)
 
         scrollLayout.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
