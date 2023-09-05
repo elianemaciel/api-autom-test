@@ -13,6 +13,7 @@ from assets.ui.widgets.menu_button import AtMenuButton
 from assets.ui.widgets.method_choice import MethodChoice
 from assets.ui.widgets.method_crud import MethodCrud
 from assets.ui.windows.bottom_buttons_for_add_extra_data import BottomButtonsForAddExtraData
+from model.DataTypes import DATA_TYPES
 
 
 def get_methods_from_test_cases(test_cases):
@@ -164,15 +165,6 @@ class InsertMethodsInfoWidget:
             widget = InsertMethodsInfoWidget.content.widget(
                 InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX)
             InsertMethodsInfoWidget.content.removeWidget(widget)
-        # initialize the content
-        # method = Method(name="addClientExtraInfo", class_name='ClientManagement',
-        #                 package_name='com.test.client.management', output_type='Boolean')
-        # method.add_param_by_arg('clientId', 'Integer')
-        # method.add_param_by_arg('clientPostCode', 'Integer')
-        # method.add_param_by_arg('clientAddress', 'String')
-        # method.add_param_by_arg('clientCity', 'String')
-        # method.add_param_by_arg('clientState', 'String')
-        # method.add_param_by_arg('clientCountry', 'String')
         widget = InsertMethodsInfoWidget.create_or_edit_method_content_widget(do_to_show_next_page, method)
         InsertMethodsInfoWidget.content.addWidget(widget)
         InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
@@ -292,7 +284,7 @@ class InsertMethodsInfoWidget:
         edit_button_layout = QVBoxLayout()
         edit_button_layout.addItem(QSpacerItem(15, 15, QSizePolicy.Fixed, QSizePolicy.Fixed))
         edit_button_layout.addWidget(AtMenuButton(
-            text="Fill in data",#todo: if all required fields are set, otherwise "edit data"
+            text="Fill\nin\ndata",#todo: if all required fields are set, otherwise "edit data"
             minimum_width=70,
             maximum_width=70,
             height=70,
@@ -311,17 +303,13 @@ class InsertMethodsInfoWidget:
         method_name.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
         combo_box = CustomComboBox()
-        combo_box.addItem("Integer")
-        combo_box.addItem("String")
-        combo_box.addItem("Boolean")
-        if method is not None:
-            if method.output_type == "Integer":
-                combo_box.setCurrentIndex(0)
-            elif method.output_type == "String":
-                combo_box.setCurrentIndex(1)
-            else:
-                combo_box.setCurrentIndex(2)
-        # combo_box.setStyleSheet(text_edit_stylesheet)
+        index = 0
+        for i in range(0, len(DATA_TYPES)):
+            combo_box.addItem(DATA_TYPES[i])
+            if method is not None and method.output_type == DATA_TYPES[i]:
+                index = i
+        combo_box.setCurrentIndex(index)
+
         combo_box.setFixedWidth(500)
         combo_box.setFixedHeight(40)
         method_name.addWidget(combo_box)
@@ -523,36 +511,6 @@ class InsertMethodsInfoWidget:
         return method_crud
 
     @staticmethod
-    def setup_add_extra_data_content_bottom_buttons():
-        # Bottom button bar
-        bottom_button_bar_layout = QHBoxLayout()
-        spacing = QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
-        bottom_button_bar_layout.addItem(spacing)
-        bottom_button_bar_layout.addWidget(
-            AtMenuButton(
-                text="Go Back",
-                # height=30,
-                minimum_width=100,  # TODO: implementar botão voltar
-                do_when_clicked=lambda: print("Voltando para onde estávamos antes"),
-                btn_color=color.BOTTOM_NAVIGATION_BACKWARD
-            )
-        )
-        bottom_button_bar_layout.addWidget(
-            AtMenuButton(
-                text="Continue",
-                # height=30,
-                minimum_width=170,
-                do_when_clicked=lambda: (
-                    # TODO: carregar specify_equiv_classes
-                ),
-                btn_color=color.BOTTOM_NAVIGATION_FORWARD
-            )
-        )
-        end_spacing = QSpacerItem(10, 10, QSizePolicy.Fixed, QSizePolicy.Minimum)
-        bottom_button_bar_layout.addItem(end_spacing)
-        return bottom_button_bar_layout
-
-    @staticmethod
     def setup_success_content_bottom_buttons(do_to_show_next_page):
         # Bottom button bar
         bottom_button_bar_layout = QHBoxLayout()
@@ -584,10 +542,4 @@ class InsertMethodsInfoWidget:
         )
         end_spacing = QSpacerItem(10, 10, QSizePolicy.Fixed, QSizePolicy.Minimum)
         bottom_button_bar_layout.addItem(end_spacing)
-        return bottom_button_bar_layout
-
-    @staticmethod
-    def setup_create_or_edit_method_content_bottom_buttons(do_to_show_next_page):
-        # Bottom button bar
-
         return bottom_button_bar_layout

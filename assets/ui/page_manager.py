@@ -1,5 +1,5 @@
 from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget, get_methods_from_test_cases
-from assets.ui.windows.specify_equiv_classes_page import SpecifyEquivClassesWidget
+from assets.ui.windows.specify_equiv_class.specify_equiv_classes_page import SpecifyEquivClassesWidget
 
 
 class PageManager:

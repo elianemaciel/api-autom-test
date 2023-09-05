@@ -5,6 +5,7 @@ from assets.components import Parameter
 from assets.ui.util import color
 from assets.ui.widgets.combo_box import CustomComboBox
 from assets.ui.widgets.menu_button import AtMenuButton
+from model.DataTypes import DATA_TYPES
 
 
 class ParamEditItem(QHBoxLayout):
@@ -37,16 +38,12 @@ class ParamEditItem(QHBoxLayout):
         self.addWidget(type_label)
 
         self.type_combo_box = CustomComboBox()
-        self.type_combo_box.addItem("Integer")
-        self.type_combo_box.addItem("String")
-        self.type_combo_box.addItem("Boolean")
-        if self.param_type == "Integer":
-            self.type_combo_box.setCurrentIndex(0)
-        elif self.param_type == "String":
-            self.type_combo_box.setCurrentIndex(1)
-        else:
-            self.type_combo_box.setCurrentIndex(2)
-        self.type_combo_box.setFixedWidth(100)
+        index = 0
+        for i in range(0, len(DATA_TYPES)):
+            self.type_combo_box.addItem(DATA_TYPES[i])
+            if self.param_type == DATA_TYPES[i]:
+                index = i
+        self.type_combo_box.setCurrentIndex(index)
         self.addWidget(self.type_combo_box)
 
         remove_button = AtMenuButton(

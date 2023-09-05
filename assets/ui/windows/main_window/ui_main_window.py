@@ -1,6 +1,6 @@
 from assets.qt_core import *
 from assets.ui.page_manager import PageManager
-from assets.ui.util import color, style
+from assets.ui.util import color
 from assets.ui.widgets.menu_button import AtMenuButton
 import os
 
@@ -8,7 +8,7 @@ from assets.ui.windows.about_page import AboutPageWidget
 from assets.ui.windows.check_inserted_data_page import CheckInsertedDataWidget
 from assets.ui.windows.generate_tests_page import GenerateTestsWidget
 from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget
-from assets.ui.windows.specify_equiv_classes_page import SpecifyEquivClassesWidget
+from assets.ui.windows.specify_equiv_class.specify_equiv_classes_page import SpecifyEquivClassesWidget
 from assets.ui.windows.start_page import StartPageWidget
 from assets.ui.windows.user_story_page import InsertUserStoryWidget
 

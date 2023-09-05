@@ -4,10 +4,20 @@ from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QL
 
 from assets.components import ParamRange, TestSet, Parameter
 from assets.ui.util import style, color
+from assets.ui.widgets.range_widget.BooleanRangeWidget import BooleanRangeWidget
+from assets.ui.widgets.range_widget.CharRangeWidget import CharRangeWidget
+from assets.ui.widgets.range_widget.DateRangeWidget import DateRangeWidget
+from assets.ui.widgets.range_widget.NumericRangeWidget import NumericRangeWidget, NUMERIC_TYPE_INTEGER, \
+    NUMERIC_TYPE_FLOAT, NUMERIC_TYPE_DOUBLE
+from assets.ui.widgets.range_widget.StringRangeWidget import StringRangeWidget
 from assets.ui.widgets.combo_box import CustomComboBox
 from assets.ui.widgets.dialog.set_equiv_class_params_dialog import EquivalenceClassParamsDialog
 from assets.ui.widgets.menu_button import AtMenuButton
 from assets.ui.widgets.param_range_add_button import ParamRangeAddButton
+
+
+def do_when_change_method_selection(index):
+    SpecifyEquivClassesWidget.show_create_equiv_class_content(SpecifyEquivClassesWidget.methods[index][0])
 
 
 class SpecifyEquivClassesWidget:
@@ -21,6 +31,7 @@ class SpecifyEquivClassesWidget:
     methods = []
     visible_content = 0
     combo_box = None
+    return_widget = None
 
     @staticmethod
     def get_or_start(position=None, visible_content=0):
@@ -38,19 +49,18 @@ class SpecifyEquivClassesWidget:
         return SpecifyEquivClassesWidget.instance
 
     @staticmethod
-    def show_create_equiv_class_content(method=None):
+    def show_create_equiv_class_content(method=None, equiv_class=None, is_edit=False):
         # if the content already exists, remove to add it again
         if SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX != -1:
             content_widget = SpecifyEquivClassesWidget.content.widget(
                 SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX)
             SpecifyEquivClassesWidget.content.removeWidget(content_widget)
         # initialize the content
-        widget = SpecifyEquivClassesWidget._create_equiv_class_content_widget(method)
+        widget = SpecifyEquivClassesWidget._create_equiv_class_content_widget(method, equiv_class, is_edit)
         SpecifyEquivClassesWidget.content.addWidget(widget)
         SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX = SpecifyEquivClassesWidget.content.indexOf(widget)
         # set as active content
         SpecifyEquivClassesWidget.content.setCurrentIndex(SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX)
-        print("definido show_create_equiv_class_content com sucesso. Index:" + str(SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX))
 
     @staticmethod
     def show_list_equiv_class_content():
@@ -148,22 +158,33 @@ class SpecifyEquivClassesWidget:
         return about_page
 
     @staticmethod
-    def _create_equiv_class_content_widget(method):
+    def _create_equiv_class_content_widget(method, equiv_class, is_edit):
         if method is None:
             method = SpecifyEquivClassesWidget.methods[0][0]
-        about_page = QWidget()
+
+        page = QWidget()
         content_layout = QVBoxLayout()
+        page.setLayout(content_layout)
+
+        vertical_scroll = QScrollArea()
+        vertical_scroll.setWidgetResizable(True)
+        vertical_scroll_content = QWidget(vertical_scroll)
+        vertical_scrollable_content_layout = QVBoxLayout(vertical_scroll_content)
+        content_layout.addWidget(vertical_scroll)
+        content_layout.addWidget(vertical_scroll)
+        vertical_scroll.setWidget(vertical_scroll_content)
+        vertical_scroll.setStyleSheet("border: none;")
 
         # Set spacing
         spacing = QSpacerItem(20, 20, QSizePolicy.Fixed, QSizePolicy.Fixed)
-        content_layout.addItem(spacing)
+        vertical_scrollable_content_layout.addItem(spacing)
 
         # Set header-------------------------------------------------------------------------------
         title = QLabel()
         title.setText("Choose a method and specify an equivalence class for it:")
         title.setStyleSheet(style.BASIC_APPLICATION_TEXT)
         title.setWordWrap(True)
-        content_layout.addWidget(title)
+        vertical_scrollable_content_layout.addWidget(title)
 
         # Method Selection-----------------------------------------------------------------------------
         label_stylesheet = "padding:10px; font-size: 16px; font-weight: bold;"
@@ -173,45 +194,46 @@ class SpecifyEquivClassesWidget:
         method_name_layout.addWidget(label)
         method_name_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
-        SpecifyEquivClassesWidget.combo_box = CustomComboBox()
-        for m in SpecifyEquivClassesWidget.methods:
-            SpecifyEquivClassesWidget.combo_box.addItem(m[0].name)
-        SpecifyEquivClassesWidget.combo_box.setCurrentIndex(SpecifyEquivClassesWidget.find_index_by_method(method))
-        SpecifyEquivClassesWidget.combo_box.setFixedWidth(500)
-        SpecifyEquivClassesWidget.combo_box.setFixedHeight(40)
+        if not SpecifyEquivClassesWidget.combo_box:
+            SpecifyEquivClassesWidget.combo_box = CustomComboBox(lambda i: do_when_change_method_selection(i))
+            for m in SpecifyEquivClassesWidget.methods:
+                SpecifyEquivClassesWidget.combo_box.addItem(m[0].name)
+            SpecifyEquivClassesWidget.combo_box.setCurrentIndex(SpecifyEquivClassesWidget.find_index_by_method(method))
+            SpecifyEquivClassesWidget.combo_box.setFixedHeight(40)
+        SpecifyEquivClassesWidget.combo_box.setEnabled(not is_edit)
         method_name_layout.addWidget(SpecifyEquivClassesWidget.combo_box)
-        content_layout.addLayout(method_name_layout)
+        vertical_scrollable_content_layout.addLayout(method_name_layout)
 
         # Equiv class name-----------------------------------------------------------------------------
         text_edit_stylesheet = "QLineEdit {border-radius: 10px; background-color: white}"
-        expected_retun_layout = QHBoxLayout()
+        numeric_return_layout = QHBoxLayout()
         label = QLabel("Equivalence class name:")
         label.setStyleSheet(label_stylesheet)
-        expected_retun_layout.addWidget(label)
-        expected_retun_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        numeric_return_layout.addWidget(label)
+        numeric_return_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         equiv_class_name_line_edit = QLineEdit()
         equiv_class_name_line_edit.setStyleSheet(text_edit_stylesheet)
         equiv_class_name_line_edit.setFixedHeight(40)
-        equiv_class_name_line_edit.setFixedWidth(400)
-        expected_retun_layout.addWidget(equiv_class_name_line_edit)
-        content_layout.addLayout(expected_retun_layout)
+        equiv_class_name_line_edit.setText(equiv_class.name if equiv_class else "")
+        numeric_return_layout.addWidget(equiv_class_name_line_edit)
+        vertical_scrollable_content_layout.addLayout(numeric_return_layout)
 
         # Number of test cases-----------------------------------------------------------------------------
         text_edit_stylesheet = "QLineEdit {border-radius: 10px; background-color: white}"
-        expected_retun_layout = QHBoxLayout()
+        numeric_return_layout = QHBoxLayout()
         label = QLabel("Number of test cases to be generated:")
         label.setStyleSheet(label_stylesheet)
-        expected_retun_layout.addWidget(label)
-        expected_retun_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        numeric_return_layout.addWidget(label)
+        numeric_return_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         num_test_cases_line_edit = QLineEdit()
         num_test_cases_line_edit.setStyleSheet(text_edit_stylesheet)
         num_test_cases_line_edit.setFixedHeight(40)
-        num_test_cases_line_edit.setFixedWidth(400)
-        expected_retun_layout.addWidget(num_test_cases_line_edit)
-        content_layout.addLayout(expected_retun_layout)
+        num_test_cases_line_edit.setText(equiv_class.number_of_cases if equiv_class else "")
+        numeric_return_layout.addWidget(num_test_cases_line_edit)
+        vertical_scrollable_content_layout.addLayout(numeric_return_layout)
 
         # Specify parameters button-------------------------------------------------------------------------------
-        content_layout.addWidget(AtMenuButton(
+        vertical_scrollable_content_layout.addWidget(AtMenuButton(
             text="Specify Parameters",
             height=40,
             btn_color=color.ADD_NEW_METHOD_BUTTON,
@@ -219,54 +241,44 @@ class SpecifyEquivClassesWidget:
         ))
 
         # Expected return values-----------------------------------------------------------------------------
-        text_edit_stylesheet = "QLineEdit {border-radius: 10px; background-color: white}"
-        expected_retun_layout = QHBoxLayout()
 
-        label = QLabel("Expected returns (Integer number):")
+        type_label_content = "Unknown"
+        SpecifyEquivClassesWidget.return_widget = NumericRangeWidget(NUMERIC_TYPE_INTEGER, equiv_class)
+        if method.output_type.lower() == 'int':
+            type_label_content = "Integer number"
+        elif method.output_type.lower() == 'float':
+            type_label_content = "Float number"
+            SpecifyEquivClassesWidget.return_widget = NumericRangeWidget(NUMERIC_TYPE_FLOAT, equiv_class)
+        elif method.output_type.lower() == 'double':
+            type_label_content = "Double number"
+            SpecifyEquivClassesWidget.return_widget = NumericRangeWidget(NUMERIC_TYPE_DOUBLE, equiv_class)
+        elif method.output_type.lower() == 'string':
+            type_label_content = "String"
+            SpecifyEquivClassesWidget.return_widget = StringRangeWidget(equiv_class)
+        elif method.output_type.lower() == 'char':
+            type_label_content = "Character"
+            SpecifyEquivClassesWidget.return_widget = CharRangeWidget(equiv_class)
+        elif method.output_type.lower() == 'boolean':
+            type_label_content = "Boolean"
+            SpecifyEquivClassesWidget.return_widget = BooleanRangeWidget(equiv_class)
+        elif method.output_type.lower() == 'date':
+            type_label_content = "Date dd/MM/yyyy or dd-MM-yyyy"
+            SpecifyEquivClassesWidget.return_widget = DateRangeWidget(equiv_class)
+
+        label = QLabel("Expected returns (" + type_label_content + "):")
         label.setStyleSheet(label_stylesheet)
-        content_layout.addWidget(label)
+        vertical_scrollable_content_layout.addWidget(label)
+        vertical_scrollable_content_layout.addWidget(SpecifyEquivClassesWidget.return_widget)
 
-        label = QLabel("From:")
-        label.setStyleSheet(label_stylesheet)
-        expected_retun_layout.addWidget(label)
-
-        from_text_edit = QLineEdit()
-        from_text_edit.setStyleSheet(text_edit_stylesheet)
-        from_text_edit.setFixedHeight(40)
-        # from_text_edit.setFixedWidth(100)
-        expected_retun_layout.addWidget(from_text_edit)
-
-        label = QLabel("To:")
-        label.setStyleSheet(label_stylesheet)
-        expected_retun_layout.addWidget(label)
-
-        to_text_edit = QLineEdit()
-        to_text_edit.setStyleSheet(text_edit_stylesheet)
-        to_text_edit.setFixedHeight(40)
-        # to_text_edit.setFixedWidth(100)
-        expected_retun_layout.addWidget(to_text_edit)
-
-        label = QLabel("Also include\n (comma separated):")
-        label.setStyleSheet(label_stylesheet)
-        expected_retun_layout.addWidget(label)
-
-        also_include_text_edit = QLineEdit()
-        also_include_text_edit.setStyleSheet(text_edit_stylesheet)
-        also_include_text_edit.setFixedHeight(40)
-        # also_include_text_edit.setFixedWidth(200)
-        expected_retun_layout.addWidget(also_include_text_edit)
-
-        content_layout.addLayout(expected_retun_layout)
         # bottom buttons--------------------------------------------------------------------------------
 
         # Set spacing
-        content_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        vertical_scrollable_content_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
         bottom_layout = QHBoxLayout()
         bottom_layout.addWidget(
             AtMenuButton(
-                text="List equivalence\n classes",
-                # height=30,
+                text="List equivalence\nclasses",
                 maximum_width=170,
                 minimum_width=170,
                 do_when_clicked=lambda: SpecifyEquivClassesWidget.show_list_equiv_class_content(),
@@ -283,7 +295,6 @@ class SpecifyEquivClassesWidget:
                 btn_color=color.BOTTOM_NAVIGATION_BACKWARD
             )
         )
-        content_layout.addLayout(bottom_layout)
         bottom_layout.addWidget(
             AtMenuButton(
                 text="Save",
@@ -292,18 +303,14 @@ class SpecifyEquivClassesWidget:
                     SpecifyEquivClassesWidget.methods[SpecifyEquivClassesWidget.combo_box.currentIndex()][0],
                     SpecifyEquivClassesWidget.methods[SpecifyEquivClassesWidget.combo_box.currentIndex()][1],
                     equiv_class_name_line_edit.text(),
-                    num_test_cases_line_edit.text(),
-                    from_text_edit.text(),
-                    to_text_edit.text(),
-                    also_include_text_edit.text()
+                    num_test_cases_line_edit.text()
                 ),
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD
             )
         )
         content_layout.addLayout(bottom_layout)
 
-        about_page.setLayout(content_layout)
-        return about_page
+        return page
 
     @staticmethod
     def find_index_by_method(method):
@@ -318,7 +325,6 @@ class SpecifyEquivClassesWidget:
         if not SpecifyEquivClassesWidget.methods[curr_method_index][1]:
             param_ranges = []
             for param in SpecifyEquivClassesWidget.methods[curr_method_index][0].params:
-                #SpecifyEquivClassesWidget.param_ranges.append(ParamRange(param))
                 param_ranges.append(ParamRange(param))
             SpecifyEquivClassesWidget.methods[curr_method_index][1] = param_ranges
 
@@ -329,16 +335,13 @@ class SpecifyEquivClassesWidget:
         SpecifyEquivClassesWidget.methods[curr_method_index][1] = params_dialog.current_param_range_list
         params_dialog.deleteLater()
 
-
     @staticmethod
-    def save_and_show_again(method, equiv_class_param_ranges, equiv_class_name, num_test_cases, return_from, return_to, return_also_include):
+    def save_and_show_again(method, equiv_class_param_ranges, equiv_class_name, num_test_cases):
         #todo: verify fields and show popup error in case it's not all set
 
         # update methods info
-        method_return_values = ParamRange(
-            Parameter('saida_esperada', 'integer'),#TODO: other possible data values
-            return_from, return_to, return_also_include)
-        equiv_class = TestSet(equiv_class_name, num_test_cases, method_return_values)
+        return_range = SpecifyEquivClassesWidget.return_widget.get_data_as_param_range()
+        equiv_class = TestSet(equiv_class_name, num_test_cases, return_range)
         equiv_class.clear_params()
         for equiv_class_param_range in equiv_class_param_ranges:
             equiv_class.add_param_range(equiv_class_param_range)#TODO: assert data validity
@@ -408,9 +411,8 @@ class SpecifyEquivClassesWidget:
                     minimum_width=100,
                     maximum_width=100,
                     btn_color=color.EDIT_BUTTON,
-                    do_when_clicked=lambda i: (print(i),
-                                               SpecifyEquivClassesWidget.show_create_equiv_class_content(
-                        SpecifyEquivClassesWidget.methods[i][0]))
+                    do_when_clicked=lambda i: SpecifyEquivClassesWidget.show_create_equiv_class_content(
+                        SpecifyEquivClassesWidget.methods[i][0], equiv_class, True)
                 ))
                 item_layout.addLayout(method_layout)
 
@@ -473,7 +475,3 @@ class SpecifyEquivClassesWidget:
 
         page.setLayout(content_layout)
         return page
-
-def show_next_content():
-    # TODO: implement
-    pass
