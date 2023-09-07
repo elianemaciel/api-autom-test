@@ -24,7 +24,7 @@ class PageManager:
                 return  # ignoring because it's not clickable at the current application state
         for btn in PageManager.instance.main_ui.menu_buttons:
             btn.toggle_active(btn.id == id_button)
-        PageManager.instance.set_logo_visibility(True)
+        PageManager.instance.set_logo_visibility(not id_button == "ABOUT")
         PageManager.main_ui.all_pages.setCurrentIndex(position)
 
     @staticmethod

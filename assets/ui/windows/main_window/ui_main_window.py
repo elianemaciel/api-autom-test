@@ -9,7 +9,6 @@ from assets.ui.windows.check_inserted_data_page import CheckInsertedDataWidget
 from assets.ui.windows.generate_tests_page import GenerateTestsWidget
 from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget
 from assets.ui.windows.specify_equiv_class.specify_equiv_classes_page import SpecifyEquivClassesWidget
-from assets.ui.windows.start_page import StartPageWidget
 from assets.ui.windows.user_story_page import InsertUserStoryWidget
 
 
@@ -56,13 +55,12 @@ class UI_MainWindow(object):
 
         # Crio um QStackedWidget q contém todas as páginas
         self.all_pages = QStackedWidget()
-        self.all_pages.addWidget(StartPageWidget.get_or_start(0))
+        self.all_pages.addWidget(AboutPageWidget.get_or_start(0))
         self.all_pages.addWidget(InsertUserStoryWidget.get_or_start(1))
         self.all_pages.addWidget(InsertMethodsInfoWidget.get_or_start(2))
         self.all_pages.addWidget(CheckInsertedDataWidget.get_or_start(3))
         self.all_pages.addWidget(SpecifyEquivClassesWidget.get_or_start(4))
         self.all_pages.addWidget(GenerateTestsWidget.get_or_start(5))
-        self.all_pages.addWidget(AboutPageWidget.get_or_start(6))
 
         content_layout.addWidget(self.all_pages)
         content.setLayout(content_layout)
@@ -118,42 +116,43 @@ class UI_MainWindow(object):
         # q_font.setFamily("Arial")
         # q_font.setBold(300)
         # btn_add_user_story.setFont(q_font)
+        btn_about = AtMenuButton(
+            id="ABOUT",
+            text="About AutomTest",
+            do_when_clicked=lambda: PageManager.show_page(AboutPageWidget.position, "ABOUT"),
+            is_active=True
+        )
         btn_add_methods_info = AtMenuButton(
             id="INSERT_INFO",
-            text="Inserir Informações\ndos Métodos",
+            text="Insert Methods Info",
             do_when_clicked=lambda: PageManager.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
         )
         btn_read_data = AtMenuButton(
             id="CHECK_DATA",
-            text="Ver Dados Inseridos",
+            text="See Inserted Data",
             do_when_clicked=lambda: PageManager.show_page(CheckInsertedDataWidget.position, "CHECK_DATA"),
             is_clickable=False
         )
         btn_equiv_classes = AtMenuButton(
             id="EQUIV_CLASSES",
-            text="Especificar Classes\nde Equivalência",
+            text="Specify Equivalence\nClasses",
             do_when_clicked=lambda: PageManager.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES"),
             is_clickable=False
         )
         btn_generate_tests = AtMenuButton(
             id="TESTS",
-            text="Gerar Testes",
+            text="Generate Tests",
             do_when_clicked=lambda: PageManager.show_page(GenerateTestsWidget.position, "TESTS"),
             is_clickable=False
         )
-        btn_about = AtMenuButton(
-            id="ABOUT",
-            text="Sobre o AutomTest",
-            do_when_clicked=lambda: PageManager.show_page(AboutPageWidget.position, "ABOUT")
-        )
 
         # Add buttons to layout
+        self.menu_buttons.append(btn_about)
         self.menu_buttons.append(btn_add_user_story)
         self.menu_buttons.append(btn_add_methods_info)
         self.menu_buttons.append(btn_read_data)
         self.menu_buttons.append(btn_equiv_classes)
         self.menu_buttons.append(btn_generate_tests)
-        self.menu_buttons.append(btn_about)
         for btn in self.menu_buttons:
             left_menu_top_layout.addWidget(btn)
 

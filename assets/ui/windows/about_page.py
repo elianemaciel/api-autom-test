@@ -22,12 +22,12 @@ class AboutPageWidget:
 
     @staticmethod
     def _setup():
-        content_widget = QWidget()
-        content_layout = QVBoxLayout()
+        start_page = QWidget()
+        start_page_layout = QVBoxLayout()
 
         # Set spacing
         spacing = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        content_layout.addItem(spacing)
+        start_page_layout.addItem(spacing)
 
         # Set application logo
         logo = QLabel()
@@ -36,22 +36,35 @@ class AboutPageWidget:
         logo.setPixmap(scaled_pixmap)
         logo.resize(scaled_pixmap.width(), scaled_pixmap.height())
         logo.setAlignment(Qt.AlignCenter)
-        content_layout.addWidget(logo)
+        start_page_layout.addWidget(logo)
+        start_page.setLayout(start_page_layout)
 
         # Set spacing
         spacing = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        content_layout.addItem(spacing)
+        start_page_layout.addItem(spacing)
 
         # Set main content
         program_description = QLabel()
-        program_description.setText("Content for about page")
+        program_description.setText(mainScreenText())
         program_description.setStyleSheet(style.BASIC_APPLICATION_TEXT)
         program_description.setWordWrap(True)
-        content_layout.addWidget(program_description)
+        start_page_layout.addWidget(program_description)
 
         # Set spacing
         spacing = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
-        content_layout.addItem(spacing)
+        start_page_layout.addItem(spacing)
 
-        content_widget.setLayout(content_layout)
-        return content_widget
+        return start_page
+
+
+def mainScreenText():
+    return """
+Use the left menu to start.
+
+AutomTest has two main options for you to start with:
+
+1. Inserting an User Story
+2. Inserting the Methods Information manually
+
+Select the corresponding option in the left menu and continue
+        """
