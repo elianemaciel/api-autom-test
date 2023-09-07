@@ -40,14 +40,14 @@ class ParamRange:
 
 	def __str__(self):
 		output = self.param.__str__()
-		
+
 		if (self.v2 == '' and self.v3 == ''):
 			output += "\n\t" + self.v1
 		elif (self.v3 == ''):
 			output += "\n\t" + self.v1 + " / " + self.v2
 		else:
 			output += "\n\t" + self.v1 + " / " + self.v2 + " / " + self.v3
-		
+
 		return output
 
 # NEW CLASS ######################################################################
@@ -102,22 +102,22 @@ class Method:
 
 	def __str__(self):
 		output = ''
-		
+
 		if (self.package_name == ''):
 			output += "METHOD: "+self.name + "\nCLASS: " +self.class_name + "\nOUTPUT: " +self.output_type
 		else:
 			output += "METHOD: "+self.name + "\nCLASS: " +self.class_name + "\nPACKAGE: " +self.package_name + "\nOUTPUT: " +self.output_type
-		
+
 		c = 1
 		for x in self.params:
 			output += '\nPARAMETER '+str(c)+': '+x.name+' '+x.type_name
 			c += 1
-		
+
 		c = 1
 		for x in self.testsets:
 			output += '\n\nEQUIVALENCE CLASS '+str(c)+': ' + x.__str__()
 			c += 1
-		
+
 		return output
 
 	def add_param_by_arg(self, param_name, type_name=''):
@@ -125,10 +125,10 @@ class Method:
 		self.params.append(param)
 
 	def add_param_by_parameter(self, param):
-		self.params.append(param)	
+		self.params.append(param)
 
 	def remove_last_param(self):
-		self.params.pop()		
+		self.params.pop()
 
 	def add_testset(self, test):
 		#t = TestSet(name, num)
@@ -140,6 +140,12 @@ class Method:
 				self.testsets[i] = test
 				return
 		self.testsets.append(test)
+
+	def remove_testset(self, test):
+		try:
+			self.testsets.remove(test)
+		except:
+			print("Error when removing testset " + str(test) + " from " + self.name)
 
 	def remove_from_test_set_list(self, element):
 		for x in range(0,len(self.testsets)):

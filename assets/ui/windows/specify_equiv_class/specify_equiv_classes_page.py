@@ -4,6 +4,7 @@ from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QL
 
 from assets.components import ParamRange, TestSet, Parameter
 from assets.ui.util import style, color
+from assets.ui.widgets.VariableParamClickableButton import VariableParamClickableButton
 from assets.ui.widgets.range_widget.BooleanRangeWidget import BooleanRangeWidget
 from assets.ui.widgets.range_widget.CharRangeWidget import CharRangeWidget
 from assets.ui.widgets.range_widget.DateRangeWidget import DateRangeWidget
@@ -18,6 +19,13 @@ from assets.ui.widgets.param_range_add_button import ParamRangeAddButton
 
 def do_when_change_method_selection(index):
     SpecifyEquivClassesWidget.show_create_equiv_class_content(SpecifyEquivClassesWidget.methods[index][0])
+
+
+# def remove_equiv_class(method_index, equiv_class):
+def remove_equiv_class(params):
+    # SpecifyEquivClassesWidget.methods[method_index][0].remove_testset(equiv_class)
+    SpecifyEquivClassesWidget.methods[params[0]][0].remove_testset(params[1])
+    SpecifyEquivClassesWidget.show_list_equiv_class_content()
 
 
 class SpecifyEquivClassesWidget:
@@ -439,12 +447,14 @@ class SpecifyEquivClassesWidget:
                     font-size: 14px;
                 """)
                 equiv_class_layout.addWidget(label)
-                equiv_class_layout.addWidget(AtMenuButton(
+                equiv_class_layout.addWidget(VariableParamClickableButton(
                     text="Remove",
                     height=40,
                     minimum_width=100,
                     maximum_width=100,
-                    btn_color=color.REMOVE_BUTTON
+                    btn_color=color.REMOVE_BUTTON,
+                    do_when_clicked=lambda params: remove_equiv_class(params),
+                    do_when_clicked_params=[SpecifyEquivClassesWidget.find_index_by_method(method[0]), equiv_class]
                 ))
                 item_layout.addLayout(equiv_class_layout)
 
