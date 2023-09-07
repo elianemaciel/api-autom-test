@@ -1,5 +1,9 @@
+import threading
+
 from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget, get_methods_from_test_cases
 from assets.ui.windows.specify_equiv_class.specify_equiv_classes_page import SpecifyEquivClassesWidget
+import schedule
+import time
 
 
 class PageManager:
@@ -10,12 +14,42 @@ class PageManager:
         PageManager.main_ui = main_ui
         PageManager.instance = self
 
+        job_thread = threading.Thread(target=PageManager.schedule_buttons_states)
+        job_thread.start()
+
     @staticmethod
     def show_page(position, id_button):
-        PageManager.instance.set_logo_visibility(True)
-        PageManager.main_ui.all_pages.setCurrentIndex(position)
+        for btn in PageManager.instance.main_ui.menu_buttons:
+            if btn.id == id_button and not btn.is_clickable:
+                return  # ignoring because it's not clickable at the current application state
         for btn in PageManager.instance.main_ui.menu_buttons:
             btn.toggle_active(btn.id == id_button)
+        PageManager.instance.set_logo_visibility(True)
+        PageManager.main_ui.all_pages.setCurrentIndex(position)
+
+    @staticmethod
+    def toggle_buttons_state():
+        for btn in PageManager.instance.main_ui.menu_buttons:
+            is_clickable = True
+            if btn.id == "CHECK_DATA":
+                is_clickable = len(InsertMethodsInfoWidget.methods) > 0
+            elif btn.id == "EQUIV_CLASSES":
+                is_clickable = len(InsertMethodsInfoWidget.methods) > 0
+            elif btn.id == "TESTS":
+                is_clickable = SpecifyEquivClassesWidget.has_any_equiv_class()
+            # print(btn.id + " > " + str(is_clickable))
+            if not btn.is_clickable == is_clickable:
+                btn.toggle_clickable(is_clickable)
+
+    @staticmethod
+    def schedule_buttons_states():
+        schedule.every(1).second.do(PageManager.toggle_buttons_state)
+        while True:
+            try:
+                schedule.run_pending()
+                time.sleep(1)
+            except Exception as e:
+                print("Error while toggling buttons state: ", e)
 
     @staticmethod
     def show_specify_equiv_classes_start_page(methods):

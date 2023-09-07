@@ -27,5 +27,5 @@ class VariableParamClickableButton(AtMenuButton):
     ):
         self.do_when_clicked = do_when_clicked
         super().__init__(id, text, height, minimum_width, maximum_width, text_padding, font_size, border_radius,
-                         text_color, btn_color, btn_hover, btn_pressed, is_active,
+                         text_color, btn_color, btn_hover, btn_pressed, is_active, True,
                          lambda: do_when_clicked(do_when_clicked_params))

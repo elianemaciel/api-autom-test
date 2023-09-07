@@ -286,22 +286,13 @@ class SpecifyEquivClassesWidget:
         vertical_scrollable_content_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
         bottom_layout = QHBoxLayout()
-        bottom_layout.addWidget(
-            AtMenuButton(
-                text="List equivalence\nclasses",
-                maximum_width=170,
-                minimum_width=170,
-                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_list_equiv_class_content(),
-                btn_color=color.BOTTOM_NAVIGATION_LIST_ALL
-            )
-        )
         # Set spacing
         bottom_layout.addItem(QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
         bottom_layout.addWidget(
             AtMenuButton(
                 text="Cancel",
                 minimum_width=170,
-                do_when_clicked=lambda: print("go back"),
+                do_when_clicked=lambda: SpecifyEquivClassesWidget.show_list_equiv_class_content(),
                 btn_color=color.BOTTOM_NAVIGATION_BACKWARD
             )
         )
@@ -494,3 +485,10 @@ class SpecifyEquivClassesWidget:
 
         page.setLayout(content_layout)
         return page
+
+    @staticmethod
+    def has_any_equiv_class():
+        for method in SpecifyEquivClassesWidget.methods:
+            if len(method[0].testsets) > 0:
+                return True
+        return False

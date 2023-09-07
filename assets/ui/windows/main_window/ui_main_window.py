@@ -71,7 +71,7 @@ class UI_MainWindow(object):
 
     def setupLeftMenu(self):
 
-        #setup Page manager
+        # setup Page manager
         PageManager(self)
 
         self.left_menu = QFrame()
@@ -96,7 +96,6 @@ class UI_MainWindow(object):
         self.logo.setAlignment(Qt.AlignCenter)
         PageManager.set_logo_visibility(False)
         left_menu_layout.addWidget(self.logo)
-
 
         # Top frame menu
         left_menu_top_frame = QFrame()
@@ -127,17 +126,20 @@ class UI_MainWindow(object):
         btn_read_data = AtMenuButton(
             id="CHECK_DATA",
             text="Ver Dados Inseridos",
-            do_when_clicked=lambda: PageManager.show_page(CheckInsertedDataWidget.position, "CHECK_DATA")
+            do_when_clicked=lambda: PageManager.show_page(CheckInsertedDataWidget.position, "CHECK_DATA"),
+            is_clickable=False
         )
         btn_equiv_classes = AtMenuButton(
             id="EQUIV_CLASSES",
             text="Especificar Classes\nde Equivalência",
-            do_when_clicked=lambda: PageManager.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES")
+            do_when_clicked=lambda: PageManager.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES"),
+            is_clickable=False
         )
         btn_generate_tests = AtMenuButton(
             id="TESTS",
             text="Gerar Testes",
-            do_when_clicked=lambda: PageManager.show_page(GenerateTestsWidget.position, "TESTS")
+            do_when_clicked=lambda: PageManager.show_page(GenerateTestsWidget.position, "TESTS"),
+            is_clickable=False
         )
         btn_about = AtMenuButton(
             id="ABOUT",
@@ -157,4 +159,3 @@ class UI_MainWindow(object):
 
         # Add to layout
         left_menu_layout.addWidget(left_menu_top_frame)
-
