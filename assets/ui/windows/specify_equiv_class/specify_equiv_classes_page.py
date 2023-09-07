@@ -18,7 +18,9 @@ from assets.ui.widgets.param_range_add_button import ParamRangeAddButton
 
 
 def do_when_change_method_selection(index):
-    SpecifyEquivClassesWidget.show_create_equiv_class_content(SpecifyEquivClassesWidget.methods[index][0])
+    SpecifyEquivClassesWidget.show_create_equiv_class_content(
+        method=SpecifyEquivClassesWidget.methods[index][0],
+        keep_combo_box=True)
 
 
 # def remove_equiv_class(method_index, equiv_class):
@@ -57,14 +59,14 @@ class SpecifyEquivClassesWidget:
         return SpecifyEquivClassesWidget.instance
 
     @staticmethod
-    def show_create_equiv_class_content(method=None, equiv_class=None, is_edit=False):
+    def show_create_equiv_class_content(method=None, equiv_class=None, is_edit=False, keep_combo_box=False):
         # if the content already exists, remove to add it again
         if SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX != -1:
             content_widget = SpecifyEquivClassesWidget.content.widget(
                 SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX)
             SpecifyEquivClassesWidget.content.removeWidget(content_widget)
         # initialize the content
-        widget = SpecifyEquivClassesWidget._create_equiv_class_content_widget(method, equiv_class, is_edit)
+        widget = SpecifyEquivClassesWidget._create_equiv_class_content_widget(method, equiv_class, is_edit, keep_combo_box)
         SpecifyEquivClassesWidget.content.addWidget(widget)
         SpecifyEquivClassesWidget.CREATE_EQUIV_CLASS_CONTENT_INDEX = SpecifyEquivClassesWidget.content.indexOf(widget)
         # set as active content
@@ -166,7 +168,7 @@ class SpecifyEquivClassesWidget:
         return about_page
 
     @staticmethod
-    def _create_equiv_class_content_widget(method, equiv_class, is_edit):
+    def _create_equiv_class_content_widget(method, equiv_class, is_edit, keep_combo_box):
         if method is None:
             method = SpecifyEquivClassesWidget.methods[0][0]
 
@@ -202,7 +204,7 @@ class SpecifyEquivClassesWidget:
         method_name_layout.addWidget(label)
         method_name_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
-        if not SpecifyEquivClassesWidget.combo_box:
+        if not keep_combo_box:
             SpecifyEquivClassesWidget.combo_box = CustomComboBox(lambda i: do_when_change_method_selection(i))
             for m in SpecifyEquivClassesWidget.methods:
                 SpecifyEquivClassesWidget.combo_box.addItem(m[0].name)
