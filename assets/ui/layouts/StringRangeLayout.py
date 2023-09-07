@@ -92,16 +92,19 @@ class StringRangeLayout(QVBoxLayout):
     def get_range_data(self):
         range_content_builder = ""
         range_quantity_builder = ""
-        for j in range(0, self.count()):
-            if isinstance(self.itemAt(j), QSpacerItem) or isinstance(self.itemAt(j).widget(), QLabel):
-                continue
-            type_combo_selected = self.horizontal_scroll_layout.itemAt(j).widget().layout().itemAt(0).itemAt(0).widget().currentText()
-            content_text = self.horizontal_scroll_layout.itemAt(j).widget().layout().itemAt(1).widget().text()
-            start_value = self.horizontal_scroll_layout.itemAt(j).widget().layout().itemAt(2).layout().itemAt(0).widget().text()
-            end_value = self.horizontal_scroll_layout.itemAt(j).widget().layout().itemAt(2).layout().itemAt(2).widget().text()
-            range_content_builder += "[" + content_text + "]"
-            range_quantity_builder += "[" + start_value + "~" + end_value + "]"
-
+        try:
+            for j in range(0, self.count()):
+                if isinstance(self.horizontal_scroll_layout.itemAt(j), QSpacerItem) \
+                        or isinstance(self.horizontal_scroll_layout.itemAt(j).widget(), QLabel):
+                    continue
+                type_combo_selected = self.horizontal_scroll_layout.itemAt(j).widget().layout().itemAt(0).itemAt(0).widget().currentText()
+                content_text = self.horizontal_scroll_layout.itemAt(j).widget().layout().itemAt(1).widget().text()
+                start_value = self.horizontal_scroll_layout.itemAt(j).widget().layout().itemAt(2).layout().itemAt(0).widget().text()
+                end_value = self.horizontal_scroll_layout.itemAt(j).widget().layout().itemAt(2).layout().itemAt(2).widget().text()
+                range_content_builder += "[" + content_text + "]"
+                range_quantity_builder += "[" + start_value + "~" + end_value + "]"
+        except Exception as e:
+            print("An internal error occurred when getting data range from StringRangeLayout", e)
         return range_content_builder, range_quantity_builder
 
 
