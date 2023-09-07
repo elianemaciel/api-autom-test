@@ -54,11 +54,12 @@ class ParamRange:
 
 class TestSet:
 
-	def __init__(self, name, number_of_cases, expected_range):
+	def __init__(self, name, number_of_cases, expected_range, identifier=None):
 		self.name = name
 		self.number_of_cases = number_of_cases
 		self.expected_range = expected_range # ParamRange Object
 		self.ranges = [] # list of ParamRanges
+		self.identifier = uuid.uuid4() if identifier is None else identifier
 
 	def add_param_range(self, param):
 		self.ranges.append(param)
@@ -75,6 +76,9 @@ class TestSet:
 			output += 'Param ' + str(c) + ': ' + x.__str__() + '\n'
 			c += 1
 		return output
+
+	def __eq__(self, other):
+		return isinstance(other, TestSet) and self.identifier == other.identifier
 
 # NEW CLASS ######################################################################
 
@@ -128,6 +132,13 @@ class Method:
 
 	def add_testset(self, test):
 		#t = TestSet(name, num)
+		self.testsets.append(test)
+
+	def add_or_update_testset(self, test):
+		for i in range(0, len(self.testsets)):
+			if self.testsets[i] == test:
+				self.testsets[i] = test
+				return
 		self.testsets.append(test)
 
 	def remove_from_test_set_list(self, element):

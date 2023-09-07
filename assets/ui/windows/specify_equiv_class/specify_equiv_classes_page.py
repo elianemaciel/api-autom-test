@@ -303,7 +303,9 @@ class SpecifyEquivClassesWidget:
                     SpecifyEquivClassesWidget.methods[SpecifyEquivClassesWidget.combo_box.currentIndex()][0],
                     SpecifyEquivClassesWidget.methods[SpecifyEquivClassesWidget.combo_box.currentIndex()][1],
                     equiv_class_name_line_edit.text(),
-                    num_test_cases_line_edit.text()
+                    num_test_cases_line_edit.text(),
+                    is_edit,
+                    equiv_class
                 ),
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD
             )
@@ -336,16 +338,21 @@ class SpecifyEquivClassesWidget:
         params_dialog.deleteLater()
 
     @staticmethod
-    def save_and_show_again(method, equiv_class_param_ranges, equiv_class_name, num_test_cases):
+    def save_and_show_again(method, equiv_class_param_ranges, equiv_class_name, num_test_cases, is_edit, equiv_class):
         #todo: verify fields and show popup error in case it's not all set
 
         # update methods info
         return_range = SpecifyEquivClassesWidget.return_widget.get_data_as_param_range()
-        equiv_class = TestSet(equiv_class_name, num_test_cases, return_range)
+        if not equiv_class:
+            equiv_class = TestSet(equiv_class_name, num_test_cases, return_range)
+        else:
+            equiv_class.name = equiv_class_name
+            equiv_class.number_of_cases = num_test_cases
+            equiv_class.expected_range = return_range
         equiv_class.clear_params()
         for equiv_class_param_range in equiv_class_param_ranges:
             equiv_class.add_param_range(equiv_class_param_range)#TODO: assert data validity
-        method.add_testset(equiv_class)
+        method.add_or_update_testset(equiv_class)
         # update method list
         index = SpecifyEquivClassesWidget.find_index_by_method(method)
         SpecifyEquivClassesWidget.methods[index][0] = method
