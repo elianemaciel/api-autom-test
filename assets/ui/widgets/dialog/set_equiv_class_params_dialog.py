@@ -75,7 +75,7 @@ class EquivalenceClassParamsDialog(QDialog):
             string_range_layout = StringRangeLayout(param_range)
             self.string_range_layouts.append(string_range_layout)
             vertical_scroll_layout.addLayout(string_range_layout)
-
+        vertical_scroll_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.setup_bottom_buttons()
 
     def setup_bottom_buttons(self):
