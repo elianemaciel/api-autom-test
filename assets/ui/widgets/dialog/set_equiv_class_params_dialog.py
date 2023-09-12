@@ -4,13 +4,18 @@ from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QSpacer
 from assets.ui.layouts.StringRangeLayout import StringRangeLayout
 from assets.ui.util import color
 from assets.ui.widgets.menu_button import AtMenuButton
+from assets.ui.widgets.range_widget.BooleanRangeWidget import BooleanRangeWidget
+from assets.ui.widgets.range_widget.CharRangeWidget import CharRangeWidget
+from assets.ui.widgets.range_widget.DataRangeWidget import DataRangeWidget
+from assets.ui.widgets.range_widget.DateRangeWidget import DateRangeWidget
+from assets.ui.widgets.range_widget.NumericRangeWidget import NumericRangeWidget
 
 
 class EquivalenceClassParamsDialog(QDialog):
     def __init__(self, param_ranges, equiv_class_name, parent=None):
         super().__init__(parent)
 
-        self.string_range_layouts = []
+        self.range_items = []
 
         self.setFixedWidth(800)
         self.setFixedHeight(500)
@@ -71,10 +76,43 @@ class EquivalenceClassParamsDialog(QDialog):
         vertical_scroll.setStyleSheet("border: none;")
 
         for param_range in param_ranges:
+            param_widget = QWidget()
+            # param_widget.setFixedHeight(133)
+            param_widget.setStyleSheet("border-radius: 10px; background-color: " + color.VERY_LIGHT_GRAY + ";")
+            param_widget_layout = QVBoxLayout()
+            param_widget.setLayout(param_widget_layout)
+            vertical_scroll_layout.addWidget(param_widget)
 
-            string_range_layout = StringRangeLayout(param_range)
-            self.string_range_layouts.append(string_range_layout)
-            vertical_scroll_layout.addLayout(string_range_layout)
+            if param_range.param.type_name == "String":
+                string_range_layout = StringRangeLayout(param_range)
+                self.range_items.append(string_range_layout)
+                param_widget_layout.addLayout(string_range_layout)
+
+            elif param_range.param.type_name == "boolean":
+                widget = BooleanRangeWidget(param_range, False)
+                self.range_items.append(widget)
+                param_widget_layout.addWidget(widget)
+
+            elif param_range.param.type_name == "Date":
+                widget = DateRangeWidget(param_range, False)
+                self.range_items.append(widget)
+                param_widget_layout.addWidget(widget)
+
+            elif param_range.param.type_name == "char":
+                widget = CharRangeWidget(param_range, False)
+                self.range_items.append(widget)
+                param_widget_layout.addWidget(widget)
+
+            elif param_range.param.type_name == "int" \
+                    or param_range.param.type_name == "float" \
+                    or param_range.param.type_name == "double":
+                widget = NumericRangeWidget(param_range, param_range.param.type_name, False)
+                self.range_items.append(widget)
+                param_widget_layout.addWidget(widget)
+
+            else:
+                print("Error: impossible to determine the type for parameter " + str(param_range.param))
+
         vertical_scroll_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         self.setup_bottom_buttons()
 
@@ -117,10 +155,15 @@ class EquivalenceClassParamsDialog(QDialog):
         self.layout.addLayout(bottom_button_bar_layout)
 
     def update_current_param_range_list(self):
-        #TODO: verify data before saving
+        # TODO: verify data before saving
 
-        for i in range(0, len(self.string_range_layouts)):
-            srl = self.string_range_layouts[i]
-            content, quantity = srl.get_range_data()
-            self.current_param_range_list[i].v1 = content
-            self.current_param_range_list[i].v2 = quantity
+        for i in range(0, len(self.range_items)):
+
+            item = self.range_items[i]
+            if isinstance(item, DataRangeWidget):
+                param_range = item.get_data_as_param_range()
+                self.current_param_range_list[i] = param_range
+            else:
+                content, quantity = item.get_range_data()
+                self.current_param_range_list[i].v1 = content
+                self.current_param_range_list[i].v2 = quantity

@@ -119,16 +119,16 @@ class SpecifyEquivClassesWidget:
 
         an_example = QLabel()
         an_example.setText("""
-            What Are:
             Here, an equivalence class is a tuple of a set of methods parameters and a set of possible return values for those parameters.
                 
             Observe the following example:
-            the method isMaiorDeIdade(inteiro idade), which has as responsibility check whether a person's of legal age, returns true in case the provided age is greater tha or equal to 18 years old and false otherwise. For that example,  we could define two equivalence classes: 
+            the method isMaiorDeIdade(inteiro idade), which has as responsibility check whether a person's of legal age, returns true in case the provided age is greater tha or equal to 18 years-old and false otherwise. For that example,  we could define two equivalence classes: 
             1. The class of legal age people, with return value true and, in the parameters set 18 and 65.
-            2. The class of minor agr people, with return value false and, as parameter set, 0, 1, 15 and 17, for
+            2. The class of minor age people, with return value false and, as parameter set, 0, 1, 15 and 17, for
             example.
+            3. The class of invalid input, with return value false and parameters -1, -2, 200, 50000.
                 
-            With those info, it's possible to define a equivalence class.
+            With those info, it's possible to define an equivalence class.
             Now it's your your turn: insert the equivalence classes you decide relevant to each previously mapped
             method.
         """)
@@ -253,27 +253,28 @@ class SpecifyEquivClassesWidget:
         # Expected return values-----------------------------------------------------------------------------
 
         type_label_content = "Unknown"
-        SpecifyEquivClassesWidget.return_widget = NumericRangeWidget(NUMERIC_TYPE_INTEGER, equiv_class)
+        return_range = equiv_class.expected_range if equiv_class is not None else None
+        SpecifyEquivClassesWidget.return_widget = NumericRangeWidget(return_range, NUMERIC_TYPE_INTEGER)
         if method.output_type.lower() == 'int':
             type_label_content = "Integer number"
         elif method.output_type.lower() == 'float':
             type_label_content = "Float number"
-            SpecifyEquivClassesWidget.return_widget = NumericRangeWidget(NUMERIC_TYPE_FLOAT, equiv_class)
+            SpecifyEquivClassesWidget.return_widget = NumericRangeWidget(return_range, NUMERIC_TYPE_FLOAT)
         elif method.output_type.lower() == 'double':
             type_label_content = "Double number"
-            SpecifyEquivClassesWidget.return_widget = NumericRangeWidget(NUMERIC_TYPE_DOUBLE, equiv_class)
+            SpecifyEquivClassesWidget.return_widget = NumericRangeWidget(return_range, NUMERIC_TYPE_DOUBLE)
         elif method.output_type.lower() == 'string':
             type_label_content = "String"
-            SpecifyEquivClassesWidget.return_widget = StringRangeWidget(equiv_class)
+            SpecifyEquivClassesWidget.return_widget = StringRangeWidget(return_range)
         elif method.output_type.lower() == 'char':
             type_label_content = "Character"
-            SpecifyEquivClassesWidget.return_widget = CharRangeWidget(equiv_class)
+            SpecifyEquivClassesWidget.return_widget = CharRangeWidget(return_range)
         elif method.output_type.lower() == 'boolean':
             type_label_content = "Boolean"
-            SpecifyEquivClassesWidget.return_widget = BooleanRangeWidget(equiv_class)
+            SpecifyEquivClassesWidget.return_widget = BooleanRangeWidget(return_range)
         elif method.output_type.lower() == 'date':
             type_label_content = "Date dd/MM/yyyy or dd-MM-yyyy"
-            SpecifyEquivClassesWidget.return_widget = DateRangeWidget(equiv_class)
+            SpecifyEquivClassesWidget.return_widget = DateRangeWidget(return_range)
 
         label = QLabel("Expected returns (" + type_label_content + "):")
         label.setStyleSheet(label_stylesheet)

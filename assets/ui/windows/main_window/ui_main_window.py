@@ -109,13 +109,9 @@ class UI_MainWindow(object):
         # Buttons:
         btn_add_user_story = AtMenuButton(
             id="USER_STORY",
-            text="Inserir uma História\nde Usuário",
+            text="Insert a User Story",
             do_when_clicked=lambda: PageManager.show_page(InsertUserStoryWidget.position, "USER_STORY")
         )
-        # q_font = QFont()
-        # q_font.setFamily("Arial")
-        # q_font.setBold(300)
-        # btn_add_user_story.setFont(q_font)
         btn_about = AtMenuButton(
             id="ABOUT",
             text="About AutomTest",

@@ -7,6 +7,15 @@ from assets.ui.widgets.combo_box import CustomComboBox
 from assets.ui.widgets.menu_button import AtMenuButton
 
 
+def run_after_combo_box_index_change(content_text_edit, index):
+    content_text_edit.setEnabled(index == 0)
+    if index != 0:
+        content_text_edit.setText("")
+        content_text_edit.setStyleSheet(get_line_edit_stylesheet("gray"))
+    else:
+        content_text_edit.setStyleSheet(get_line_edit_stylesheet("white"))
+
+
 class StringRangeLayout(QVBoxLayout):
 
     def __init__(self, range_value, is_return=False):
@@ -14,10 +23,10 @@ class StringRangeLayout(QVBoxLayout):
 
         if is_return:
             label = QLabel("Below, design the pattern of the returning String")
-            label.setStyleSheet("font-family: Arial;  font-size: 14px;")
+            label.setStyleSheet("font-size: 14px;")
         else:
-            label = QLabel("Building parameter range for parameter <b>" + range_value.param.name + "</b>:")
-            label.setStyleSheet("font-family: Arial;  font-size: 14px;")
+            label = QLabel("Building String pattern for the parameter <b>" + range_value.param.name + "</b>:")
+            label.setStyleSheet("font-size: 14px;")
         self.addWidget(label)
         param_def_layout = QHBoxLayout()
         self.addLayout(param_def_layout)
@@ -49,7 +58,7 @@ class StringRangeLayout(QVBoxLayout):
         label.setStyleSheet("font-family: Arial; font-size: 14px;")
         param_label_layout.addWidget(label)
 
-        label = QLabel("Move or Remove:")
+        label = QLabel("Move/Remove:")
         label.setStyleSheet("font-family: Arial; font-size: 14px;")
         param_label_layout.addWidget(label)
 
@@ -89,13 +98,16 @@ class StringRangeLayout(QVBoxLayout):
         return self.horizontal_scroll_layout
 
     def add_more_on_click(self):
-        return self.horizontal_scroll_layout.addWidget(self.build_param_range_element("", "", ""))
+        index = self.horizontal_scroll_layout.count() - 1
+        self.horizontal_scroll_layout.insertWidget(index, self.build_param_range_element("", "", ""))
 
     def get_range_data(self):
         range_content_builder = ""
         range_quantity_builder = ""
         try:
+
             for j in range(0, self.horizontal_scroll_layout.count()):
+
                 item = self.horizontal_scroll_layout.itemAt(j)
                 if isinstance(item, QSpacerItem) or isinstance(item.widget(), QLabel):
                     continue
@@ -109,8 +121,10 @@ class StringRangeLayout(QVBoxLayout):
                 else:
                     range_content_builder += "[" + type_combo_selected + "]"
                 range_quantity_builder += "[" + start_value + "~" + end_value + "]"
+
         except Exception as e:
             print("An internal error occurred when getting data range from StringRangeLayout", e)
+
         print("get_range_data: " + range_content_builder + " - " + range_quantity_builder)
         return range_content_builder, range_quantity_builder
 
@@ -123,17 +137,25 @@ class StringRangeLayout(QVBoxLayout):
         content_text_edit = QLineEdit()
 
         # type
+        if curr_substr == "sign":
+            combo_index = 1
+        elif curr_substr == "number":
+            combo_index = 2
+        elif curr_substr == "letter":
+            combo_index = 3
+        elif curr_substr == "alphanumeric":
+            combo_index = 4
+        else:
+            combo_index = 0
         type_layout = QHBoxLayout()
-        type_combo_box = CustomComboBox(do_after_set_index=lambda i: (
-                content_text_edit.setEnabled(i == 0),
-                content_text_edit.setStyleSheet(get_line_edit_stylesheet("gray")))
-            )
+        type_combo_box = CustomComboBox(do_after_set_index=lambda i: run_after_combo_box_index_change(content_text_edit, i))
         type_combo_box.setObjectName("type_combo_box")
         type_combo_box.addItem("any")
         type_combo_box.addItem("sign")
         type_combo_box.addItem("number")
         type_combo_box.addItem("letter")
         type_combo_box.addItem("alphanumeric")
+        type_combo_box.setCurrentIndex(combo_index)
         type_layout.addWidget(type_combo_box)
         type_layout.addWidget(AtMenuButton(
             height=20,
@@ -147,10 +169,8 @@ class StringRangeLayout(QVBoxLayout):
         ))
         param_layout.addLayout(type_layout)
         # content
-        # for type: ANY
         content_text_edit.setObjectName("content_text_edit")
-        content_text_edit.setStyleSheet(get_line_edit_stylesheet("white"))
-        content_text_edit.setText(curr_substr)
+        content_text_edit.setText(curr_substr if combo_index == 0 else "")
         content_text_edit.setAlignment(Qt.AlignCenter)
         param_layout.addWidget(content_text_edit)
         # quantity
