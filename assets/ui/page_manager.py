@@ -24,6 +24,8 @@ class PageManager:
                 return  # ignoring because it's not clickable at the current application state
         for btn in PageManager.instance.main_ui.menu_buttons:
             btn.toggle_active(btn.id == id_button)
+        if InsertMethodsInfoWidget.position == position:
+            PageManager.show_insert_methods_info_add_extra_data([])
         PageManager.instance.set_logo_visibility(not id_button == "ABOUT")
         PageManager.main_ui.all_pages.setCurrentIndex(position)
 
@@ -58,9 +60,6 @@ class PageManager:
         SpecifyEquivClassesWidget.methods = [[0] * num_cols for _ in range(num_rows)]
         for i in range(0, len(methods)):
             SpecifyEquivClassesWidget.methods[i][0] = methods[i]
-        print("métodos:")
-        print(methods)
-        print()
         PageManager.instance.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES")
 
     @staticmethod
@@ -90,10 +89,9 @@ class PageManager:
 
     @staticmethod
     def show_insert_methods_info_add_extra_data(test_cases):
-        PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
         InsertMethodsInfoWidget.methods = get_methods_from_test_cases(test_cases)
         InsertMethodsInfoWidget.show_add_extra_data(
-            test_cases,#TODO: estão atualizados?
+            test_cases,
             lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.methods)
         )
 

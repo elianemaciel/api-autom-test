@@ -390,7 +390,9 @@ class InsertMethodsInfoWidget:
         spacing = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Fixed)
         content_layout.addItem(spacing)
         # Set header
-        header = QLabel("Insert extra data for each method:")
+        header = QLabel("Insert extra data for each method:" if len(methods) > 0 else "Insert methods based on which "
+                                                                                      "the tests are going to be "
+                                                                                      "created uppon:")
         header.setStyleSheet(style.BASIC_APPLICATION_TEXT)
         header.setWordWrap(True)
         content_layout.addWidget(header)
