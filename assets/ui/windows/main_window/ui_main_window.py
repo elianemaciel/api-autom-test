@@ -58,9 +58,9 @@ class UI_MainWindow(object):
         self.all_pages.addWidget(AboutPageWidget.get_or_start(0))
         self.all_pages.addWidget(InsertUserStoryWidget.get_or_start(1))
         self.all_pages.addWidget(InsertMethodsInfoWidget.get_or_start(2))
-        self.all_pages.addWidget(CheckInsertedDataWidget.get_or_start(3))
-        self.all_pages.addWidget(SpecifyEquivClassesWidget.get_or_start(4))
-        self.all_pages.addWidget(GenerateTestsWidget.get_or_start(5))
+        # self.all_pages.addWidget(CheckInsertedDataWidget.get_or_start(3))
+        self.all_pages.addWidget(SpecifyEquivClassesWidget.get_or_start(3))
+        self.all_pages.addWidget(GenerateTestsWidget.get_or_start(4))
 
         content_layout.addWidget(self.all_pages)
         content.setLayout(content_layout)
@@ -110,34 +110,39 @@ class UI_MainWindow(object):
         btn_add_user_story = AtMenuButton(
             id="USER_STORY",
             text="Insert a User Story",
+            height=63,
             do_when_clicked=lambda: PageManager.show_page(InsertUserStoryWidget.position, "USER_STORY")
         )
         btn_about = AtMenuButton(
             id="ABOUT",
             text="About AutomTest",
+            height=63,
             do_when_clicked=lambda: PageManager.show_page(AboutPageWidget.position, "ABOUT"),
             is_active=True
         )
         btn_add_methods_info = AtMenuButton(
             id="INSERT_INFO",
             text="Insert Methods Info",
+            height=63,
             do_when_clicked=lambda: PageManager.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
         )
-        btn_read_data = AtMenuButton(
-            id="CHECK_DATA",
-            text="See Inserted Data",
-            do_when_clicked=lambda: PageManager.show_page(CheckInsertedDataWidget.position, "CHECK_DATA"),
-            is_clickable=False
-        )
+        # btn_read_data = AtMenuButton(
+        #     id="CHECK_DATA",
+        #     text="See Inserted Data",
+        #     do_when_clicked=lambda: PageManager.show_page(CheckInsertedDataWidget.position, "CHECK_DATA"),
+        #     is_clickable=False
+        # )
         btn_equiv_classes = AtMenuButton(
             id="EQUIV_CLASSES",
             text="Specify Equivalence\nClasses",
+            height=63,
             do_when_clicked=lambda: PageManager.show_page(SpecifyEquivClassesWidget.position, "EQUIV_CLASSES"),
             is_clickable=False
         )
         btn_generate_tests = AtMenuButton(
             id="TESTS",
             text="Generate Tests",
+            height=63,
             do_when_clicked=lambda: PageManager.show_page(GenerateTestsWidget.position, "TESTS"),
             is_clickable=False
         )
@@ -146,7 +151,6 @@ class UI_MainWindow(object):
         self.menu_buttons.append(btn_about)
         self.menu_buttons.append(btn_add_user_story)
         self.menu_buttons.append(btn_add_methods_info)
-        self.menu_buttons.append(btn_read_data)
         self.menu_buttons.append(btn_equiv_classes)
         self.menu_buttons.append(btn_generate_tests)
         for btn in self.menu_buttons:

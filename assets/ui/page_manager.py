@@ -33,9 +33,7 @@ class PageManager:
     def toggle_buttons_state():
         for btn in PageManager.instance.main_ui.menu_buttons:
             is_clickable = True
-            if btn.id == "CHECK_DATA":
-                is_clickable = len(InsertMethodsInfoWidget.methods) > 0
-            elif btn.id == "EQUIV_CLASSES":
+            if btn.id == "EQUIV_CLASSES":
                 is_clickable = len(InsertMethodsInfoWidget.methods) > 0
             elif btn.id == "TESTS":
                 is_clickable = SpecifyEquivClassesWidget.has_any_equiv_class()
