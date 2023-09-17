@@ -1,11 +1,10 @@
+import os
+
 from assets.qt_core import *
 from assets.ui.page_manager import PageManager
 from assets.ui.util import color
 from assets.ui.widgets.menu_button import AtMenuButton
-import os
-
 from assets.ui.windows.about_page import AboutPageWidget
-from assets.ui.windows.check_inserted_data_page import CheckInsertedDataWidget
 from assets.ui.windows.generate_tests_page import GenerateTestsWidget
 from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget
 from assets.ui.windows.specify_equiv_class.specify_equiv_classes_page import SpecifyEquivClassesWidget
@@ -56,8 +55,14 @@ class UI_MainWindow(object):
         # Crio um QStackedWidget q contém todas as páginas
         self.all_pages = QStackedWidget()
         self.all_pages.addWidget(AboutPageWidget.get_or_start(0))
-        self.all_pages.addWidget(InsertUserStoryWidget.get_or_start(1))
-        self.all_pages.addWidget(InsertMethodsInfoWidget.get_or_start(2))
+        self.all_pages.addWidget(InsertUserStoryWidget.get_or_start(
+            do_to_show_insert_methods_info_success=lambda mthds: PageManager.show_insert_methods_info_success(mthds),
+            position=1
+        ))
+        self.all_pages.addWidget(InsertMethodsInfoWidget.get_or_start(
+            do_to_go_back=PageManager.show_page(InsertUserStoryWidget.position, "USER_STORY"),
+            position=2
+        ))
         # self.all_pages.addWidget(CheckInsertedDataWidget.get_or_start(3))
         self.all_pages.addWidget(SpecifyEquivClassesWidget.get_or_start(3))
         self.all_pages.addWidget(GenerateTestsWidget.get_or_start(4))

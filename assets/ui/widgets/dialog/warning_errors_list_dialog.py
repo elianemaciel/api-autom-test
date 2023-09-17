@@ -1,13 +1,11 @@
-from PySide6.QtGui import QRegion, QPalette, QColor
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QSpacerItem, QSizePolicy, QScrollArea, QWidget
 
-from assets.ui.page_manager import PageManager
 from assets.ui.util import color
 from assets.ui.widgets.menu_button import AtMenuButton
 
 
 class WarningErrorsListDialog(QDialog):
-    def __init__(self, warnings_and_errors, methods, parent=None):
+    def __init__(self, do_to_show_insert_methods_info_success, warnings_and_errors, methods, parent=None):
         super().__init__(parent)
 
         self.setStyleSheet("background-color: " + color.BACKGROUND + ";")
@@ -44,9 +42,9 @@ class WarningErrorsListDialog(QDialog):
             scrollLayout.addWidget(label)
 
         self.setLayout(self.layout)
-        self.setup_bottom_buttons(methods)
+        self.setup_bottom_buttons(do_to_show_insert_methods_info_success, methods)
 
-    def setup_bottom_buttons(self, methods):
+    def setup_bottom_buttons(self, do_to_show_insert_methods_info_success, methods):
         # Bottom button bar
         bottom_button_bar_layout = QHBoxLayout()
         spacing = QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -57,7 +55,7 @@ class WarningErrorsListDialog(QDialog):
                 height=30,
                 minimum_width=170,
                 do_when_clicked=lambda: (
-                    PageManager.show_insert_methods_info_success(methods),
+                    do_to_show_insert_methods_info_success(methods),
                     self.close()
                 ),
                 btn_color=color.POPUP_BOTTOM_BUTTON_OK

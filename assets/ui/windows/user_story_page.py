@@ -1,12 +1,10 @@
-from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QTextEdit, QHBoxLayout, \
-    QMessageBox
+from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QTextEdit, QHBoxLayout
 
 from assets import StandardPlnRepository
 from assets.AutomTestException import AutomTestException
-from assets.ui.page_manager import PageManager
 from assets.ui.util import style
-from assets.ui.widgets.menu_button import AtMenuButton
 from assets.ui.widgets.dialog.warning_errors_list_dialog import WarningErrorsListDialog
+from assets.ui.widgets.menu_button import AtMenuButton
 
 
 class InsertUserStoryWidget:
@@ -14,18 +12,18 @@ class InsertUserStoryWidget:
     instance = None
 
     @staticmethod
-    def get_or_start(position=None):
+    def get_or_start(do_to_show_insert_methods_info_success, position=None):
         if InsertUserStoryWidget.position is None and position is None:
             raise ValueError("UserStoryPageWidget not started yet. position has value 'None'. Please start the page "
                              "first")
         if InsertUserStoryWidget.position is not None:
             return InsertUserStoryWidget.instance
         InsertUserStoryWidget.position = position
-        InsertUserStoryWidget.instance = InsertUserStoryWidget._setup()
+        InsertUserStoryWidget.instance = InsertUserStoryWidget._setup(do_to_show_insert_methods_info_success)
         return InsertUserStoryWidget.instance
 
     @staticmethod
-    def _setup():
+    def _setup(do_to_show_insert_methods_info_success):
         about_page = QWidget()
         content_layout = QVBoxLayout()
 
@@ -60,7 +58,7 @@ class InsertUserStoryWidget:
             text="Submit Story",
             height=30,
             minimum_width=170,
-            do_when_clicked=lambda: submit_user_story(user_story_text_edit.toPlainText())
+            do_when_clicked=lambda: submit_user_story(user_story_text_edit.toPlainText(), do_to_show_insert_methods_info_success)
         )
         button_bar_layout.addWidget(button)
 
@@ -74,48 +72,19 @@ class InsertUserStoryWidget:
         return about_page
 
 
-def submit_user_story(user_story_data):
+def submit_user_story(user_story_data, do_to_show_insert_methods_info_success):
     # Aqui teremos a lógica de recuperar o campo com os dados do user story
     print("User story recebido: " + user_story_data)
     # E, em seguida, passamos para um repository responsável por enviar pro backend processar esse dado
     try:
         methods, warnings = StandardPlnRepository.send_user_story(user_story_data)
-        # warnings = [
-        #     "This is the second warning, in which several things might have happened and must be treated"
-        #     "First warning. Unable to retrieve the correct data from Given",
-        #     "This is the second warning, in which several things might have happened and must be treated",
-        #     "First warning. Unable to retrieve the correct data from Given",
-        #     "This is the second warning, in which several things might have happened and must be treated",
-        #     "First warning. Unable to retrieve the correct data from Given",
-        #     "This is the second warning, in which several things might have happened and must be treated",
-        # ]
-        # methods = [#TODO: adicionar dados dentro do methods e ver a UO como confi
-        #     "errorWhenClassAlreadyExists",
-        #     "invalidClassName",
-        #     "invalidClassNumber"
-        #     "validClassNumber",
-        #     "validClassName",
-        #     "successWhenClassDoesNotExist",
-        #     "classNameDefinitionSuccess",
-        #     "interestOnClassName",
-        #     "errorWhenClassAlreadyExists",
-        #     "invalidClassName",
-        #     "invalidClassNumber"
-        #     "validClassNumber",
-        #     "validClassName",
-        #     "successWhenClassDoesNotExist",
-        #     "classNameDefinitionSuccess",
-        #     "interestOnClassName"
-        # ]
         if bool(warnings):
-            cd = WarningErrorsListDialog(warnings, methods)
+            cd = WarningErrorsListDialog(do_to_show_insert_methods_info_success, warnings, methods)
             cd.exec_()
         else:
             #Não aconteceram warnings. Ir para tela de resultado
-            PageManager.show_insert_methods_info_success(methods)
-            print("no warning. Methods:")
-            print(methods)
-        # case continue, send to next screen: insert Methods info page
+            do_to_show_insert_methods_info_success(methods)
+
     except AutomTestException as e:
         # Show error message in popup
         print(e.message)
@@ -126,59 +95,3 @@ def submit_user_story(user_story_data):
     #  (1) Uma negativa, com uma causa
     #  (2) Os dados necessários que passaremos para a próxima página
     # show_error_processing_user_story_message_dialog()
-
-
-def show_message_dialog(mainText, icon, bttnsAndRoles, bodyText):
-    # Create a QMessageBox instance
-    popup = QMessageBox()
-    popup.setWindowTitle("User Story Analysis")
-    popup.setText(mainText)
-    popup.setIcon(icon)
-    for bttnsAndRole in bttnsAndRoles:
-        popup.addButton(bttnsAndRole[0], bttnsAndRole[1])
-    content_layout = QVBoxLayout()
-    content_text = QLabel()
-    content_text.setText(bodyText)
-    content_text.setStyleSheet(style.BASIC_APPLICATION_TEXT)
-    content_text.setWordWrap(True)
-    content_layout.addWidget(content_text)
-    popup.setLayout(content_layout)  # TODO: create a body of text to show every warning that occurred. What if lots happened?
-    # Execute the popup and get the result
-    result = popup.exec()
-    print("message dialog exibido. Resultado é " + str(result))
-
-
-def show_error_processing_user_story_message_dialog():
-    show_message_dialog(
-        "The User Story is ",
-        QMessageBox.Information,
-        [
-            [AtMenuButton("Yes"), QMessageBox.YesRole],
-            [AtMenuButton("No"), QMessageBox.NoRole],
-            [AtMenuButton("Cancel"), QMessageBox.RejectRole],
-        ],
-        "Body text content 2"
-    )
-    # # Create a QMessageBox instance
-    # popup = QMessageBox()
-    # popup.setWindowTitle("User Story Analysis Error")
-    # popup.setText("The User Story is ")
-    # popup.setIcon(QMessageBox.Information)
-    #
-    # # Add buttons to the popup
-    # # popup.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-    # # popup.setDefaultButton(QMessageBox.Ok)
-    #
-    # # Add custom buttons
-    # yes_button = AtMenuButton("Yes")
-    # popup.addButton(yes_button, QMessageBox.YesRole)
-    #
-    # no_button = AtMenuButton("No")
-    # popup.addButton(no_button, QMessageBox.NoRole)
-    #
-    # cancel_button = AtMenuButton("Cancel")
-    # popup.addButton(cancel_button, QMessageBox.RejectRole)
-    #
-    # # Execute the popup and get the result
-    # result = popup.exec()
-    # print("message dialog exibido")

@@ -5,6 +5,8 @@ from assets.ui.windows.specify_equiv_class.specify_equiv_classes_page import Spe
 import schedule
 import time
 
+from assets.ui.windows.user_story_page import InsertUserStoryWidget
+
 
 class PageManager:
     main_ui = None
@@ -75,7 +77,8 @@ class PageManager:
         InsertMethodsInfoWidget.methods = get_methods_from_test_cases(test_cases)
         InsertMethodsInfoWidget.show_converting_success(
             test_cases,
-            lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.methods)
+            lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.methods),
+            lambda: PageManager.show_insert_user_story()
         )
 
     @staticmethod
@@ -96,3 +99,7 @@ class PageManager:
     @staticmethod
     def set_logo_visibility(is_visible):
         PageManager.instance.main_ui.logo.setVisible(is_visible)
+
+    @staticmethod
+    def show_insert_user_story():
+        PageManager.instance.show_page(InsertUserStoryWidget.position, "USER_STORY")

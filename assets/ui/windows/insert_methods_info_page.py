@@ -66,7 +66,7 @@ class InsertMethodsInfoWidget:
     content = None
 
     @staticmethod
-    def get_or_start(position=None, visible_content=0):
+    def get_or_start(do_to_go_back, position=None, visible_content=0):
 
         # InsertMethodsInfoWidget._setup_basic_content()
         InsertMethodsInfoWidget.content = QStackedWidget()
@@ -78,19 +78,15 @@ class InsertMethodsInfoWidget:
         if InsertMethodsInfoWidget.position is not None:
             return InsertMethodsInfoWidget.instance
         InsertMethodsInfoWidget.position = position
-        InsertMethodsInfoWidget.instance = InsertMethodsInfoWidget._setup_basic_content(lambda: None)
+        InsertMethodsInfoWidget.instance = InsertMethodsInfoWidget._setup_basic_content(lambda: None, do_to_go_back)
         InsertMethodsInfoWidget.methods_choice = []
         InsertMethodsInfoWidget.methods_crud = []
         return InsertMethodsInfoWidget.instance
 
-    # @staticmethod
-    # def set_page_visible():
-    #     if InsertMethodsInfoWidget.visible_content == 0:
-
     @staticmethod
-    def _setup_basic_content(do_to_show_next_page):
+    def _setup_basic_content(do_to_show_next_page, do_to_go_back):
         InsertMethodsInfoWidget.content.addWidget(InsertMethodsInfoWidget.get_basic_content())
-        content_widget = InsertMethodsInfoWidget.success_content_widget([], do_to_show_next_page)
+        content_widget = InsertMethodsInfoWidget.success_content_widget([], do_to_show_next_page, do_to_go_back)
         InsertMethodsInfoWidget.content.addWidget(content_widget)
         InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(
             content_widget)
@@ -145,14 +141,14 @@ class InsertMethodsInfoWidget:
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX)
 
     @staticmethod
-    def show_converting_success(methods, do_to_show_next_page):
+    def show_converting_success(methods, do_to_show_next_page, do_to_go_back):
         # if the content already exists, remove to add it again
         if InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX != -1:
             converting_success_widget = InsertMethodsInfoWidget.content.widget(
                 InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX)
             InsertMethodsInfoWidget.content.removeWidget(converting_success_widget)
         # initialize the content
-        widget = InsertMethodsInfoWidget.success_content_widget(methods, do_to_show_next_page)
+        widget = InsertMethodsInfoWidget.success_content_widget(methods, do_to_show_next_page, do_to_go_back)
         InsertMethodsInfoWidget.content.addWidget(widget)
         InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
         # set as active content
@@ -439,7 +435,7 @@ class InsertMethodsInfoWidget:
         return widget
 
     @staticmethod
-    def success_content_widget(methods, do_to_show_next_page):
+    def success_content_widget(methods, do_to_show_next_page, do_to_go_back):
         widget = QWidget()
         content_layout = QVBoxLayout()
         # Set spacing
@@ -481,7 +477,8 @@ class InsertMethodsInfoWidget:
         content_layout.addItem(spacing)
 
         # Bottom bar
-        content_layout.addLayout(InsertMethodsInfoWidget.setup_success_content_bottom_buttons(do_to_show_next_page))
+        content_layout.addLayout(InsertMethodsInfoWidget.setup_success_content_bottom_buttons(
+            do_to_show_next_page, do_to_go_back))
 
         widget.setLayout(content_layout)
         return widget
@@ -513,7 +510,7 @@ class InsertMethodsInfoWidget:
         return method_crud
 
     @staticmethod
-    def setup_success_content_bottom_buttons(do_to_show_next_page):
+    def setup_success_content_bottom_buttons(do_to_show_next_page, do_to_go_back):
         # Bottom button bar
         bottom_button_bar_layout = QHBoxLayout()
         spacing = QSpacerItem(20, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -523,7 +520,7 @@ class InsertMethodsInfoWidget:
                 text="Go Back",
                 # height=30,
                 minimum_width=100,
-                do_when_clicked=lambda: print("Voltando para onde estávamos antes"),
+                do_when_clicked=do_to_go_back,
                 btn_color=color.BOTTOM_NAVIGATION_BACKWARD
             )
         )
