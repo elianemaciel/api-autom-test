@@ -66,7 +66,7 @@ class AtMenuButton(QPushButton):
         self.clicked.connect(do_when_clicked)
 
     def toggle_active(self, is_active):
-        print("toggle_active: " + str(is_active) + " ID: " + self.id)
+        # print("toggle_active: " + str(is_active) + " ID: " + self.id)
         self.is_active = is_active
         self.set_style(
             self.text_padding,
@@ -81,7 +81,7 @@ class AtMenuButton(QPushButton):
         )
 
     def toggle_clickable(self, is_clickable):
-        print("toggle_clickable: " + str(is_clickable) + " ID: " + self.id)
+        # print("toggle_clickable: " + str(is_clickable) + " ID: " + self.id)
         self.is_clickable = is_clickable
         self.setEnabled(is_clickable)
         self.set_style(

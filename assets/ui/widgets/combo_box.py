@@ -28,6 +28,6 @@ class CustomComboBox(QComboBox):
 
     def handle_index_change(self, index):
         if index != self.curr_index:
-            print("handle_index_change: " + str(index))
+            # print("handle_index_change: " + str(index))
             self.do_after_set_index(index)
             self.curr_index = index

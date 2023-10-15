@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QTextEdit, QHBoxLayout
 
-from assets import StandardPlnRepository
+from assets.repository import StandardPlnRepository
 from assets.AutomTestException import AutomTestException
 from assets.ui.util import style
 from assets.ui.widgets.dialog.warning_errors_list_dialog import WarningErrorsListDialog
@@ -74,7 +74,6 @@ class InsertUserStoryWidget:
 
 def submit_user_story(user_story_data, do_to_show_insert_methods_info_success):
     # Aqui teremos a lógica de recuperar o campo com os dados do user story
-    print("User story recebido: " + user_story_data)
     # E, em seguida, passamos para um repository responsável por enviar pro backend processar esse dado
     try:
         methods, warnings = StandardPlnRepository.send_user_story(user_story_data)

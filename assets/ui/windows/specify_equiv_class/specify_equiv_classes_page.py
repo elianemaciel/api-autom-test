@@ -85,7 +85,7 @@ class SpecifyEquivClassesWidget:
         SpecifyEquivClassesWidget.LIST_EQUIV_CLASS_CONTENT_INDEX = SpecifyEquivClassesWidget.content.indexOf(widget)
         # set as active content
         SpecifyEquivClassesWidget.content.setCurrentIndex(SpecifyEquivClassesWidget.LIST_EQUIV_CLASS_CONTENT_INDEX)
-        print("definido show_list_equiv_class_content com sucesso. Index:" + str(SpecifyEquivClassesWidget.LIST_EQUIV_CLASS_CONTENT_INDEX))
+        # print("definido show_list_equiv_class_content com sucesso. Index:" + str(SpecifyEquivClassesWidget.LIST_EQUIV_CLASS_CONTENT_INDEX))
 
     @staticmethod
     def show_help_content():
@@ -171,6 +171,8 @@ class SpecifyEquivClassesWidget:
     def _create_equiv_class_content_widget(method, equiv_class, is_edit, keep_combo_box):
         if method is None:
             method = SpecifyEquivClassesWidget.methods[0][0]
+        if equiv_class is None:
+            equiv_class = TestSet("", None, None)#name, numberOfCases,experctedRange...
 
         page = QWidget()
         content_layout = QVBoxLayout()
@@ -238,7 +240,7 @@ class SpecifyEquivClassesWidget:
         num_test_cases_line_edit = QLineEdit()
         num_test_cases_line_edit.setStyleSheet(text_edit_stylesheet)
         num_test_cases_line_edit.setFixedHeight(40)
-        num_test_cases_line_edit.setText(equiv_class.number_of_cases if equiv_class else "")
+        num_test_cases_line_edit.setText(equiv_class.number_of_cases if equiv_class.number_of_cases else "")
         numeric_return_layout.addWidget(num_test_cases_line_edit)
         vertical_scrollable_content_layout.addLayout(numeric_return_layout)
 
@@ -247,7 +249,10 @@ class SpecifyEquivClassesWidget:
             text="Specify Parameters",
             height=40,
             btn_color=color.ADD_NEW_METHOD_BUTTON,
-            do_when_clicked=lambda: (SpecifyEquivClassesWidget.setup_and_call_param_dialog())
+            do_when_clicked=lambda: SpecifyEquivClassesWidget.setup_and_call_param_dialog(
+                equiv_class,
+                equiv_class_name_line_edit.text()
+            )
         ))
 
         # Expected return values-----------------------------------------------------------------------------
@@ -303,10 +308,8 @@ class SpecifyEquivClassesWidget:
                 minimum_width=170,
                 do_when_clicked=lambda: SpecifyEquivClassesWidget.save_and_show_again(
                     SpecifyEquivClassesWidget.methods[SpecifyEquivClassesWidget.combo_box.currentIndex()][0],
-                    SpecifyEquivClassesWidget.methods[SpecifyEquivClassesWidget.combo_box.currentIndex()][1],
                     equiv_class_name_line_edit.text(),
                     num_test_cases_line_edit.text(),
-                    is_edit,
                     equiv_class
                 ),
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD
@@ -323,24 +326,22 @@ class SpecifyEquivClassesWidget:
                 return i
 
     @staticmethod
-    def setup_and_call_param_dialog():
+    def setup_and_call_param_dialog(equiv_class, equiv_class_name):
         curr_method_index = SpecifyEquivClassesWidget.combo_box.currentIndex()
         #TODO: é sempre para um método específico somente
-        if not SpecifyEquivClassesWidget.methods[curr_method_index][1]:
+        if len(equiv_class.ranges) == 0:#TODO: alternativ: ao salvar, apagar info (ponteiro) desse [1]
             param_ranges = []
             for param in SpecifyEquivClassesWidget.methods[curr_method_index][0].params:
                 param_ranges.append(ParamRange(param))
-            SpecifyEquivClassesWidget.methods[curr_method_index][1] = param_ranges
-
+            equiv_class.ranges = param_ranges
         params_dialog = EquivalenceClassParamsDialog(
-            SpecifyEquivClassesWidget.methods[curr_method_index][1],
-            equiv_class_name="valid_input")
+            equiv_class.ranges, equiv_class_name=equiv_class_name)#TODO: mandar o nome real da equiv class
         params_dialog.exec_()
-        SpecifyEquivClassesWidget.methods[curr_method_index][1] = params_dialog.current_param_range_list
+        equiv_class.ranges = params_dialog.current_param_range_list
         params_dialog.deleteLater()
 
     @staticmethod
-    def save_and_show_again(method, equiv_class_param_ranges, equiv_class_name, num_test_cases, is_edit, equiv_class):
+    def save_and_show_again(method, equiv_class_name, num_test_cases, equiv_class):
         #todo: verify fields and show popup error in case it's not all set
 
         # update methods info
@@ -351,9 +352,7 @@ class SpecifyEquivClassesWidget:
             equiv_class.name = equiv_class_name
             equiv_class.number_of_cases = num_test_cases
             equiv_class.expected_range = return_range
-        equiv_class.clear_params()
-        for equiv_class_param_range in equiv_class_param_ranges:
-            equiv_class.add_param_range(equiv_class_param_range)#TODO: assert data validity
+        #TODO: assert data validity
         method.add_or_update_testset(equiv_class)
         # update method list
         index = SpecifyEquivClassesWidget.find_index_by_method(method)
@@ -414,14 +413,15 @@ class SpecifyEquivClassesWidget:
                 """)
                 method_layout.addWidget(label)
                 method_layout.addWidget(ParamRangeAddButton(
+                    equiv_class=equiv_class,
                     id=SpecifyEquivClassesWidget.find_index_by_method(method[0]),
                     text="Edit",
                     height=40,
                     minimum_width=100,
                     maximum_width=100,
                     btn_color=color.EDIT_BUTTON,
-                    do_when_clicked=lambda i: SpecifyEquivClassesWidget.show_create_equiv_class_content(
-                        SpecifyEquivClassesWidget.methods[i][0], equiv_class, True)
+                    do_when_clicked=lambda i, eq_class: SpecifyEquivClassesWidget.show_create_equiv_class_content(
+                        SpecifyEquivClassesWidget.methods[i][0], eq_class, True)
                 ))
                 item_layout.addLayout(method_layout)
 

@@ -16,9 +16,12 @@ class MethodChoice(QHBoxLayout):
         self.method_info = method
         self.addWidget(self.item_checkbox)
         # Text label with info
+        parameters = ", ".join(str(item) for item in self.method_info.parameters) if self.method_info.parameters else ""
         item_description = QLabel(
-            "<html><b>Método:</b> " + self.method_info.method + "<br> <b>Parâmetros:</b>" + "disciplina, periodoLetivo, "
-                                                                           "turma, notas, desistentes" + " </html>")
+            "<html>"
+            + "<b>Method:</b> " + self.method_info.method
+            + "<br><b>Parameters:</b> " + parameters
+            + " </html>")
         item_description.setStyleSheet("""
                                QLabel {
                                    border-radius: 10px; 

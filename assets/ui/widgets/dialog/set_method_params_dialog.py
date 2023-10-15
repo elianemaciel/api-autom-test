@@ -1,10 +1,8 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QSpacerItem, QSizePolicy, QScrollArea, QWidget, \
-    QTextEdit
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QSpacerItem, QSizePolicy, QScrollArea, QWidget
 
 from assets.components import Parameter
 from assets.ui.util import color
-from assets.ui.widgets.combo_box import CustomComboBox
 from assets.ui.widgets.menu_button import AtMenuButton
 from assets.ui.widgets.param_edit_item import ParamEditItem
 
@@ -71,7 +69,7 @@ class MethodParamsDialog(QDialog):
                     if self.current_params_list[i].identifier is item.get_param().identifier:
                         self.current_params_list[i] = item.get_param()
                         break
-                print(item)
+                # print(item)
                 item.layout().deleteLater()
 
         scrollContent = QWidget(self.scroll)
@@ -83,7 +81,7 @@ class MethodParamsDialog(QDialog):
             scrollLayout.addLayout(self.build_param_item(item))
 
     def build_param_item(self, param):
-        print("Building param:" + param.name)
+        # print("Building param:" + param.name)
         return ParamEditItem(
             param,
             do_when_remove_is_clicked=lambda: (

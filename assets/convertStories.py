@@ -1,5 +1,6 @@
 import re
 import warnings
+import sys
 from enum import Enum
 
 import pt_core_news_md
@@ -43,8 +44,8 @@ def getAcceptanceCriterias(story):
         acceptanceCriterias = []
         given,when,then = None, None,None
         for itr, line in enumerate(story):
-            if re.match(r"dado que",line.lower()):
-                given = definePremise(story,itr)
+            if re.match(r"dado que",line.lower()):#TODO: considerando, considerando que, se, se é verdade que
+                given = definePremise(story,itr)#TODO: colocar o verbo no infinitivo sempre "dado que eu esteha cadastrando as notas finais dos alunos: cadastrarNotasFinaisAlunos
             elif re.match(r"quando",line.lower()):
                 when = defineAction(story,itr)
             elif re.match(r"então",line.lower()):
@@ -53,17 +54,20 @@ def getAcceptanceCriterias(story):
                 given,when,then = None, None,None
         return acceptanceCriterias
     except Exception as e:
+        print(e.__traceback__)
         raise AutomTestException(e, "Unable to get acceptance criteria in user story")
 
-def validateContent(returnedStory):
+
+def validateHasContent(returnedStory):
     if(len(returnedStory) >=1 and returnedStory[0] != ''):
         return True
     return False
 
+
 def defineTestsFromStories(returnedStory):#TODO: este método, ao invés de levantar uma exception, trata a exception e retorna uma mensagem
     testCases = []
     warningsFromAccCriteria = []
-    if validateContent(returnedStory):
+    if validateHasContent(returnedStory):
         descriptionStory, acceptanceCriterias = definePartsStory(createArrayStory(returnedStory))
         if acceptanceCriterias:
             testCases, warningsFromAccCriteria = defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias)
@@ -86,12 +90,15 @@ def defineClassForTests(testCases, feature):
     except Exception as e:
         raise AutomTestException(e, "Error when defining class for tests")
 
+
 def treatFeature(feature):
     if feature is None or feature == '': return None
     return ''.join([str(p) for p in unidecode(feature.title()) if p.isalpha() or p.isalnum()])
 
+
 def createArrayStory(story):
-    return str.split(story,"\n")
+    return str.split(story, "\n")
+
 
 def defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias):
     successTestCases = []#TODO: implementar e testar substituir o param
@@ -126,6 +133,7 @@ def addPremissToTest(testCases, premiss):
             return testCases
     testCases.append(TestCase(None,premiss,None))
     return testCases
+
 
 def addParameterToTest(testCases, parameter, premiss):
     if premiss is None or len(parameter) == 0:
@@ -168,6 +176,7 @@ def getPremiseFromPhrase(phrase):
     if validateValidatorScenario(doc):
         return createMethodValidateScenario(doc)
     return createTestTitle(verifyImperative(phrase))
+
 
 def verifyImperative(phrase):
     phrase = searchKeyGiven(phrase)
@@ -213,7 +222,7 @@ def verifyTagField(doc):
 def getLinesField(story):
     fields = []
     for iter,x in enumerate(story):
-        if (not verifyFields(x) and not re.match("e",x.lower())):
+        if not verifyFields(x) and not re.match("e", x.lower()):
             continue
         TratedFields = getArrayFields(x)
         if TratedFields:
@@ -274,7 +283,9 @@ def existsMultipleFieldsBetweenComma(field):
 def getVerbAndTagsFields(doc):
     for itr,word in enumerate(doc):
         #é necessário colocar o selecione po uma limitação do spacy
-        if word.lemma_ in ["enviar","preencher","salvar", "selecionar", "selecione", "informar","digitar","guardar","inserir"]:
+        if word.lemma_ in ["enviar", "preencher", "salvar", "selecionar", "selecione", "informar", "digitar", "guardar",
+                           "inserir"]:
+        #if word.pos_ == "VERB":
             if len(doc) > itr+1 and doc[itr+1].pos_ in ["NOUN","PRON","DET","NUM"]:
                 return "{} {}".format(word.text,doc[itr+1].text)
     return None
@@ -430,7 +441,7 @@ def searchKeysFeature(line):
 
 def nlpFeature(phrase):
     doc = nlp(phrase)
-    for itr,word in enumerate(doc):
+    for itr, word in enumerate(doc):
         if word.pos_ == 'VERB':
             return getNounAfterVerbFeature(doc[itr:])
     return phrase.strip()
@@ -439,7 +450,7 @@ def getNounAfterVerbFeature(doc):
     nouns = ''
     for word in doc:
         if word.pos_ in ['NOUN', 'ADJ']:
-            if word.lemma_ not in ["válido","inválido","incorreto","vazio"]:
+            if word.lemma_ not in ["válido", "inválido", "incorreto", "vazio"]:
                 nouns = nouns + ' ' + word.text
         elif word.pos_ in ["DET"]:
             continue

@@ -9,6 +9,7 @@ from assets.ui.widgets.menu_button import AtMenuButton
 class ParamRangeAddButton(AtMenuButton):
     def __init__(
             self,
+            equiv_class,
             id="",
             text="",
             height=50,
@@ -25,6 +26,7 @@ class ParamRangeAddButton(AtMenuButton):
             do_when_clicked=None
     ):
         super().__init__(id, text, height, minimum_width, maximum_width, text_padding, font_size, border_radius,
-                         text_color, btn_color, btn_hover, btn_pressed, is_active, True, lambda: do_when_clicked(id))
+                         text_color, btn_color, btn_hover, btn_pressed, is_active, True, lambda: do_when_clicked(id, equiv_class))
+        print("id é " + str(id))
 
 
