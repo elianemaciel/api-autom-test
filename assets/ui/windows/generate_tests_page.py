@@ -1,16 +1,16 @@
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QFileDialog, QHBoxLayout, \
     QTextEdit
-import os
 
+from assets.generator import generate_tests
 from assets.ui.util import style, color
 from assets.ui.widgets.menu_button import AtMenuButton
+from assets.ui.windows.specify_equiv_class.specify_equiv_classes_page import SpecifyEquivClassesWidget
 
 
 class GenerateTestsWidget:
     position = None
     instance = None
+    # methods = []
 
     @staticmethod
     def get_or_start(position=None):
@@ -100,6 +100,11 @@ class GenerateTestsWidget:
             print("Invalid Location")
         else:
             print("Generating tests in selected location")
+            for i in range(0, len(SpecifyEquivClassesWidget.methods)):
+                method = SpecifyEquivClassesWidget.methods[i][0]
+                for testset in method.testsets:
+                    testset.number_of_cases = int(testset.number_of_cases)
+                generate_tests(method, file_path=location)
 
     @staticmethod
     def select_location(about_page):

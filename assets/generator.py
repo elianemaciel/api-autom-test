@@ -213,8 +213,9 @@ def test_content( MUT, test_set_name, cont, testset_position ):
 	return content
 
 
-def generate_tests(MUT):
-	testfile = open(MUT.class_name + 'Test.java', 'a+')
+def generate_tests(MUT, file_path=''):
+	file_location = file_path + ('' if file_path.endswith('/') else '/') + MUT.class_name + 'Test.java'
+	testfile = open(file_location, 'a+')
 	testfile.seek(0)
 	previous = testfile.readlines()
 
