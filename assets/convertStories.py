@@ -1,4 +1,5 @@
 import re
+import traceback
 import warnings
 import sys
 from enum import Enum
@@ -34,27 +35,42 @@ class AcceptanceCriteria:
         self.when = when
         self.then = then
 
+    def __str__(self):
+        return "<Acceptance Criteria - given: [" + self.given + "] when: [" + self.when + "] then: [" + self.then + "]>"
+
 class TagsAcceptance(Enum):
     GIVEN = 1
     WHEN = 2
     THEN = 3
+
 
 def getAcceptanceCriterias(story):
     try:
         acceptanceCriterias = []
         given,when,then = None, None,None
         for itr, line in enumerate(story):
-            if re.match(r"dado que",line.lower()):#TODO: considerando, considerando que, se, se é verdade que
-                given = definePremise(story,itr)#TODO: colocar o verbo no infinitivo sempre "dado que eu esteha cadastrando as notas finais dos alunos: cadastrarNotasFinaisAlunos
-            elif re.match(r"quando",line.lower()):
-                when = defineAction(story,itr)
-            elif re.match(r"então",line.lower()):
-                then = defineOutcome(story,itr)
-                acceptanceCriterias.append(AcceptanceCriteria(given, when, then))
-                given,when,then = None, None,None
-        return acceptanceCriterias
+            try:
+                if re.match(r"dado que", line.lower()):  # TODO: considerando, considerando que, se, se é verdade que
+                    given = definePremise(story,itr)  # TODO: colocar o verbo no infinitivo sempre "dado que eu esteja cadastrando as notas finais dos alunos": cadastrarNotasFinaisAlunos
+                elif re.match(r"quando", line.lower()):
+                    when = defineAction(story, itr)
+                elif re.match(r"então", line.lower()):
+                    then = defineOutcome(story, itr)
+                    # if given and when and then:
+                    acceptanceCriterias.append(AcceptanceCriteria(given, when, then))
+                    given, when, then = None, None, None
+            except:
+                print("Um erro ocorreu ao tratar a linha <" + line + ">")
+                # traceback.print_exc()
+                continue
+        filteredAccCriteria = []
+        for acc in acceptanceCriterias:
+            if acc.given and acc.when and acc.then:
+                filteredAccCriteria.append(acc)
+        print("filtered acc criteria: " + filteredAccCriteria.__str__())
+        return filteredAccCriteria
     except Exception as e:
-        print(e.__traceback__)
+        traceback.print_exc()
         raise AutomTestException(e, "Unable to get acceptance criteria in user story")
 
 
@@ -76,7 +92,9 @@ def defineTestsFromStories(returnedStory):#TODO: este método, ao invés de leva
         for test in testCases:
             print(test.className, test.method, test.parameters)
     else:
-        raise AutomTestException(message="Please insert the user story first")
+        message = "Please insert the user story first"
+        print(message)
+        raise AutomTestException(message=message)
     return testCases, warningsFromAccCriteria
 
 
@@ -119,6 +137,7 @@ def defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias):
                     for parameter in a.then.parameters:
                         testCases = addParameterToTest(testCases, parameter,a.then.premiss if a.then.premiss != None else a.when.premiss if a.when.premiss != None else a.given.premiss)
         except Exception as e:
+            traceback.print_exc()
             error_message = "Error when extracting data from the following acceptance criterion: " + a
             warnings.warn(error_message + e)
             errorAccCriteria.append(error_message)
@@ -172,10 +191,13 @@ def definePremise(story,itr):
 
 
 def getPremiseFromPhrase(phrase):
-    doc = nlp(phrase)
-    if validateValidatorScenario(doc):
-        return createMethodValidateScenario(doc)
-    return createTestTitle(verifyImperative(phrase))
+    try:
+        doc = nlp(phrase)
+        if validateValidatorScenario(doc):
+            return createMethodValidateScenario(doc)
+        return createTestTitle(verifyImperative(phrase))
+    except Exception as e:
+        traceback.print_exc()
 
 
 def verifyImperative(phrase):
@@ -221,13 +243,13 @@ def verifyTagField(doc):
 
 def getLinesField(story):
     fields = []
-    for iter,x in enumerate(story):
+    for iter, x in enumerate(story):
         if not verifyFields(x) and not re.match("e", x.lower()):
             continue
         TratedFields = getArrayFields(x)
         if TratedFields:
             fields.extend(TratedFields)
-        if len(story) > iter+1 and validateEndOfBlock(story[iter+1]):
+        if len(story) > iter + 1 and validateEndOfBlock(story[iter + 1]):
             break
     return treatFields(fields)
 

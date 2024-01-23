@@ -22,6 +22,7 @@ def get_methods_from_test_cases(test_cases):
         if isinstance(test_case, Method):
             methods.append(test_case)
         else:
+            #method = Method(name=test_case.method_info, class_name=test_case.className)
             method = Method(name=test_case.method, class_name=test_case.className)
             if test_case is not None and test_case.parameters is not None:
                 for param in test_case.parameters:

@@ -6,8 +6,10 @@ import assets.layout as layout
 def removeUnselectedMethods(testCases, vals3):
     selectedTests = [key for key,value in vals3.items() if value == True]
     return [test for test in testCases if test.method in selectedTests]
+    # return [test for test in testCases if test.method_info in selectedTests]
 
 def generateTest(test,home):
+    # return filltestsMUT(MethodInformation(test.className, '', test.method_info, test.parameters, ''))
     return filltestsMUT(MethodInformation(test.className, '', test.method, test.parameters,''))
 
 def defineTestsFromExtractedStories(MUT, testCases, home, testeAtual, totalTestes ):

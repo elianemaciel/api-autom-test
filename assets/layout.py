@@ -116,12 +116,14 @@ def newLayoutConjuntosTeste(MUT):
 
 def line_frame(index,test):
     frame_layout = [
+        # [sg.Text('Method: {}'.format(test.method_info))],
         [sg.Text('Method: {}'.format(test.method))],
 		[sg.Text('Parameters: {}'.format(', '.join(p for p in test.parameters) if test.parameters is not None else '-'))],
     ]
 	
     layout = [
 		[sg.Checkbox('', enable_events=True, key=f'{test.method}', default=True),
+		# [sg.Checkbox('', enable_events=True, key=f'{test.method_info}', default=True),
         sg.Frame('', frame_layout, pad=((0, 5), (0, 10)), border_width=0, relief=sg.RELIEF_FLAT,)],
     ]
     return sg.Frame('', layout, pad=((0, 5), 0,), border_width=0)

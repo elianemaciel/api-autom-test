@@ -16,7 +16,9 @@ class PageManager:
         PageManager.main_ui = main_ui
         PageManager.instance = self
 
-        job_thread = threading.Thread(target=PageManager.schedule_buttons_states)
+        scheduler_thread = schedule.Scheduler()
+        job_thread = threading.Thread(target=PageManager.schedule_buttons_states, args=(scheduler_thread,))
+        job_thread.setDaemon(True)
         job_thread.start()
 
     @staticmethod
@@ -34,24 +36,29 @@ class PageManager:
     @staticmethod
     def toggle_buttons_state():
         for btn in PageManager.instance.main_ui.menu_buttons:
-            is_clickable = True
-            if btn.id == "EQUIV_CLASSES":
-                is_clickable = len(InsertMethodsInfoWidget.methods) > 0
-            elif btn.id == "TESTS":
-                is_clickable = SpecifyEquivClassesWidget.has_any_equiv_class()
-            # print(btn.id + " > " + str(is_clickable))
-            if not btn.is_clickable == is_clickable:
-                btn.toggle_clickable(is_clickable)
+            try:
+                is_clickable = True
+                if btn.id == "EQUIV_CLASSES":
+                    is_clickable = len(InsertMethodsInfoWidget.methods) > 0
+                elif btn.id == "TESTS":
+                    is_clickable = SpecifyEquivClassesWidget.has_any_equiv_class()
+                # print(btn.id + " > " + str(is_clickable))
+                if not btn.is_clickable == is_clickable:
+                    btn.toggle_clickable(is_clickable)
+            except Exception as e:
+                # print("Error while toggling buttons state: ", e)
+                pass
 
     @staticmethod
-    def schedule_buttons_states():
-        schedule.every(1).second.do(PageManager.toggle_buttons_state)
+    def schedule_buttons_states(scheduler_thread):
+        scheduler_thread.every(1).second.do(PageManager.toggle_buttons_state)
         while True:
             try:
-                schedule.run_pending()
-                time.sleep(1)
+                scheduler_thread.run_pending()
             except Exception as e:
-                print("Error while toggling buttons state: ", e)
+                #print("Error while toggling buttons state: ", e)
+                pass
+            time.sleep(1)
 
     @staticmethod
     def show_specify_equiv_classes_start_page(methods):

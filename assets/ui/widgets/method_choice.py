@@ -1,5 +1,7 @@
 from PySide6.QtWidgets import QHBoxLayout, QCheckBox, QLabel
 
+from assets.components import Method
+
 
 class MethodChoice(QHBoxLayout):
     def __init__(self,
@@ -16,11 +18,16 @@ class MethodChoice(QHBoxLayout):
         self.method_info = method
         self.addWidget(self.item_checkbox)
         # Text label with info
-        parameters = ", ".join(str(item) for item in self.method_info.parameters) if self.method_info.parameters else ""
+        if isinstance(self.method_info, Method):
+            parameters = ", ".join(str(item) for item in self.method_info.params) if self.method_info.params else ""
+        else:
+            parameters = ", ".join(str(item) for item in self.method_info.parameters) if self.method_info.parameters else ""
         item_description = QLabel(
             "<html>"
-            + "<b>Method:</b> " + self.method_info.method
+            + "<b>Class:</b> " + (self.method_info.class_name if isinstance(self.method_info, Method) else self.method_info.className)
+            + "<br><b>Method:</b> " + (self.method_info.name if isinstance(self.method_info, Method) else self.method_info.method)
             + "<br><b>Parameters:</b> " + parameters
+            + "<br><b>Return type:</b> " + (self.method_info.output_type if isinstance(self.method_info, Method) else "")
             + " </html>")
         item_description.setStyleSheet("""
                                QLabel {
