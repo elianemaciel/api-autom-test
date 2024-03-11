@@ -152,3 +152,15 @@ class Method:
 			if (element == self.testsets[x].name):
 				self.testsets.remove( self.testsets[x] )
 				break
+
+	def build_from(other_method, name=None, class_name=None, package_name=None, output_type=None, identifier=None, params=None, testsets=None):
+		new_method = Method(
+			name=name if name else other_method.name,
+			class_name=class_name if class_name else other_method.className,
+			package_name=package_name if package_name else other_method.package_name,
+			output_type=output_type if output_type else other_method.output_type,
+			identifier=identifier if identifier else other_method.identifier,
+			params=params if params else other_method.params
+		)
+		new_method.testsets = testsets if testsets else other_method.testsets
+		return new_method

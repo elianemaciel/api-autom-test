@@ -31,7 +31,7 @@ def get_methods_from_test_cases(test_cases):
     return methods
 
 
-def verify_save_and_show_list_page(new_method, do_to_show_next_page):
+def verify_save_and_show_list_page(new_method, do_to_show_next_page, do_to_go_back):
     # TODO: verify
     if InsertMethodsInfoWidget.methods.count(new_method) > 0:
         index = InsertMethodsInfoWidget.methods.index(new_method)
@@ -39,15 +39,15 @@ def verify_save_and_show_list_page(new_method, do_to_show_next_page):
     else:
         InsertMethodsInfoWidget.methods.append(new_method)
 
-    InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.methods, do_to_show_next_page)
+    InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.methods, do_to_show_next_page, do_to_go_back)
 
 
-def do_to_remove_method_item(method, do_to_show_next_page):
+def do_to_remove_method_item(method, do_to_show_next_page, do_to_go_back):
     try:
         InsertMethodsInfoWidget.methods.remove(method)
     except:
         pass
-    InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.methods, do_to_show_next_page)
+    InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.methods, do_to_show_next_page, do_to_go_back)
 
 
 class InsertMethodsInfoWidget:
@@ -65,6 +65,7 @@ class InsertMethodsInfoWidget:
     methods_crud = []
     methods = []
     content = None
+    parametersLayout = None
 
     @staticmethod
     def get_or_start(do_to_go_back, position=None, visible_content=0):
@@ -126,7 +127,7 @@ class InsertMethodsInfoWidget:
         return widget
 
     @staticmethod
-    def show_add_extra_data(test_cases, do_to_show_next_page):
+    def show_add_extra_data(test_cases, do_to_show_next_page, do_to_go_back):
         InsertMethodsInfoWidget.methods = get_methods_from_test_cases(test_cases)
         # if the content already exists, remove to add it again
         if InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX != -1:
@@ -135,7 +136,7 @@ class InsertMethodsInfoWidget:
             InsertMethodsInfoWidget.content.removeWidget(extra_data_widget)
         # initialize the content
         widget = InsertMethodsInfoWidget.add_extra_data_content_widget(InsertMethodsInfoWidget.methods,
-                                                                       do_to_show_next_page)
+                                                                       do_to_show_next_page, do_to_go_back)
         InsertMethodsInfoWidget.content.addWidget(widget)
         InsertMethodsInfoWidget.ADD_EXTRA_DATA_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
         # set as active content
@@ -156,20 +157,20 @@ class InsertMethodsInfoWidget:
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX)
 
     @staticmethod
-    def show_create_or_edit_method(do_to_show_next_page, method=None):
+    def show_create_or_edit_method(do_to_show_next_page, do_to_go_back, method=None):
         # if the content already exists, remove to add it again
         if InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX != -1:
             widget = InsertMethodsInfoWidget.content.widget(
                 InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX)
             InsertMethodsInfoWidget.content.removeWidget(widget)
-        widget = InsertMethodsInfoWidget.create_or_edit_method_content_widget(do_to_show_next_page, method)
+        widget = InsertMethodsInfoWidget.create_or_edit_method_content_widget(do_to_show_next_page, do_to_go_back, method)
         InsertMethodsInfoWidget.content.addWidget(widget)
         InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
         # set as active content
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.CREATE_OR_EDIT_METHOD_CONTENT_INDEX)
 
     @staticmethod
-    def create_or_edit_method_content_widget(do_to_show_next_page, method=None):
+    def create_or_edit_method_content_widget(do_to_show_next_page, do_to_go_back, method=None):
         widget = QWidget()
         content_layout = QVBoxLayout()
         # Set spacing
@@ -233,6 +234,9 @@ class InsertMethodsInfoWidget:
         content_layout.addLayout(method_name)
 
         # Params-----------------------------------------------------------------------------
+        #To be used below (but reference needed in this section)
+        return_type_combo_box = CustomComboBox()
+        #-----------------
         params = QHBoxLayout()
 
         label = QLabel("parameters*:")
@@ -240,6 +244,7 @@ class InsertMethodsInfoWidget:
         params.addWidget(label)
         params.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         scroll = QScrollArea()
+        scroll.setObjectName("scroll-area")
         scroll.setFixedHeight(117)
         scroll.setFixedWidth(420)
         params.addWidget(scroll)
@@ -280,15 +285,27 @@ class InsertMethodsInfoWidget:
             method = Method()
         edit_button_layout = QVBoxLayout()
         edit_button_layout.addItem(QSpacerItem(15, 15, QSizePolicy.Fixed, QSizePolicy.Fixed))
+
         edit_button_layout.addWidget(AtMenuButton(
-            text="Fill\nin\ndata",#todo: if all required fields are set, otherwise "edit data"
+            text="Fill\nin\ndata",  # todo: if all required fields are set, otherwise "edit data"
             minimum_width=70,
             maximum_width=70,
             height=70,
-            do_when_clicked=lambda: InsertMethodsInfoWidget.show_dialog_and_update_with_result(method, do_to_show_next_page)
+            do_when_clicked=lambda: InsertMethodsInfoWidget.show_dialog_and_update_with_result(
+                Method.build_from(
+                    other_method=method,
+                    name=method_name_text_edit.text(),
+                    class_name=class_name_text_edit.text(),
+                    package_name=pkg_name_text_edit.text(),
+                    output_type=return_type_combo_box.currentText()
+                ),
+                do_to_show_next_page,
+                do_to_go_back
+            )
         ))
         edit_button_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         params.addLayout(edit_button_layout)
+        InsertMethodsInfoWidget.parametersLayout = params
 
         content_layout.addLayout(params)
 
@@ -299,17 +316,16 @@ class InsertMethodsInfoWidget:
         method_name.addWidget(label)
         method_name.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
 
-        combo_box = CustomComboBox()
         index = 0
         for i in range(0, len(DATA_TYPES)):
-            combo_box.addItem(DATA_TYPES[i])
+            return_type_combo_box.addItem(DATA_TYPES[i])
             if method is not None and method.output_type == DATA_TYPES[i]:
                 index = i
-        combo_box.setCurrentIndex(index)
+        return_type_combo_box.setCurrentIndex(index)
 
-        combo_box.setFixedWidth(500)
-        combo_box.setFixedHeight(40)
-        method_name.addWidget(combo_box)
+        return_type_combo_box.setFixedWidth(500)
+        return_type_combo_box.setFixedHeight(40)
+        method_name.addWidget(return_type_combo_box)
         content_layout.addLayout(method_name)
 
         # Set spacing----------------------------------------------------------------------------
@@ -345,11 +361,12 @@ class InsertMethodsInfoWidget:
                         Method(name=method_name_text_edit.text(),
                                class_name=class_name_text_edit.text(),
                                package_name=pkg_name_text_edit.text(),
-                               output_type=combo_box.currentText(),
+                               output_type=return_type_combo_box.currentText(),
                                identifier=method.identifier if method is not None else None,
                                params=method.params if (method is not None and method.params is not None) else []
                                ),
-                        do_to_show_next_page)
+                        do_to_show_next_page,
+                        do_to_go_back)
                 ),
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD
             )
@@ -364,8 +381,9 @@ class InsertMethodsInfoWidget:
         widget.setLayout(content_layout)
         return widget
 
+
     @staticmethod
-    def show_dialog_and_update_with_result(method, do_to_show_next_page):
+    def show_dialog_and_update_with_result(method, do_to_show_next_page, do_to_go_back):
         dialog = MethodParamsDialog(method.params, method.name)
         dialog.exec_()
         if dialog.should_update_parent_param_list():
@@ -377,10 +395,14 @@ class InsertMethodsInfoWidget:
             else:
                 InsertMethodsInfoWidget.methods.append(method)
 
-            InsertMethodsInfoWidget.show_create_or_edit_method(do_to_show_next_page, method)
+            InsertMethodsInfoWidget.show_create_or_edit_method(
+                do_to_show_next_page,
+                do_to_go_back,
+                method
+            )
 
     @staticmethod
-    def add_extra_data_content_widget(methods, do_to_show_next_page):
+    def add_extra_data_content_widget(methods, do_to_show_next_page, do_to_go_back):
         widget = QWidget()
         content_layout = QVBoxLayout()
         # Set spacing
@@ -408,14 +430,14 @@ class InsertMethodsInfoWidget:
 
         # add item into the scrollable-list
         for method in methods:
-            scrollLayout.addLayout(InsertMethodsInfoWidget.get_crud_method_item(method, do_to_show_next_page))
+            scrollLayout.addLayout(InsertMethodsInfoWidget.get_crud_method_item(method, do_to_show_next_page, do_to_go_back))
 
         # add a button at the end of scrollable list
         scrollLayout.addWidget(AtMenuButton(
             text="Add a New Method",
             height=40,
             btn_color=color.ADD_NEW_METHOD_BUTTON,
-            do_when_clicked=lambda: InsertMethodsInfoWidget.show_create_or_edit_method(do_to_show_next_page)
+            do_when_clicked=lambda: InsertMethodsInfoWidget.show_create_or_edit_method(do_to_show_next_page, do_to_go_back)
         ))
 
         # Set spacing
@@ -430,7 +452,7 @@ class InsertMethodsInfoWidget:
         # content_layout.addLayout(InsertMethodsInfoWidget.setup_add_extra_data_content_bottom_buttons())
         content_layout.addLayout(BottomButtonsForAddExtraData(
             do_to_show_next_page,
-            lambda: InsertMethodsInfoWidget.show_converting_success(methods, do_to_show_next_page)
+            lambda: InsertMethodsInfoWidget.show_converting_success(methods, do_to_show_next_page, do_to_go_back)
         ))
         widget.setLayout(content_layout)
         return widget
@@ -499,12 +521,13 @@ class InsertMethodsInfoWidget:
         return method_choice
 
     @staticmethod
-    def get_crud_method_item(method, do_to_show_next_page):
+    def get_crud_method_item(method, do_to_show_next_page, do_to_go_back):
         method_crud = MethodCrud(
             method,
             do_when_edit_is_clicked=lambda: InsertMethodsInfoWidget.show_create_or_edit_method(do_to_show_next_page,
+                                                                                               do_to_go_back,
                                                                                                method),
-            do_when_remove_is_clicked=lambda: do_to_remove_method_item(method, do_to_show_next_page)
+            do_when_remove_is_clicked=lambda: do_to_remove_method_item(method, do_to_show_next_page, do_to_go_back)
             # TODO: remover e atualizar lista de métodos. do_when_remove_is_clicked= InsertMethodsInfoWidget.
         )
         InsertMethodsInfoWidget.methods_crud.append(method_crud)
@@ -533,7 +556,8 @@ class InsertMethodsInfoWidget:
                 do_when_clicked=lambda: (
                     InsertMethodsInfoWidget.show_add_extra_data(
                         InsertMethodsInfoWidget.get_selected_methods(),
-                        do_to_show_next_page
+                        do_to_show_next_page,
+                        do_to_go_back
                     ),
                     # self.close() TODO: voltar esta linha à ativa
                 ),

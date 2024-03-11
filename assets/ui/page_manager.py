@@ -92,7 +92,8 @@ class PageManager:
     def show_create_or_edit_method(method=None):
         PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
         InsertMethodsInfoWidget.show_create_or_edit_method(
-            lambda: PageManager.show_specify_equiv_classes_start_page()
+            lambda: PageManager.show_specify_equiv_classes_start_page(),
+            lambda: PageManager.show_insert_user_story()
         )
 
     @staticmethod
@@ -100,7 +101,8 @@ class PageManager:
         InsertMethodsInfoWidget.methods = get_methods_from_test_cases(test_cases)
         InsertMethodsInfoWidget.show_add_extra_data(
             test_cases,
-            lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.methods)
+            lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.methods),
+            lambda: PageManager.show_insert_user_story()
         )
 
     @staticmethod
