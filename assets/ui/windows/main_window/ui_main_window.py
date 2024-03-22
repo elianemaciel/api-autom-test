@@ -46,6 +46,8 @@ class UI_MainWindow(object):
         # Set Central Widget
         parent.setCentralWidget(self.central_frame)
 
+        PageManager.show_page(AboutPageWidget.position, "ABOUT")
+
     def setupContentArea(self):
         content = QFrame()
         content.setStyleSheet("background-color: " + color.BACKGROUND)
@@ -112,18 +114,18 @@ class UI_MainWindow(object):
         left_menu_top_layout.setSpacing(20)
 
         # Buttons:
-        btn_add_user_story = AtMenuButton(
-            id="USER_STORY",
-            text="Insert a User Story",
-            height=63,
-            do_when_clicked=lambda: PageManager.show_page(InsertUserStoryWidget.position, "USER_STORY")
-        )
         btn_about = AtMenuButton(
             id="ABOUT",
             text="About AutomTest",
             height=63,
             do_when_clicked=lambda: PageManager.show_page(AboutPageWidget.position, "ABOUT"),
             is_active=True
+        )
+        btn_add_user_story = AtMenuButton(
+            id="USER_STORY",
+            text="Insert a User Story",
+            height=63,
+            do_when_clicked=lambda: PageManager.show_page(InsertUserStoryWidget.position, "USER_STORY")
         )
         btn_add_methods_info = AtMenuButton(
             id="INSERT_INFO",

@@ -116,7 +116,7 @@ class StringRangeLayout(QVBoxLayout):
                 start_value = item.widget().layout().itemAt(2).layout().itemAt(0).widget().text()
                 end_value = item.widget().layout().itemAt(2).layout().itemAt(2).widget().text()
 
-                if type_combo_selected == "any":
+                if type_combo_selected == "manually specify":
                     range_content_builder += "[" + content_text + "]"
                 else:
                     range_content_builder += "[" + type_combo_selected + "]"
@@ -137,24 +137,28 @@ class StringRangeLayout(QVBoxLayout):
         content_text_edit = QLineEdit()
 
         # type
-        if curr_substr == "sign":
+        if curr_substr == "any character":
             combo_index = 1
-        elif curr_substr == "number":
+        elif curr_substr == "signs":
             combo_index = 2
-        elif curr_substr == "letter":
+        elif curr_substr == "numbers":
             combo_index = 3
-        elif curr_substr == "alphanumeric":
+        elif curr_substr == "letters":
             combo_index = 4
+        elif curr_substr == "numbers/letters":
+            combo_index = 5
         else:
             combo_index = 0
+
         type_layout = QHBoxLayout()
         type_combo_box = CustomComboBox(do_after_set_index=lambda i: run_after_combo_box_index_change(content_text_edit, i))
         type_combo_box.setObjectName("type_combo_box")
-        type_combo_box.addItem("any")
-        type_combo_box.addItem("sign")
-        type_combo_box.addItem("number")
-        type_combo_box.addItem("letter")
-        type_combo_box.addItem("alphanumeric")
+        type_combo_box.addItem("manually specify")
+        type_combo_box.addItem("any character")
+        type_combo_box.addItem("signs")
+        type_combo_box.addItem("numbers")
+        type_combo_box.addItem("letters")
+        type_combo_box.addItem("numbers/letters")
         type_combo_box.setCurrentIndex(combo_index)
         type_layout.addWidget(type_combo_box)
         type_layout.addWidget(AtMenuButton(
@@ -211,7 +215,7 @@ class StringRangeLayout(QVBoxLayout):
             # maximum_width=30,
             font_size=10,
             border_radius=5,
-            text="Remover",
+            text="Remove",
             btn_color=color.REMOVE_BUTTON,
             do_when_clicked=lambda: remove_and_update_view(param_widget)
         ))

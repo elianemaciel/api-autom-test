@@ -14,7 +14,7 @@ class BottomButtonsForAddExtraData(QHBoxLayout):
             AtMenuButton(
                 text="Go Back",
                 # height=30,
-                minimum_width=100,  # TODO: implementar botão voltar
+                minimum_width=100,
                 do_when_clicked=do_to_go_back,
                 btn_color=color.BOTTOM_NAVIGATION_BACKWARD
             )
@@ -22,12 +22,7 @@ class BottomButtonsForAddExtraData(QHBoxLayout):
         self.addWidget(
             AtMenuButton(
                 text="Continue",
-                # height=30,
                 minimum_width=170,
-                # do_when_clicked=lambda: (
-                #     # TODO: carregar specify_equiv_classes
-                #     PageManager.show_specify_equiv_classes_start_page()
-                # ),
                 do_when_clicked=do_to_show_next_page,
                 btn_color=color.BOTTOM_NAVIGATION_FORWARD
             )

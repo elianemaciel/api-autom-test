@@ -16,7 +16,7 @@ class MethodCrud(QHBoxLayout):
         self.method_info = method
 
         # Text label with info
-        item_description = QLabel("<html><b>Método: </b> " + self.method_info.name + "</html>")
+        item_description = QLabel("<html><b>Method: </b> " + self.method_info.name + "</html>")
         item_description.setStyleSheet("""
                                QLabel {
                                    border-radius: 10px; 

@@ -1,9 +1,10 @@
 import os
+import re
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QStackedWidget, QHBoxLayout, \
-    QScrollArea, QLineEdit
+    QScrollArea, QLineEdit, QMessageBox
 
 from assets.components import Method
 from assets.ui.util import style, color
@@ -33,6 +34,15 @@ def get_methods_from_test_cases(test_cases):
 
 def verify_save_and_show_list_page(new_method, do_to_show_next_page, do_to_go_back):
     # TODO: verify
+    validation_result, field = validate_method(new_method)
+    if not validation_result:
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Warning)
+        msg_box.setWindowTitle("Validation Error")
+        msg_box.setText(
+            "Empty mandatory field: " + field + ". Please fill it before saving")
+        msg_box.exec()
+        return
     if InsertMethodsInfoWidget.methods.count(new_method) > 0:
         index = InsertMethodsInfoWidget.methods.index(new_method)
         InsertMethodsInfoWidget.methods[index] = new_method
@@ -49,6 +59,48 @@ def do_to_remove_method_item(method, do_to_show_next_page, do_to_go_back):
         pass
     InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.methods, do_to_show_next_page, do_to_go_back)
 
+
+def validate_methods_and_show_error():
+    valid_result = validate_current_methods()
+    if valid_result is None:
+        return True
+
+    msg_box = QMessageBox()
+    msg_box.setIcon(QMessageBox.Warning)
+    msg_box.setWindowTitle("Validation Error")
+    msg_box.setText("The method \"" + valid_result.name + "\" has empty mandatory (*) fields. Please fix it before continue")
+    msg_box.exec()
+
+
+def validate_valid_string(value):
+    pattern = r'^[a-zA-Z_$][a-zA-Z\d_$]*$'
+    return bool(re.match(pattern, value))
+
+
+def validate_method(method):
+    if not validate_valid_string(method.class_name):
+        return False, "Class Name"
+    if not validate_valid_string(method.name):
+        return False, "Method Name"
+    if method.output_type == '':
+        return False, "Output Type"
+    if len(method.params) == 0:
+        return False, "Parameters"
+    for param in method.params:
+        if not validate_valid_string(param.name):
+            return False, "Parameter name"
+        if param.type_name == '':
+            return False, "Return type of '" + param.name + "'"
+    return True, ''
+
+
+def validate_current_methods():
+    methods = InsertMethodsInfoWidget.methods
+    for method in methods:
+        validation_result, _ = validate_method(method)
+        if not validation_result:
+            return method
+    return None
 
 class InsertMethodsInfoWidget:
     BASIC_CONTENT_INDEX = 0
@@ -338,7 +390,8 @@ class InsertMethodsInfoWidget:
             AtMenuButton(
                 text="List all methods",
                 minimum_width=170,
-                do_when_clicked=lambda: print("Listando todos os métodos novamente"),
+                do_when_clicked=lambda: InsertMethodsInfoWidget.show_add_extra_data(
+                    InsertMethodsInfoWidget.methods, do_to_show_next_page, do_to_go_back),
                 btn_color=color.BOTTOM_NAVIGATION_LIST_ALL
             )
         )
@@ -347,7 +400,8 @@ class InsertMethodsInfoWidget:
             AtMenuButton(
                 text="Go Back",
                 minimum_width=100,
-                do_when_clicked=lambda: print("Voltando para onde estávamos antes"),
+                do_when_clicked=lambda: InsertMethodsInfoWidget.show_add_extra_data(
+                    InsertMethodsInfoWidget.methods, do_to_show_next_page, do_to_go_back),
                 btn_color=color.BOTTOM_NAVIGATION_BACKWARD
             )
         )
@@ -356,7 +410,6 @@ class InsertMethodsInfoWidget:
                 text="Save",
                 minimum_width=100,
                 do_when_clicked=lambda: (
-                    # InsertMethodsInfoWidget.show_add_extra_data(InsertMethodsInfoWidget.get_selected_methods(), do_to_show_next_page),
                     verify_save_and_show_list_page(
                         Method(name=method_name_text_edit.text(),
                                class_name=class_name_text_edit.text(),
@@ -409,9 +462,9 @@ class InsertMethodsInfoWidget:
         spacing = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Fixed)
         content_layout.addItem(spacing)
         # Set header
-        header = QLabel("Insert extra data for each method:" if len(methods) > 0 else "Insert methods based on which "
-                                                                                      "the tests are going to be "
-                                                                                      "created uppon:")
+        header = QLabel("Insert extra data for each method:" if len(methods) > 0 else "Insert methods for "
+                                                                                      "the tests that are going to be "
+                                                                                      "created use:")
         header.setStyleSheet(style.BASIC_APPLICATION_TEXT)
         header.setWordWrap(True)
         content_layout.addWidget(header)
@@ -451,8 +504,11 @@ class InsertMethodsInfoWidget:
         # Bottom bar
         # content_layout.addLayout(InsertMethodsInfoWidget.setup_add_extra_data_content_bottom_buttons())
         content_layout.addLayout(BottomButtonsForAddExtraData(
-            do_to_show_next_page,
-            lambda: InsertMethodsInfoWidget.show_converting_success(methods, do_to_show_next_page, do_to_go_back)
+            lambda: do_to_show_next_page() if validate_methods_and_show_error() else None,
+            lambda: InsertMethodsInfoWidget.show_converting_success(
+                methods,
+                do_to_show_next_page,
+                do_to_go_back)
         ))
         widget.setLayout(content_layout)
         return widget

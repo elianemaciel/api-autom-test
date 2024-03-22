@@ -15,7 +15,7 @@ class MethodParamsDialog(QDialog):
         self.current_params_list = params
 
         self.setStyleSheet("background-color: " + color.BACKGROUND + ";")
-        self.setWindowTitle("Warnings when converting User Story")
+        self.setWindowTitle("Setting Method Params")
         self.layout = QVBoxLayout()
 
         message = QLabel("Define parameters for " + method_name)
