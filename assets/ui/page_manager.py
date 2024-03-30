@@ -29,7 +29,7 @@ class PageManager:
         for btn in PageManager.instance.main_ui.menu_buttons:
             btn.toggle_active(btn.id == id_button)
         if InsertMethodsInfoWidget.position == position:
-            PageManager.show_insert_methods_info_add_extra_data([])
+            PageManager.show_insert_methods_info_add_extra_data()
         PageManager.instance.set_logo_visibility(not id_button == "ABOUT")
         PageManager.main_ui.all_pages.setCurrentIndex(position)
 
@@ -97,10 +97,9 @@ class PageManager:
         )
 
     @staticmethod
-    def show_insert_methods_info_add_extra_data(test_cases):
-        InsertMethodsInfoWidget.methods = get_methods_from_test_cases(test_cases)
+    def show_insert_methods_info_add_extra_data():
         InsertMethodsInfoWidget.show_add_extra_data(
-            test_cases,
+            InsertMethodsInfoWidget.methods,
             lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.methods),
             lambda: PageManager.show_insert_user_story()
         )

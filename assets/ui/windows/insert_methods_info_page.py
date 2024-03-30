@@ -99,6 +99,7 @@ def validate_current_methods():
             return method
     return None
 
+
 class InsertMethodsInfoWidget:
     BASIC_CONTENT_INDEX = 0
     SUCCESS_ON_CONVERTING_CONTENT_INDEX = -1
@@ -137,7 +138,11 @@ class InsertMethodsInfoWidget:
     @staticmethod
     def _setup_basic_content(do_to_show_next_page, do_to_go_back):
         InsertMethodsInfoWidget.content.addWidget(InsertMethodsInfoWidget.get_basic_content())
-        content_widget = InsertMethodsInfoWidget.success_content_widget([], do_to_show_next_page, do_to_go_back)
+        content_widget = InsertMethodsInfoWidget.success_content_widget(
+            InsertMethodsInfoWidget.methods,
+            do_to_show_next_page,
+            do_to_go_back
+        )
         InsertMethodsInfoWidget.content.addWidget(content_widget)
         InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(
             content_widget)
