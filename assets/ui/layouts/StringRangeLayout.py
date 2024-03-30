@@ -1,4 +1,5 @@
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QVBoxLayout, QLabel, QHBoxLayout, QScrollArea, QWidget, QSpacerItem, QSizePolicy, \
     QLineEdit
 
@@ -24,9 +25,11 @@ class StringRangeLayout(QVBoxLayout):
         if is_return:
             label = QLabel("Below, design the pattern of the returning String")
             label.setStyleSheet("font-size: 14px;")
+            self.method_name = 'Return value'
         else:
             label = QLabel("Building String pattern for the parameter <b>" + range_value.param.name + "</b>:")
             label.setStyleSheet("font-size: 14px;")
+            self.method_name = range_value.param.name
         self.addWidget(label)
         param_def_layout = QHBoxLayout()
         self.addLayout(param_def_layout)
@@ -134,7 +137,7 @@ class StringRangeLayout(QVBoxLayout):
         param_widget.setStyleSheet("border-radius: 10px; background-color: " + color.LIGHT_GRAY + ";")
         param_layout = QVBoxLayout()
 
-        content_text_edit = QLineEdit()
+        self.content_text_edit = QLineEdit()
 
         # type
         if curr_substr == "any character":
@@ -151,7 +154,7 @@ class StringRangeLayout(QVBoxLayout):
             combo_index = 0
 
         type_layout = QHBoxLayout()
-        type_combo_box = CustomComboBox(do_after_set_index=lambda i: run_after_combo_box_index_change(content_text_edit, i))
+        type_combo_box = CustomComboBox(do_after_set_index=lambda i: run_after_combo_box_index_change(self.content_text_edit, i))
         type_combo_box.setObjectName("type_combo_box")
         type_combo_box.addItem("manually specify")
         type_combo_box.addItem("any character")
@@ -173,27 +176,33 @@ class StringRangeLayout(QVBoxLayout):
         ))
         param_layout.addLayout(type_layout)
         # content
-        content_text_edit.setObjectName("content_text_edit")
-        content_text_edit.setText(curr_substr if combo_index == 0 else "")
-        content_text_edit.setAlignment(Qt.AlignCenter)
-        param_layout.addWidget(content_text_edit)
+        self.content_text_edit.setObjectName("content_text_edit")
+        self.content_text_edit.setText(curr_substr if combo_index == 0 else "")
+        self.content_text_edit.setAlignment(Qt.AlignCenter)
+        param_layout.addWidget(self.content_text_edit)
         # quantity
         quantity_layout = QHBoxLayout()
-        start_quantity_text_edit = QLineEdit()
-        start_quantity_text_edit.setObjectName("start_quantity_text_edit")
-        start_quantity_text_edit.setStyleSheet(get_line_edit_stylesheet("white"))
-        start_quantity_text_edit.setAlignment(Qt.AlignCenter)
-        start_quantity_text_edit.setText(curr_range_start)
-        quantity_layout.addWidget(start_quantity_text_edit)
+
+        self.start_quantity_text_edit = QLineEdit()
+        self.start_quantity_text_edit.setObjectName("start_quantity_text_edit")
+        self.start_quantity_text_edit.setStyleSheet(get_line_edit_stylesheet("white"))
+        self.start_quantity_text_edit.setAlignment(Qt.AlignCenter)
+        self.start_quantity_text_edit.setText(curr_range_start)
+
+        validator = QIntValidator()
+        self.start_quantity_text_edit.setValidator(validator)
+
+
+        quantity_layout.addWidget(self.start_quantity_text_edit)
         label = QLabel("to")
         label.setStyleSheet("padding:2px; font-family: Arial; font-size: 14px;")
         quantity_layout.addWidget(label)
-        end_quantity_text_edit = QLineEdit()
-        end_quantity_text_edit.setObjectName("end_quantity_text_edit")
-        end_quantity_text_edit.setStyleSheet(get_line_edit_stylesheet("white"))
-        end_quantity_text_edit.setAlignment(Qt.AlignCenter)
-        end_quantity_text_edit.setText(curr_range_end)
-        quantity_layout.addWidget(end_quantity_text_edit)
+        self.end_quantity_text_edit = QLineEdit()
+        self.end_quantity_text_edit.setObjectName("end_quantity_text_edit")
+        self.end_quantity_text_edit.setStyleSheet(get_line_edit_stylesheet("white"))
+        self.end_quantity_text_edit.setAlignment(Qt.AlignCenter)
+        self.end_quantity_text_edit.setText(curr_range_end)
+        quantity_layout.addWidget(self.end_quantity_text_edit)
         param_layout.addLayout(quantity_layout)
 
         bottom_items_layout = QHBoxLayout()
@@ -240,6 +249,42 @@ class StringRangeLayout(QVBoxLayout):
         if direction == "right" and index + 1 < (self.horizontal_scroll_layout.count() - 1):
             index += 1
         self.horizontal_scroll_layout.insertWidget(index, param_widget)
+
+    def validate_fields(self):
+        try:
+            cont = 0
+            for j in range(0, self.horizontal_scroll_layout.count()):
+                item = self.horizontal_scroll_layout.itemAt(j)
+                if isinstance(item, QSpacerItem) or isinstance(item.widget(), QLabel):
+                    continue
+
+                cont += 1
+
+                type_combo_selected = item.widget().layout().itemAt(0).itemAt(0).widget().currentText()
+                content_text = item.widget().layout().itemAt(1).widget().text()
+                start_value = item.widget().layout().itemAt(2).layout().itemAt(0).widget().text()
+                end_value = item.widget().layout().itemAt(2).layout().itemAt(2).widget().text()
+                msg = ''
+
+                if len(start_value) == 0 or len(end_value) == 0:
+                    msg = "Provide a *start* and *end quantity* for every field in every piece of a String pattern"
+                elif int(end_value) < int(start_value):
+                    msg = "*Start quantity* cannot be greater than *end quantity* for any piece of a String pattern"
+                elif type_combo_selected == "manually specify" and len(content_text) == 0:
+                    msg = "Provide a *content* for every 'Manually Specify' field in every piece of a String pattern"
+
+                if msg != '':
+                    return False, self.method_name + ": " + msg
+
+            if cont == 0:
+                msg = 'String pattern cannot be empty'
+                return False, self.method_name + ": " + msg
+
+            return True, ''
+
+        except Exception as e:
+            print("An internal error occurred when getting data range from StringRangeLayout", e)
+            return False, self.method_name + ': An internal error occurred when getting data range. Please, try again.'
 
 
 def remove_and_update_view(widget_to_remove):

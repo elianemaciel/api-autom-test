@@ -1,10 +1,14 @@
+import re
+
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QIntValidator
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QHBoxLayout, QStackedWidget, \
     QLineEdit, QScrollArea
 
 from assets.components import ParamRange, TestSet, Parameter
 from assets.ui.util import style, color
 from assets.ui.widgets.VariableParamClickableButton import VariableParamClickableButton
+from assets.ui.widgets.dialog.validation_error_dialog import ValidationErrorDialog
 from assets.ui.widgets.range_widget.BooleanRangeWidget import BooleanRangeWidget
 from assets.ui.widgets.range_widget.CharRangeWidget import CharRangeWidget
 from assets.ui.widgets.range_widget.DateRangeWidget import DateRangeWidget
@@ -238,6 +242,7 @@ class SpecifyEquivClassesWidget:
         numeric_return_layout.addWidget(label)
         numeric_return_layout.addItem(QSpacerItem(10, 10, QSizePolicy.Minimum, QSizePolicy.Expanding))
         num_test_cases_line_edit = QLineEdit()
+        num_test_cases_line_edit.setValidator(QIntValidator(1, 2147483647))
         num_test_cases_line_edit.setStyleSheet(text_edit_stylesheet)
         num_test_cases_line_edit.setFixedHeight(40)
         num_test_cases_line_edit.setText(equiv_class.number_of_cases if equiv_class.number_of_cases else "")
@@ -278,7 +283,7 @@ class SpecifyEquivClassesWidget:
             type_label_content = "Boolean"
             SpecifyEquivClassesWidget.return_widget = BooleanRangeWidget(return_range)
         elif method.output_type.lower() == 'date':
-            type_label_content = "Date dd/MM/yyyy or dd-MM-yyyy"
+            type_label_content = "Date"
             SpecifyEquivClassesWidget.return_widget = DateRangeWidget(return_range)
 
         label = QLabel("Expected returns (" + type_label_content + "):")
@@ -342,7 +347,30 @@ class SpecifyEquivClassesWidget:
 
     @staticmethod
     def save_and_show_again(method, equiv_class_name, num_test_cases, equiv_class):
-        #todo: verify fields and show popup error in case it's not all set
+        msg = ''
+        if len(equiv_class_name) == 0:
+            msg = "Please provide the equivalence class name"
+        elif len(num_test_cases) == 0:
+            msg = "Please provide the number of test cases to be generated"
+        elif int(num_test_cases) == 0:
+            msg = "Please provide a number os test cases to be generated of at least 1."
+        elif not re.match(r'^[a-zA-Z_$][a-zA-Z\d_$]*$', equiv_class_name):
+            msg = 'Invalid Equivalence class name. Characters allowed: letters, numbers and _. Do not use whitespaces'
+        elif len(equiv_class.ranges) == 0:
+            msg = 'Please specify the parameters range values. Click in "Specify Parameters" for that.'
+        else:
+            is_valid, msg = SpecifyEquivClassesWidget.return_widget.validate_fields()
+            if not is_valid:
+                msg = 'Expected Return: ' + msg
+
+        for r in equiv_class.ranges:
+            if r.v1 == '':
+                msg = 'Please specify the parameters range values. Click in "Specify Parameters" for that.'
+                break
+
+        if msg != '':
+            ValidationErrorDialog(msg).exec_()
+            return
 
         # update methods info
         return_range = SpecifyEquivClassesWidget.return_widget.get_data_as_param_range()

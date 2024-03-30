@@ -16,3 +16,6 @@ class StringRangeWidget(DataRangeWidget):
     def get_data_as_param_range(self):
         content, quantity = self.layout.get_range_data()
         return ParamRange(Parameter('saida_esperada', 'String'), content, quantity)
+
+    def validate_fields(self):
+        return self.layout.validate_fields()

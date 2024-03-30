@@ -10,6 +10,7 @@ from assets.components import Method
 from assets.ui.util import style, color
 from assets.ui.widgets.combo_box import CustomComboBox
 from assets.ui.widgets.dialog.set_method_params_dialog import MethodParamsDialog
+from assets.ui.widgets.dialog.validation_error_dialog import ValidationErrorDialog
 from assets.ui.widgets.menu_button import AtMenuButton
 from assets.ui.widgets.method_choice import MethodChoice
 from assets.ui.widgets.method_crud import MethodCrud
@@ -36,12 +37,8 @@ def verify_save_and_show_list_page(new_method, do_to_show_next_page, do_to_go_ba
     # TODO: verify
     validation_result, field = validate_method(new_method)
     if not validation_result:
-        msg_box = QMessageBox()
-        msg_box.setIcon(QMessageBox.Warning)
-        msg_box.setWindowTitle("Validation Error")
-        msg_box.setText(
-            "Empty mandatory field: " + field + ". Please fill it before saving")
-        msg_box.exec()
+        error_message = "Invalid mandatory field: " + field + ". Please correct it before saving"
+        ValidationErrorDialog(error_message).exec_()
         return
     if InsertMethodsInfoWidget.methods.count(new_method) > 0:
         index = InsertMethodsInfoWidget.methods.index(new_method)
@@ -88,7 +85,7 @@ def validate_method(method):
         return False, "Parameters"
     for param in method.params:
         if not validate_valid_string(param.name):
-            return False, "Parameter name"
+            return False, "Missing parameter name"
         if param.type_name == '':
             return False, "Return type of '" + param.name + "'"
     return True, ''

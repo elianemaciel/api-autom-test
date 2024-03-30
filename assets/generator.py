@@ -93,7 +93,7 @@ def generate_int(v1, v2, v3):
 def generate_decimal_numbers(type_name, v1, v2, v3):
     if (v1 != '' and v2 != '' and v3 != ''):
         a = random.uniform(int(v1), int(v2))
-        vals = v3.replace(" ", "").split(',')
+        vals = v3.replace(" ", "").split('/')
         b = random.randint(0, len(vals))
         if (b == 0):
             if (type_name == 'double'):

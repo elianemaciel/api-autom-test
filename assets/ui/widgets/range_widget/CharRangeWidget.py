@@ -1,3 +1,5 @@
+import re
+
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
 
 from assets.components import Parameter, ParamRange
@@ -40,3 +42,11 @@ class CharRangeWidget(DataRangeWidget):
             self.param_range.v1 = value
             return self.param_range
         return ParamRange(Parameter('saida_esperada', 'char'), value)
+
+    def validate_fields(self):
+        char_line = self.char_line_edit.text()
+        if not re.match(r'^[A-Za-z,]+$', char_line):
+            msg = 'Invalid characters definition: "' + char_line + '"'
+            return False, msg
+
+        return True, ''

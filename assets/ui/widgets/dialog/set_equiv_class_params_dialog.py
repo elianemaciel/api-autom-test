@@ -1,8 +1,10 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QSpacerItem, QSizePolicy, QScrollArea, QWidget
+from PySide6.QtWidgets import QDialog, QVBoxLayout, QLabel, QHBoxLayout, QSpacerItem, QSizePolicy, QScrollArea, QWidget, \
+    QMessageBox
 
 from assets.ui.layouts.StringRangeLayout import StringRangeLayout
 from assets.ui.util import color
+from assets.ui.widgets.dialog.validation_error_dialog import ValidationErrorDialog
 from assets.ui.widgets.menu_button import AtMenuButton
 from assets.ui.widgets.range_widget.BooleanRangeWidget import BooleanRangeWidget
 from assets.ui.widgets.range_widget.CharRangeWidget import CharRangeWidget
@@ -24,7 +26,7 @@ class EquivalenceClassParamsDialog(QDialog):
         self.parent = parent
 
         self.setStyleSheet("background-color: " + color.BACKGROUND + ";")
-        self.setWindowTitle("Set parameter ranges or equivalence class")
+        self.setWindowTitle("Set parameter ranges for equivalence class")
         self.setup_all_view(equiv_class_name, param_ranges)
 
     def setup_all_view(self, equiv_class_name, param_ranges):
@@ -143,16 +145,23 @@ class EquivalenceClassParamsDialog(QDialog):
                 text="Save",
                 height=30,
                 minimum_width=90,
-                do_when_clicked=lambda: (
-                    self.update_current_param_range_list(),
-                    self.close()
-                ),
+                do_when_clicked=lambda: self.validate_and_save(),
                 btn_color=color.POPUP_BOTTOM_BUTTON_OK
             )
         )
         end_spacing = QSpacerItem(10, 10, QSizePolicy.Fixed, QSizePolicy.Minimum)
         bottom_button_bar_layout.addItem(end_spacing)
         self.layout.addLayout(bottom_button_bar_layout)
+
+    def validate_and_save(self):
+        for item in self.range_items:
+            validation_result, error_message = item.validate_fields()
+            if not validation_result:
+                print('Falha ao validar campos: ' + error_message)
+                ValidationErrorDialog(error_message).exec_()
+                return
+        self.update_current_param_range_list()
+        self.close()
 
     def update_current_param_range_list(self):
         # TODO: verify data before saving
