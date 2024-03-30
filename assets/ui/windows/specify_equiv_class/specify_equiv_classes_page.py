@@ -245,7 +245,7 @@ class SpecifyEquivClassesWidget:
         num_test_cases_line_edit.setValidator(QIntValidator(1, 2147483647))
         num_test_cases_line_edit.setStyleSheet(text_edit_stylesheet)
         num_test_cases_line_edit.setFixedHeight(40)
-        num_test_cases_line_edit.setText(equiv_class.number_of_cases if equiv_class.number_of_cases else "")
+        num_test_cases_line_edit.setText(str(equiv_class.number_of_cases) if equiv_class.number_of_cases else "")
         numeric_return_layout.addWidget(num_test_cases_line_edit)
         vertical_scrollable_content_layout.addLayout(numeric_return_layout)
 

@@ -3,6 +3,7 @@ from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QL
 
 from assets.generator import generate_tests
 from assets.ui.util import style, color
+from assets.ui.widgets.dialog.success_generating_tests_dialog import SuccessGeneratingTestsDialog
 from assets.ui.widgets.menu_button import AtMenuButton
 from assets.ui.windows.specify_equiv_class.specify_equiv_classes_page import SpecifyEquivClassesWidget
 
@@ -105,6 +106,7 @@ class GenerateTestsWidget:
                 for testset in method.testsets:
                     testset.number_of_cases = int(testset.number_of_cases)
                 generate_tests(method, file_path=location)
+            SuccessGeneratingTestsDialog().exec_()
 
     @staticmethod
     def select_location(about_page):
