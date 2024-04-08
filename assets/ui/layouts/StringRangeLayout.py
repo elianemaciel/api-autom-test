@@ -198,6 +198,7 @@ class StringRangeLayout(QVBoxLayout):
         label.setStyleSheet("padding:2px; font-family: Arial; font-size: 14px;")
         quantity_layout.addWidget(label)
         self.end_quantity_text_edit = QLineEdit()
+        self.end_quantity_text_edit.setValidator(QIntValidator())
         self.end_quantity_text_edit.setObjectName("end_quantity_text_edit")
         self.end_quantity_text_edit.setStyleSheet(get_line_edit_stylesheet("white"))
         self.end_quantity_text_edit.setAlignment(Qt.AlignCenter)
