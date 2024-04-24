@@ -61,11 +61,11 @@ def mainScreenText():
     return """
 AutomTest is a Test-Driven Development (TDD) test case generator designed for Java, specifically tailored to generate unit tests prior to developing the necessary system methods.
 
-To accomplish this objective, AutomTest requires information about the methods that the system must include, including the data types for each parameter and the expected return values. Armed with this information and by constructing Equivalence Classes, AutomTest can generate the required tests.
+To accomplish this objective, AutomTest requires information about the methods that the system must include, including the data types for each parameter and the expected return values. Armed with that information and by constructing Equivalence Classes, AutomTest can generate the required tests.
 
 Obtaining the necessary method inputs can be achieved through two avenues: either manually inserting the method information or utilizing a User Story that outlines the requirements under test.
 
-To get started, use the options available in the left menu. Choose between:
+To get started, use the options available in the left menu. Start by choosing between:
 
 1. Inserting a User Story
 2. Inserting Method Information manually

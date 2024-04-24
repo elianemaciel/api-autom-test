@@ -9,6 +9,7 @@ from PySide6.QtWidgets import QProgressDialog
 from assets.repository.MultiMethodCatcherRepository import MultiMethodCatcherRepository
 
 lock = threading.Lock()
+while_lock = threading.Lock()
 progress_dialog = None
 llm_execution_thread = None
 
@@ -46,15 +47,21 @@ def run(user_story_txt, language, parent=None):
 def _run_llm(scheduler_thread):
     schedule.every().seconds.do(_update_methods_result_and_percentage)
     # while LLMRepository.get_current_state_percentage() < 100:
-    while method_catcher_repository.get_current_state_percentage() < 100:
-        try:
-            print("running pending")
-            schedule.run_pending()
-        except Exception as e:
-            traceback.print_exc()
-            print("Error while getting extra methods suggestions from user story: " + e.__str__())
-        time.sleep(1)
+    while True:
+        print('entrou no while')
+        with while_lock:
+            print('entrou no while_lock')
+            if method_catcher_repository.get_current_state_percentage() >= 100:
+                break
+            try:
+                print("running pending")
+                schedule.run_pending()
+            except Exception as e:
+                traceback.print_exc()
+                print("Error while getting extra methods suggestions from user story: " + e.__str__())
+            time.sleep(1)
     schedule.clear()
+
 
 def _update_methods_result_and_percentage():
     with lock:

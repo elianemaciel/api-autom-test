@@ -1,15 +1,67 @@
 import json
-import re
 
-import google.generativeai as palm
+from openai import OpenAI
 
 from assets.components import Method
 from assets.repository.LLMRepository import LLMRepository
 from environment import SecretConfig
 
 
+def _extract_methods_from_result(result_json, language):
+    methods = []
+    method_label = 'method' if language == 'en' else 'metodo'
+    returnType_label = 'returnType' if language == 'en' else 'tipoRetorno'
+    className_label = 'className' if language == 'en' else 'nomeClasse'
+    parameters_label = 'parameters' if language == 'en' else 'parametros'
+    name_label = 'name' if language == 'en' else 'nome'
+    type_label = 'type' if language == 'en' else 'tipo'
+    try:
+        data = json.loads(result_json)
+        for method in data:
+            name = method[method_label].strip()
+            return_type = method[returnType_label].lower().strip()
+            class_name = method[className_label] if method[className_label].strip() else ''
+
+            new_method = Method(
+                name=name,
+                class_name=class_name,
+                package_name="",
+                output_type=return_type,
+                params=[])
+
+            for param in method[parameters_label]:
+                param_name = param[name_label].strip()
+                param_type = param[type_label].lower().strip()
+                new_method.add_param_by_arg(param_name, param_type)
+            methods.append(new_method)
+
+    except:
+        print('Erro ao tentar gerar Json a partir do resultado do gpt-3.5-turbo.')
+
+    return methods
+
+
+# def _enrich_llm_request(user_stories):
+#     return 'Use the user story with acceptance critera below to suggest Java methods and class name. Use the following json format:\n' \
+#            '[{\n' \
+#            '    "method": "isMinorAge",\n' \
+#            '   "parameters": [\n' \
+#            '       {\n' \
+#            '           "name": "classCode",\n' \
+#            '           "type": "String"\n' \
+#            '       }\n' \
+#            '   ],\n' \
+#            '    "returnType": "boolean",\n' \
+#            '    "className": "AgeVerifier"\n' \
+#            '},\n' \
+#            '{\n' \
+#            '...\n' \
+#            '}]\n' \
+#            'The user story is this:\n' \
+#            '' + user_stories
+
+
 def _enrich_llm_request(user_stories, language):
-    print('Idioma: ' + language)
     if language == 'en':
         return 'You are an assistant that returns JSON output for the requested input.\n'\
             'Use the user story with acceptance critera below to suggest Java methods and class name.' \
@@ -55,47 +107,14 @@ def _enrich_llm_request(user_stories, language):
                '' + user_stories
 
 
-def _extract_methods_from_result(result_json, language):
-    methods = []
-    method_label = 'method' if language == 'en' else 'metodo'
-    returnType_label = 'returnType' if language == 'en' else 'tipoRetorno'
-    className_label = 'className' if language == 'en' else 'nomeClasse'
-    parameters_label = 'parameters' if language == 'en' else 'parametros'
-    name_label = 'name' if language == 'en' else 'nome'
-    type_label = 'type' if language == 'en' else 'tipo'
-    try:
-        data = json.loads(result_json)
-        for method in data:
-            name = method[method_label].strip()
-            return_type = method[returnType_label].lower().strip()
-            class_name = method[className_label] if method[className_label].strip() else ''
 
-            new_method = Method(
-                name=name,
-                class_name=class_name,
-                package_name="",
-                output_type=return_type,
-                params=[])
-
-            for param in method[parameters_label]:
-                param_name = param[name_label].strip()
-                param_type = param[type_label].lower().strip()
-                new_method.add_param_by_arg(param_name, param_type)
-            methods.append(new_method)
-
-    except:
-        print('Erro ao tentar gerar Json a partir do resultado do Palm.')
-
-    return methods
-
-
-class PalmLlmRepository(LLMRepository):
+class ChatGptTurboRepository(LLMRepository):
 
     def __init__(self):
-        palm.configure(api_key=SecretConfig.API_KEY)
+        self.client = OpenAI(api_key=SecretConfig.OPEN_AI_API_KEY)
 
     def setup(self, user_story, language="pt"):
-        self.isActive = language == "en"
+        self.isActive = True#language == "en"
         super().setup(user_story, language)
 
     def compute_extra_methods(self):
@@ -107,7 +126,17 @@ class PalmLlmRepository(LLMRepository):
 
     def get_methods_from_user_stories(self):
         request = _enrich_llm_request(self.user_story_txt, super().lang)
-        result = palm.generate_text(prompt=request).result
-        print("<Palm>:" + str(result))
-        result_json = result.replace("```json", '').replace('```', '')
+
+        completion = self.client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system",
+                 "content": "You are an assistant that returns JSON output for the requested input"},
+                {"role": "user", "content": request}
+            ]
+        )
+        print("<gpt-3.5-turbo>" + str(completion.choices[0].message.content))
+        result_content = completion.choices[0].message.content
+        result_json = result_content.replace("```json", '').replace('```', '')
+
         return _extract_methods_from_result(result_json, super().lang)

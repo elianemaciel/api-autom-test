@@ -28,18 +28,14 @@ class NlpRepository(MethodCatcherRepository):
         pass
 
     def get_current_state_percentage(self):
-        return (self.curr_retry_number / self.max_retries) * 100
+        return (self.curr_retry_number / self.max_retries) * 100 if self.active else 100
 
     def compute_extra_methods(self):
         if not self.active:
             print("Geração por NLP não está ativa")
             return
-        # self.methods = self.get_methods_from_user_stories()
-        #for i in range(0, self.max_retries):
-        print("entrou em compute_extra_methods")
         if self.curr_retry_number < self.max_retries and self.exceptCount < 3:
             self.curr_retry_number += 1
-            print("executando em compute_extra_methods")
             try:
                 methods, warnings = convertStories.defineTestsFromStories(self.user_story)
                 self.methods.extend(methods)

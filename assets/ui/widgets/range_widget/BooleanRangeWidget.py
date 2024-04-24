@@ -36,3 +36,6 @@ class BooleanRangeWidget(DataRangeWidget):
             self.param_range.v1 = value
             return self.param_range
         return ParamRange(Parameter('saida_esperada', 'boolean'), value)
+
+    def validate_fields(self):
+        return True, ''

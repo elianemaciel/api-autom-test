@@ -18,6 +18,9 @@ class MainWindow(QMainWindow):
         #Setup Main Window
         self.ui = UI_MainWindow()
         self.ui.setup_ui(self)
+        path = os.path.join(os.getcwd(), 'ui/images/logo_icon.png')
+        app_icon = QIcon(path)
+        app.setWindowIcon(app_icon)
 
         #Clicks
         #self.ui.btn_about.clicked.connect(self.show_about_page)

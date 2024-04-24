@@ -70,9 +70,9 @@ class TestSet:
         self.ranges.clear()
 
     def __str__(self):
-        output = self.name + ' (' + str(self.number_of_cases) + ' test cases)\n'
-        output += 'Expected Output Range (' + self.expected_range.param.type_name + '): '
-        output += self.expected_range.v1 + ' ' + self.expected_range.v2 + ' ' + self.expected_range.v3 + '\n'
+        output = str(self.name) + ' (' + str(self.number_of_cases) + ' test cases)\n'
+        output += 'Expected Output Range (' + str(self.expected_range.param.type_name) + '): '
+        output += str(self.expected_range.v1) + ' ' + str(self.expected_range.v2) + ' ' + str(self.expected_range.v3) + '\n'
         c = 1
         for x in self.ranges:
             output += 'Param ' + str(c) + ': ' + x.__str__() + '\n'
@@ -104,6 +104,20 @@ class Method:
     # return self.name == other.name
     # and self.class_name == other.class_name and self.package_name = package_name and self.output_type = output_type and self.params = and self.testsets
 
+    def toJSON(self):
+        parameters = []
+        for param in self.params:
+            parameters.append({
+                "nome": param.name,
+                "tipo": param.type_name
+            })
+        return {
+            "nome": self.name,
+            "nomeClasse": self.class_name,
+            "tipoRetorno": self.output_type,
+            "parametros": [parameters]
+        }
+
     def __str__(self):
         output = ''
 
@@ -114,7 +128,7 @@ class Method:
 
         c = 1
         for x in self.params:
-            output += '\nPARAMETER ' + str(c) + ': ' + x.name + ' ' + x.type_name
+            output += '\nPARAMETER ' + str(c) + ': ' + str(x.name) + ' ' + str(x.type_name)
             c += 1
 
         c = 1
@@ -125,10 +139,16 @@ class Method:
         return output
 
     def add_param_by_arg(self, param_name, type_name=''):
+        if type(param_name) != str or param_name.startswith('['):
+            print('Ignoring invalid param "' + str(param_name) + '"')
+            return
         param = Parameter(param_name, type_name)
         self.params.append(param)
 
     def add_param_by_parameter(self, param):
+        if type(param) != Parameter or param.param_name.startswith('['):
+            print('Ignoring invalid param "' + str(param) + '"')
+            return
         self.params.append(param)
 
     def remove_last_param(self):

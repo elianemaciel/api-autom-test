@@ -157,7 +157,7 @@ class EquivalenceClassParamsDialog(QDialog):
         for item in self.range_items:
             validation_result, error_message = item.validate_fields()
             if not validation_result:
-                print('Falha ao validar campos: ' + error_message)
+                print('Falha ao validar campos: ' + str(error_message))
                 ValidationErrorDialog(error_message).exec_()
                 return
         self.update_current_param_range_list()
