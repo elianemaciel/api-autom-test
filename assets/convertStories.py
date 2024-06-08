@@ -1,17 +1,14 @@
 import re
 import traceback
 import warnings
-#import spacy
+import spacy
 from enum import Enum
 
-from dependencies import pt_core_news_md
-#import pt_core_news_md
-#nlp = spacy.load('pt_core_news_md')
 from unidecode import unidecode
 
 from assets.AutomTestException import AutomTestException
 
-nlp = pt_core_news_md.load()
+nlp = spacy.load('pt_core_news_md')
 
 class TestCase:
     def __init__(self, className, method, parameters):
