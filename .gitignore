@@ -5,4 +5,4 @@
 environment/SecretConfig.py
 .vercel
 /api/build/app/
-/api/build/dist/
+/api/dist/

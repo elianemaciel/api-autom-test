@@ -1,9 +1,16 @@
 # AutomTest 3.0
-Towards a Test Case Generation Tool Based on Functional Requirements. Article for first version:
-https://dl.acm.org/doi/10.1145/3439961.3440002
+Article on AutomTest's First version: 
+Towards a Test Case Generation Tool Based on Functional Requirements <https://dl.acm.org/doi/10.1145/3439961.3440002>
 
 ## Requisitos:
 PySimpleGUI
+
+## Para atualizar:
+pyinstaller app.spec
+
+## Endpoints:
+- Recebe uma história de usuário e seu idioma
+- Retorna uma coleção de métodos
 
 ### Para executar no Linux:
 python3 main.py
