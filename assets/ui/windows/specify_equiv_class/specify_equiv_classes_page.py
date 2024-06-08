@@ -126,15 +126,13 @@ class SpecifyEquivClassesWidget:
             Here, an equivalence class is a tuple of a set of methods parameters and a set of possible return values for those parameters.
                 
             Observe the following example:
-            the method isMaiorDeIdade(inteiro idade), which has as responsibility check whether a person's of legal age, returns true in case the provided age is greater tha or equal to 18 years-old and false otherwise. For that example,  we could define two equivalence classes: 
-            1. The class of legal age people, with return value true and, in the parameters set 18 and 65.
-            2. The class of minor age people, with return value false and, as parameter set, 0, 1, 15 and 17, for
-            example.
+            the method isMaiorDeIdade(inteiro idade), which has as responsibility check whether a person's of legal age, returns true in case the provided age is greater than or equal to 18 years-old and false otherwise. For that example,  we could define two equivalence classes: 
+            1. The class of legal age people, with return value true and, in the parameters set, 18, 20, 45 and 65, for example.
+            2. The class of minor age people, with return value false and, as parameter set, 0, 1, 15 and 17, for example.
             3. The class of invalid input, with return value false and parameters -1, -2, 200, 50000.
                 
-            With those info, it's possible to define an equivalence class.
-            Now it's your your turn: insert the equivalence classes you decide relevant to each previously mapped
-            method.
+            Each of the examples above could be equivalence class, with a defined set of possibilities of parameters to which the return value/values are acceptable.
+            Now it's your your turn: insert the equivalence classes you decide relevant to each previously mapped method.
         """)
         an_example.setStyleSheet(style.EXPLANATION_APPLICATION_TEXT)
         an_example.setWordWrap(True)

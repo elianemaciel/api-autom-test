@@ -1,7 +1,7 @@
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QTextEdit, QHBoxLayout
 
 from assets.AutomTestException import AutomTestException
-from assets.ui import LoadingPopupManager
+from assets.ui import LoadingPopupManager, LoadingPopupManagerBKP
 from assets.ui.util import style
 from assets.ui.widgets.RadioButton import RadioButton
 from assets.ui.widgets.dialog.warning_errors_list_dialog import WarningErrorsListDialog
@@ -66,10 +66,14 @@ class InsertUserStoryWidget:
             text="Submit Story",
             height=30,
             minimum_width=170,
-            do_when_clicked=lambda: submit_user_story(
-                user_story_text_edit.toPlainText(),
-                do_to_show_insert_methods_info_success,
-                content_layout
+            do_when_clicked=lambda: (
+                button.setText("Loading..."),
+                submit_user_story(
+                    user_story_text_edit.toPlainText(),
+                    do_to_show_insert_methods_info_success,
+                    content_layout
+                ),
+                button.setText("Submit Story")
             )
         )
         button_bar_layout.addWidget(button)

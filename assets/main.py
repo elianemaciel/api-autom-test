@@ -1,11 +1,12 @@
 ## Import modules
 
-import sys
 import os
+import sys
 
-from assets.ui.windows import about_page
-from qt_core import *
-from ui.windows.main_window.ui_main_window import UI_MainWindow
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QMainWindow, QApplication
+
+from assets.ui.windows.main_window.ui_main_window import UI_MainWindow
 
 
 #Main window
@@ -28,10 +29,6 @@ class MainWindow(QMainWindow):
 
         #Show the application
         self.show()
-
-    def show_about_page(self):
-        self.ui.pages.setCurrentWidget(about_page.get_about_widget())
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

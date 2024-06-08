@@ -1,5 +1,6 @@
 import re
 
+from PySide6.QtCore import QLocale
 from PySide6.QtGui import QDoubleValidator, QIntValidator
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QLineEdit, QVBoxLayout
 
@@ -31,6 +32,7 @@ class NumericRangeWidget(DataRangeWidget):
         else:
             validator = QIntValidator()
 
+        validator.setLocale(QLocale(QLocale.English, QLocale.UnitedStates))
         self.to_text_edit.setValidator(validator)
         self.from_text_edit.setValidator(validator)
 

@@ -1,6 +1,10 @@
 import os
 
-from assets.qt_core import *
+# from assets.qt_core import *
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QStackedWidget, QLabel, QSpacerItem, QSizePolicy
+
 from assets.ui.page_manager import PageManager
 from assets.ui.util import color
 from assets.ui.widgets.menu_button import AtMenuButton

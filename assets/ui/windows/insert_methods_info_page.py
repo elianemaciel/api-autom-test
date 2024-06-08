@@ -1,12 +1,13 @@
 import os
 import re
+import threading
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QSpacerItem, QSizePolicy, QWidget, QVBoxLayout, QLabel, QStackedWidget, QHBoxLayout, \
     QScrollArea, QLineEdit, QMessageBox
 
-from assets.components import Method
+from assets.components import Method, get_methods_from_test_cases
 from assets.ui.util import style, color
 from assets.ui.widgets.combo_box import CustomComboBox
 from assets.ui.widgets.dialog.set_method_params_dialog import MethodParamsDialog
@@ -18,19 +19,7 @@ from assets.ui.windows.bottom_buttons_for_add_extra_data import BottomButtonsFor
 from model.DataTypes import DATA_TYPES
 
 
-def get_methods_from_test_cases(test_cases):
-    methods = []
-    for test_case in test_cases:
-        if isinstance(test_case, Method):
-            methods.append(test_case)
-        else:
-            #method = Method(name=test_case.method_info, class_name=test_case.className)
-            method = Method(name=test_case.method, class_name=test_case.className)
-            if test_case is not None and test_case.parameters is not None:
-                for param in test_case.parameters:
-                    method.add_param_by_arg(param)
-            methods.append(method)
-    return methods
+lock = threading.Lock()
 
 
 def verify_save_and_show_list_page(new_method, do_to_show_next_page, do_to_go_back):
@@ -103,6 +92,7 @@ def validate_current_methods():
 class InsertMethodsInfoWidget:
     BASIC_CONTENT_INDEX = 0
     SUCCESS_ON_CONVERTING_CONTENT_INDEX = -1
+    LOADING_METHODS = -1
     ADD_EXTRA_DATA_CONTENT_INDEX = -1
     CREATE_OR_EDIT_METHOD_CONTENT_INDEX = -1
 
@@ -149,6 +139,12 @@ class InsertMethodsInfoWidget:
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.BASIC_CONTENT_INDEX)
         # InsertMethodsInfoWidget.get_basic_content()
         return InsertMethodsInfoWidget.content
+
+    @staticmethod
+    def getMethods():
+        with lock:
+            return InsertMethodsInfoWidget.methods
+
 
     @staticmethod
     def get_basic_content():
@@ -209,6 +205,20 @@ class InsertMethodsInfoWidget:
         InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX = InsertMethodsInfoWidget.content.indexOf(widget)
         # set as active content
         InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.SUCCESS_ON_CONVERTING_CONTENT_INDEX)
+
+    @staticmethod
+    def show_loading_methods():
+        # if the content already exists, remove to add it again
+        if InsertMethodsInfoWidget.LOADING_METHODS != -1:
+            loading_methods_widget = InsertMethodsInfoWidget.content.widget(
+                InsertMethodsInfoWidget.LOADING_METHODS)
+            InsertMethodsInfoWidget.content.removeWidget(loading_methods_widget)
+        # initialize the content
+        widget = InsertMethodsInfoWidget.loading_methods_widget()
+        InsertMethodsInfoWidget.content.addWidget(widget)
+        InsertMethodsInfoWidget.LOADING_METHODS = InsertMethodsInfoWidget.content.indexOf(widget)
+        # set as active content
+        InsertMethodsInfoWidget.content.setCurrentIndex(InsertMethodsInfoWidget.LOADING_METHODS)
 
     @staticmethod
     def show_create_or_edit_method(do_to_show_next_page, do_to_go_back, method=None):
@@ -560,6 +570,22 @@ class InsertMethodsInfoWidget:
         # Bottom bar
         content_layout.addLayout(InsertMethodsInfoWidget.setup_success_content_bottom_buttons(
             do_to_show_next_page, do_to_go_back))
+
+        widget.setLayout(content_layout)
+        return widget
+
+    @staticmethod
+    def loading_methods_widget():
+        widget = QWidget()
+        content_layout = QVBoxLayout()
+        # Set spacing
+        spacing = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Fixed)
+        content_layout.addItem(spacing)
+        # Set header
+        header = QLabel("Loading")
+        header.setStyleSheet(style.BASIC_APPLICATION_TEXT)
+        header.setWordWrap(True)
+        content_layout.addWidget(header)
 
         widget.setLayout(content_layout)
         return widget

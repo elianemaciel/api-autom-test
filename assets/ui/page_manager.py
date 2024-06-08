@@ -1,6 +1,7 @@
 import threading
 
-from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget, get_methods_from_test_cases
+from assets.components import get_methods_from_test_cases
+from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget
 from assets.ui.windows.specify_equiv_class.specify_equiv_classes_page import SpecifyEquivClassesWidget
 import schedule
 import time
@@ -35,11 +36,17 @@ class PageManager:
 
     @staticmethod
     def toggle_buttons_state():
+        # try:
+        #     if True:
+        #         PageManager.show_loading_methods()
+        # except Exception as e:
+        #     print('Exception Occurred', e)
+
         for btn in PageManager.instance.main_ui.menu_buttons:
             try:
                 is_clickable = True
                 if btn.id == "EQUIV_CLASSES":
-                    is_clickable = len(InsertMethodsInfoWidget.methods) > 0
+                    is_clickable = len(InsertMethodsInfoWidget.getMethods()) > 0
                 elif btn.id == "TESTS":
                     is_clickable = SpecifyEquivClassesWidget.has_any_equiv_class()
                 # print(btn.id + " > " + str(is_clickable))
@@ -83,24 +90,30 @@ class PageManager:
         PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
         InsertMethodsInfoWidget.methods = get_methods_from_test_cases(test_cases)
         InsertMethodsInfoWidget.show_converting_success(
-            test_cases,
-            lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.methods),
+            # test_cases,
+            InsertMethodsInfoWidget.getMethods(),
+            lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.getMethods()),
             lambda: PageManager.show_insert_user_story()
         )
 
     @staticmethod
-    def show_create_or_edit_method(method=None):
-        PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
-        InsertMethodsInfoWidget.show_create_or_edit_method(
-            lambda: PageManager.show_specify_equiv_classes_start_page(),
-            lambda: PageManager.show_insert_user_story()
-        )
+    def show_loading_methods():
+        # PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
+        InsertMethodsInfoWidget.show_loading_methods()
+
+    # @staticmethod
+    # def show_create_or_edit_method(method=None):
+    #     PageManager.instance.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
+    #     InsertMethodsInfoWidget.show_create_or_edit_method(
+    #         lambda: PageManager.show_specify_equiv_classes_start_page(),
+    #         lambda: PageManager.show_insert_user_story()
+    #     )
 
     @staticmethod
     def show_insert_methods_info_add_extra_data():
         InsertMethodsInfoWidget.show_add_extra_data(
-            InsertMethodsInfoWidget.methods,
-            lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.methods),
+            InsertMethodsInfoWidget.getMethods(),
+            lambda: PageManager.show_specify_equiv_classes_start_page(InsertMethodsInfoWidget.getMethods()),
             lambda: PageManager.show_insert_user_story()
         )
 
