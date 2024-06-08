@@ -12,14 +12,11 @@ pyinstaller app.spec
 - Recebe uma história de usuário e seu idioma
 - Retorna uma coleção de métodos
 
-### Para executar no Linux:
+### Para executar:
 python3 main.py
-  1. ```sudo apt install python3-pip```
-  2. ```sudo apt install python3-tk``` (Tkinter)
-  3. ```pip3 install pysimplegui``` (PySimpleGUI)
-  4. ```pip3 install spacy``` (Spacy)
-  5. ```python3 -m spacy download pt_core_news_md```
-  6. ```pip install Unidecode```
+  1. ```pip3 install spacy``` (Spacy)
+  2. ```python3 -m spacy download pt_core_news_md```
+  3. ```pip install Unidecode```
 
 ### Para executar no Linux:
 python3 main.py
