@@ -10,18 +10,18 @@ class MultiMethodCatcherRepository(MethodCatcherRepository):
 
     methodCatcherRepositories = []
 
-    def setup(self, user_story, language):
+    def setup(self, user_story, language, getAllMethodsAccepted=lambda: []):
         nlpRepository = NlpRepository()
         llmRepository1 = PalmLlmRepository()
         llmRepository2 = ChatGptTurboRepository()
 
-        nlpRepository.setup(user_story, language)
-        llmRepository1.setup(user_story, language)
-        llmRepository2.setup(user_story, language)
+        nlpRepository.setup(user_story, language, getAllMethodsAccepted)
+        llmRepository1.setup(user_story, language, getAllMethodsAccepted)
+        llmRepository2.setup(user_story, language, getAllMethodsAccepted)
 
-        self.methodCatcherRepositories.append(nlpRepository)
         self.methodCatcherRepositories.append(llmRepository1)
         self.methodCatcherRepositories.append(llmRepository2)
+        self.methodCatcherRepositories.append(nlpRepository)
 
     def get_methods_from_user_stories(self):
         #self.nlpRepository.get_methods_from_user_stories()

@@ -1,21 +1,23 @@
-import os, io, sys, random, string
-import assets.procedures as p
-import datetime, random
+import datetime
+import random
+import re
+import string
 
 
 def get_YearMonthDay_from_Date(date):
-    # ymd = []
-    if (date.find('/') > 0):
-        ymd = date.split('/')
-
-    elif (date.find('-') > 0):
-        ymd = date.split('-')
+    pattern = r"^\d{4}-\d{2}-\d{2}$"
+    splitter = '/' if date.find('/') > 0 else '-'
+    if re.match(pattern, date) is not None:
+        ymd = date.split(splitter)
+    else:
+        ymd = date.split(splitter)[::-1]
 
     return ymd
 
 
 def generate_Date(v1, v2, v3):
-    if (v1 != '' and v2 != ''):
+    print('generate_Date v1=' + v1 + ' v2=' + v2)
+    if v1 != '' and v2 != '':
 
         ymd1 = get_YearMonthDay_from_Date(v1)
         ymd2 = get_YearMonthDay_from_Date(v2)
@@ -60,6 +62,7 @@ def generate_String(value, qtd):
     elif value.casefold() == "any" \
             or value.casefold() == "all" \
             or value.casefold() == "any character" \
+            or value.casefold() == "any_character" \
             or value.casefold() == "anycharacter":
         return ''.join([random.choice(string.ascii_letters + string.digits + signs_without_quotes) for n in range(num)])
 
@@ -75,7 +78,7 @@ def generate_String(value, qtd):
 def generate_int(v1, v2, v3):
     if (v1 != '' and v2 != '' and v3 != ''):
         a = random.randint(int(v1), int(v2))
-        vals = v3.replace(" ", "").split(',')
+        vals = v3.replace(" ", "").split(';')
         b = random.randint(0, len(vals))
         if (b == 0):
             return str(a)
@@ -86,14 +89,14 @@ def generate_int(v1, v2, v3):
         return str(int(random.uniform(int(v1), int(v2))))
 
     else:
-        vals = v3.replace(" ", "").split(',')
+        vals = v3.replace(" ", "").split(';')
         return str(int(random.uniform(0, len(vals) - 1)))
 
 
 def generate_decimal_numbers(type_name, v1, v2, v3):
     if (v1 != '' and v2 != '' and v3 != ''):
-        a = random.uniform(int(v1), int(v2))
-        vals = v3.replace(" ", "").split('/')
+        a = random.uniform(float(v1), float(v2))
+        vals = v3.replace(" ", "").split(';')
         b = random.randint(0, len(vals))
         if (b == 0):
             if (type_name == 'double'):
@@ -103,18 +106,18 @@ def generate_decimal_numbers(type_name, v1, v2, v3):
 
         else:
             if (type_name == 'double'):
-                return str(round(int(vals[b - 1], 6)))
+                return str(round(float(vals[b - 1]), 6))
             else:
                 return vals[random.randint(0, len(vals) - 1)]
 
     elif (v1 != '' and v2 != ''):
         if (type_name == 'double'):
-            return str(round(random.uniform(int(v1), int(v2)), 6))
+            return str(round(random.uniform(float(v1), float(v2)), 6))
         else:
-            return str(round(random.uniform(int(v1), int(v2)), 3))
+            return str(round(random.uniform(float(v1), float(v2)), 3))
 
     else:
-        vals = v3.replace(" ", "").split(',')
+        vals = v3.replace(" ", "").split(';')
         return vals[random.randint(0, len(vals) - 1)]
 
 
@@ -129,7 +132,7 @@ def generate_param_value(MUT, i, j):  # i = parameter order / j = testset order
         return '\"' + content + '\"'
 
     elif (MUT.params[i].type_name == 'char'):
-        vals = MUT.testsets[j].ranges[i].v1.replace(" ", "").split(',')
+        vals = MUT.testsets[j].ranges[i].v1.replace(" ", "").split(';')
         opcoes = ''
         for x in range(0, len(vals)):
             opcoes += generate_String(vals[x], '1')
@@ -138,9 +141,14 @@ def generate_param_value(MUT, i, j):  # i = parameter order / j = testset order
     elif (MUT.params[i].type_name == 'int'):
         return generate_int(MUT.testsets[j].ranges[i].v1, MUT.testsets[j].ranges[i].v2, MUT.testsets[j].ranges[i].v3)
 
-    elif (MUT.params[i].type_name == 'double' or MUT.params[i].type_name == 'float'):
-        return generate_decimal_numbers(MUT.params[i].type_name, MUT.testsets[j].ranges[i].v1,
-                                        MUT.testsets[j].ranges[i].v2, MUT.testsets[j].ranges[i].v3)
+    elif MUT.params[i].type_name == 'double' or MUT.params[i].type_name == 'float':
+        return generate_decimal_numbers(MUT.params[i].type_name,
+                                        MUT.testsets[j].ranges[i].v1,
+                                        MUT.testsets[j].ranges[i].v2,
+                                        MUT.testsets[j].ranges[i].v3)
+
+    elif MUT.params[i].type_name == 'Date':
+        return generate_Date(MUT.testsets[j].ranges[i].v1, MUT.testsets[j].ranges[i].v2, MUT.testsets[j].ranges[i].v3)
 
     else:  # boolean
         if (MUT.testsets[j].ranges[i].v1.casefold() == "true"):
@@ -173,24 +181,29 @@ def generate_expected_output(MUT, i):  # i = testset order
         content = 'retorno == \"' + content + '\"'
 
     elif (MUT.output_type == 'char'):
-        vals = v1.replace(" ", "").split(',')
+        vals = v1.replace(" ", "").split(';')
         opcoes = ''
         for x in range(0, len(vals)):
             opcoes += generate_String(vals[x], '1')
-        content = "retorno == \'" + opcoes[random.randint(0, len(opcoes) - 1)] + "\'"
+        provided_chars = v1.replace(" ", "").split(';')
+        for character in provided_chars:
+            if content != '':
+                content += ' || retorno == \'' + character + '\''
+            else:
+                content += 'retorno == \'' + character + '\''
 
     elif (MUT.output_type == 'boolean'):
 
         if (v1.casefold() == "true"):
-            content += "retorno == true"
+            content += "retorno"
         else:
-            return "retorno == false"
+            return "!retorno"
 
     else:  # if (MUT.output_type == 'int' or MUT.output_type == 'double' or MUT.output_type == 'float'):
         if (v1 != '' and v2 != ''):
             content = '(retorno >= ' + v1 + ' && retorno <= ' + v2 + ')'
         if (v3 != ''):
-            vals = v3.replace(" ", "").split(',')
+            vals = v3.replace(" ", "").split(';')
             for x in range(0, len(vals)):
                 if (content != ''):
                     content += ' || retorno == ' + vals[x]
@@ -230,9 +243,11 @@ def generate_tests(MUT, file_path=''):
         testfile.truncate()
         testfile.write(''.join([a for a in previous[:-1]]))
 
+    cont = 1
     for i in range(0, len(MUT.testsets)):
         for j in range(0, MUT.testsets[i].number_of_cases):
-            testfile.write(test_content(MUT, MUT.testsets[i].name, j + 1, i))
+            testfile.write(test_content(MUT, MUT.testsets[i].name, cont, i))
+            cont += 1
 
     testfile.write("\n}")
     testfile.close()

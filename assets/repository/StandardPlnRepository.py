@@ -57,7 +57,7 @@ def generate_methods_suggestion(user_story_txt):
         param_matches = re.findall(r'- (.*?) \((.*?)\)', method_descr)
         for param_name, param_type in param_matches:
             if type(param_name) != str or param_name.startswith('['):
-                print('Ignoring invalid param "' + str(param_name) + '"')
+                print('(1)Ignoring invalid param "' + str(param_name) + '"')
                 continue
             new_method.add_param_by_arg(param_name, param_type)
 

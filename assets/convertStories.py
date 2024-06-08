@@ -1,10 +1,12 @@
 import re
 import traceback
 import warnings
-import sys
+#import spacy
 from enum import Enum
 
-import pt_core_news_md
+from dependencies import pt_core_news_md
+#import pt_core_news_md
+#nlp = spacy.load('pt_core_news_md')
 from unidecode import unidecode
 
 from assets.AutomTestException import AutomTestException
@@ -119,7 +121,6 @@ def createArrayStory(story):
 
 
 def defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias):
-    successTestCases = []#TODO: implementar e testar substituir o param
     errorAccCriteria = []
     for a in acceptanceCriterias:
         try:

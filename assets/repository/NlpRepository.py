@@ -15,7 +15,7 @@ class NlpRepository(MethodCatcherRepository):
         self.curr_retry_number = 0
         self.exceptCount = 0
 
-    def setup(self, user_story, language):
+    def setup(self, user_story, language, getAllMethodsAccepted=lambda: []):
         self.active = True if language == 'pt' else False
         self.user_story = user_story
         self.max_retries = 1

@@ -64,8 +64,8 @@ def _extract_methods_from_result(result_json, language):
 def _enrich_llm_request(user_stories, language):
     if language == 'en':
         return 'You are an assistant that returns JSON output for the requested input.\n'\
-            'Use the user story with acceptance critera below to suggest Java methods and class name.' \
-               'The valid data types are ONLY: int, String, float, double, char, boolean, Date.\n' \
+            'Use the user story with acceptance criteria below to suggest Java methods and class name.' \
+               'The valid data types are ONLY: int, String, float, double, char, boolean.\n' \
                ' Use the following json format:\n' \
                '[{\n' \
                '    "method": "isMinorAge",\n' \
@@ -113,9 +113,9 @@ class ChatGptTurboRepository(LLMRepository):
     def __init__(self):
         self.client = OpenAI(api_key=SecretConfig.OPEN_AI_API_KEY)
 
-    def setup(self, user_story, language="pt"):
+    def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
         self.isActive = True#language == "en"
-        super().setup(user_story, language)
+        super().setup(user_story, language, getAllMethodsAccepted)
 
     def compute_extra_methods(self):
         with super().lock:
@@ -125,7 +125,7 @@ class ChatGptTurboRepository(LLMRepository):
                 self.curr_amount_of_retries += 1
 
     def get_methods_from_user_stories(self):
-        request = _enrich_llm_request(self.user_story_txt, super().lang)
+        request = _enrich_llm_request(self.user_story_txt, super().get_lang())
 
         completion = self.client.chat.completions.create(
             model="gpt-3.5-turbo",
@@ -139,4 +139,4 @@ class ChatGptTurboRepository(LLMRepository):
         result_content = completion.choices[0].message.content
         result_json = result_content.replace("```json", '').replace('```', '')
 
-        return _extract_methods_from_result(result_json, super().lang)
+        return _extract_methods_from_result(result_json, super().get_lang())

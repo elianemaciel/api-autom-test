@@ -2,13 +2,14 @@ import threading
 from abc import ABC
 
 from assets.repository.MethodCatcherRepository import MethodCatcherRepository
-from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget
+
+# from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget
 
 valid_accepted_data_types = {
     'string': 'String',
     'date': 'Date',
     'boolean': 'boolean',
-    'bool' : 'boolean',
+    'bool': 'boolean',
     'integer': 'int',
     'int': 'int',
     'double': 'double',
@@ -27,16 +28,18 @@ class LLMRepository(MethodCatcherRepository, ABC):
     user_story_txt = ""
     lang = ""
     isActive = True
+    getAllMethodsAccepted = lambda: []
 
-    def setup(self, user_story, language="pt"):
-        print("LLMRepository setup")
-        self.max_retries = 10
-        self.number_of_acc_criteria = 5  # TODO: get this from user_story_txt
-        self.min_amount_results = 2 * self.number_of_acc_criteria
+    def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
+        self.max_retries = 2
+        # self.number_of_acc_criteria = 5  # TODO: get this from user_story_txt
+        self.number_of_acc_criteria = user_story.lower().count('dado' if language == "pt" else 'given')
+        self.min_amount_results = min(self.number_of_acc_criteria, 5)
         self.curr_amount_of_retries = 0
         self.methods = []
         self.user_story_txt = user_story
         self.lang = language
+        self.getAllMethodsAccepted = getAllMethodsAccepted
 
     def get_current_state_percentage(self):
         if not self.isActive:
@@ -66,7 +69,7 @@ class LLMRepository(MethodCatcherRepository, ABC):
                 # The method suggested must have an output type to use Equivalence Classes
                 continue
 
-            #Verify params validity
+            # Verify params validity
             valid_params = []
             for param in sugg.params:
                 if param.type_name and param.type_name in valid_accepted_data_types:
@@ -85,8 +88,10 @@ class LLMRepository(MethodCatcherRepository, ABC):
                     should_ignore = True
                     break
 
-            if InsertMethodsInfoWidget.methods and not should_ignore:
-                for method in InsertMethodsInfoWidget.methods:
+            # if InsertMethodsInfoWidget.getMethods() and not should_ignore:
+            #     for method in InsertMethodsInfoWidget.getMethods():
+            if self.getAllMethodsAccepted() and not should_ignore:
+                for method in self.getAllMethodsAccepted():
                     if method.name.lower() == sugg.name.lower():
                         print(f"Method with name {sugg.name} already suggested before.")
                         should_ignore = True
@@ -98,3 +103,6 @@ class LLMRepository(MethodCatcherRepository, ABC):
 
     def get_caught_methods(self):
         return self.methods
+
+    def get_lang(self):
+        return self.lang

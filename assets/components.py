@@ -3,6 +3,20 @@ import uuid
 import re
 
 
+def get_methods_from_test_cases(test_cases):
+    methods = []
+    for test_case in test_cases:
+        if isinstance(test_case, Method):
+            methods.append(test_case)
+        else:
+            #method = Method(name=test_case.method_info, class_name=test_case.className)
+            method = Method(name=test_case.method, class_name=test_case.className)
+            if test_case is not None and test_case.parameters is not None:
+                for param in test_case.parameters:
+                    method.add_param_by_arg(param)
+            methods.append(method)
+    return methods
+
 class Parameter:
 
     def __init__(self, name, type_name='', identifier=None):
@@ -115,7 +129,7 @@ class Method:
             "nome": self.name,
             "nomeClasse": self.class_name,
             "tipoRetorno": self.output_type,
-            "parametros": [parameters]
+            "parametros": parameters
         }
 
     def __str__(self):
@@ -140,19 +154,25 @@ class Method:
 
     def add_param_by_arg(self, param_name, type_name=''):
         if type(param_name) != str or param_name.startswith('['):
-            print('Ignoring invalid param "' + str(param_name) + '"')
+            print('(2)Ignoring invalid param "' + str(param_name) + '"')
             return
         param = Parameter(param_name, type_name)
         self.params.append(param)
 
     def add_param_by_parameter(self, param):
-        if type(param) != Parameter or param.param_name.startswith('['):
-            print('Ignoring invalid param "' + str(param) + '"')
+        if type(param) != Parameter or param.name.startswith('['):
+            print('(3)Ignoring invalid param "' + str(param) + '"')
             return
         self.params.append(param)
 
     def remove_last_param(self):
         self.params.pop()
+
+    def findParamByIdentifier(self, identifier):
+        for param in self.params:
+            if param.identifier == identifier:
+                return param
+        return None
 
     def add_testset(self, test):
         # t = TestSet(name, num)

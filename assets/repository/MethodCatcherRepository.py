@@ -3,7 +3,7 @@
 # classic method to retrieve methods, the one that doesn't use LLM.
 
 class MethodCatcherRepository:
-    def setup(self, user_story, language):
+    def setup(self, user_story, language, getAllMethodsAccepted):
         raise NotImplementedError("Subclasses must implement this method.")
 
     def get_methods_from_user_stories(self):
