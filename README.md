@@ -2,24 +2,19 @@
 Article on AutomTest's First version: 
 Towards a Test Case Generation Tool Based on Functional Requirements <https://dl.acm.org/doi/10.1145/3439961.3440002>
 
-## Requisitos:
-PySimpleGUI
-
-## Para atualizar:
-pyinstaller app.spec
-
 ## Endpoints:
 - Recebe uma história de usuário e seu idioma
 - Retorna uma coleção de métodos
 
-### Para executar:
-python3 main.py
-  1. ```pip3 install spacy``` (Spacy)
-  2. ```python3 -m spacy download pt_core_news_md```
-  3. ```pip install Unidecode```
+### Para instalação do projeto:
+1. ```pip install -r  .\requirements.txt```'
+2. ```python3 -m spacy download pt_core_news_md```
 
-### Para executar no Linux:
-python3 main.py
+### Para executar:
+Execute o arquivo api/app.py
+
+## Para construir arquivo .exe:
+Dentro do diretório 'api' rode: `pyinstaller app.spec`
 
 ## Remarks
 
