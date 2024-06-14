@@ -11,7 +11,13 @@ Towards a Test Case Generation Tool Based on Functional Requirements <https://dl
 2. ```python3 -m spacy download pt_core_news_md```
 
 ### Para executar:
-Execute o arquivo api/app.py
+Primeiro, você precisa do arquivo SecretConfig.py no diretório `/environment` dentro do projeto. Esse diretório deve conter
+as chaves de API necessárias ao AutomTest. O conteúdo do arquivo deve ser algo semelhante ao apresentado abaixo:
+```
+API_KEY = "key_aqui"
+OPEN_AI_API_KEY = "outra_key_aqui"
+```
+Uma vez tendo o arquivo de chaves configurado, execute o arquivo api/app.py
 
 ## Para construir arquivo .exe:
 Dentro do diretório 'api' rode: `pyinstaller app.spec`
