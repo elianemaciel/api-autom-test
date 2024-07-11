@@ -145,6 +145,7 @@ def defineTestsFromAcceptanceCritereas(testCases, acceptanceCriterias):
 def addPremissToTest(testCases, premiss):
     if premiss is None:
         return testCases
+    premiss = premiss[:35] # only first 35 characters, if too long
     for t in testCases:
         if t.method == premiss:
             return testCases
@@ -161,7 +162,7 @@ def addParameterToTest(testCases, parameter, premiss):
                 testCases[itr].parameters = [parameter]
             else:
                 if parameter not in testCases[itr].parameters:
-                    testCases[itr].parameters.append(parameter)
+                    testCases[itr].parameters.append(parameter[:35]) # only the first 35 characters, if it's too big
             return testCases
     return testCases
 
