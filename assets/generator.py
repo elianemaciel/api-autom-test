@@ -167,18 +167,38 @@ def header_content(MUT):
 
 
 def generate_expected_output(MUT, i):  # i = testset order
+    signs_without_quotes = r"""!#$%&()*+,-.\\\/:;<=>?@\[\]^_`{|}~"""
 
     v1 = MUT.testsets[i].expected_range.v1
     v2 = MUT.testsets[i].expected_range.v2
     v3 = MUT.testsets[i].expected_range.v3
-    content = ''
-    if (MUT.output_type == 'String'):
-        vals1 = v1[1:len(v1) - 1].replace(" ", "").split('][')
-        vals2 = v2[1:len(v2) - 1].replace(" ", "").split('][')
+    content = '^'
+    if MUT.output_type == 'String':
+        substr = v1[1:len(v1) - 1].replace(" ", "").split('][')
+        qtd_range = v2[1:len(v2) - 1].replace(" ", "").split('][')
 
-        for x in range(0, len(vals1)):
-            content += generate_String(vals1[x], vals2[x])
-        content = 'retorno == \"' + content + '\"'
+        for x in range(0, len(substr)):
+            if substr[x] == 'numbers':
+                content += '[0-9]'
+            elif substr[x] == 'letters':
+                content += '[a-zA-Z]'
+            elif substr[x] == 'numbers/letters' or substr[x] == 'alphanumerics' or substr[x] == 'alphanumeric':
+                content += '[a-zA-Z0-9]'
+            elif substr[x].casefold() == "any" \
+                or substr[x].casefold() == "all" \
+                or substr[x].casefold() == "any character" \
+                or substr[x].casefold() == "any_character" \
+                or substr[x].casefold() == "anycharacter":
+                content += '.'
+            elif substr[x].casefold() == "signs" or substr[x].casefold() == "sign":
+                content += '[' + signs_without_quotes + ']'
+            else:
+                content += '(' + substr[x] + ")"
+            qtd_ini, qtd_fim = qtd_range[x].split('~')
+
+            content += '{' + qtd_ini + ',' + qtd_fim + '}'
+
+        content = 'retorno.matches(\"' + content + '$\")'
 
     elif (MUT.output_type == 'char'):
         vals = v1.replace(" ", "").split(';')
