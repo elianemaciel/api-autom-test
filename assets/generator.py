@@ -250,6 +250,16 @@ def test_content(MUT, test_set_name, cont, testset_position):
     return content
 
 
+def replaceMethodNameWithPlaceholder(test_method_str):
+    pattern = r'@Test\s+public\s+void\s+\w+\s*\(\)\s*\{'
+    return re.sub(pattern, '@Test\n\tpublic void METHODNAME() {', test_method_str)
+
+
+def methodDoesNotExistYet(testMethodGenerated, methodsAlreadyWritten):
+    method_str_under_verif = replaceMethodNameWithPlaceholder(testMethodGenerated)
+    return all(replaceMethodNameWithPlaceholder(method) != method_str_under_verif for method in methodsAlreadyWritten)
+
+
 def generate_tests(MUT, file_path=''):
     file_location = file_path + ('' if file_path.endswith('/') else '/') + MUT.class_name + 'Test.java'
     testfile = open(file_location, 'a+')
@@ -265,9 +275,19 @@ def generate_tests(MUT, file_path=''):
 
     cont = 1
     for i in range(0, len(MUT.testsets)):
-        for j in range(0, MUT.testsets[i].number_of_cases):
-            testfile.write(test_content(MUT, MUT.testsets[i].name, cont, i))
-            cont += 1
+        methodsAlreadyWritten = []
+        retries = 1000
+        j = 0
+        while j < MUT.testsets[i].number_of_cases:
+            j += 1
+            testMethodGenerated = test_content(MUT, MUT.testsets[i].name, cont, i)
+            if methodDoesNotExistYet(testMethodGenerated, methodsAlreadyWritten):
+                testfile.write(testMethodGenerated)
+                methodsAlreadyWritten.append(testMethodGenerated)
+                cont += 1
+            elif retries != 0:
+                j -= 1
+                retries -= 1
 
     testfile.write("\n}")
     testfile.close()
