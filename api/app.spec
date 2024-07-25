@@ -10,7 +10,7 @@ a = Analysis(
         ('C:\\Users\\joand\\PycharmProjects\\AutomTest\\environment', 'environment'),
         ('C:\\Users\\joand\\PycharmProjects\\AutomTest\\dependencies', 'dependencies'),
     ],
-    hiddenimports=['flask_cors', 'openai', 'google.generativeai', 'unidecode', 'spacy'],
+    hiddenimports=['flask_cors', 'openai', 'google.generativeai', 'unidecode', 'spacy', 'pt_core_news_md'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
