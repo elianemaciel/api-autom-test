@@ -32,9 +32,10 @@ class LLMRepository(MethodCatcherRepository, ABC):
 
     def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
         self.max_retries = 2
-        # self.number_of_acc_criteria = 5  # TODO: get this from user_story_txt
-        self.number_of_acc_criteria = user_story.lower().count('dado' if language == "pt" else 'given')
+        given = 'dado' if language == "pt" else 'given'
+        self.number_of_acc_criteria = user_story.lower().count(given) if isinstance(user_story, str) else len(user_story)
         self.min_amount_results = min(self.number_of_acc_criteria, 5)
+        # self.min_amount_results = self.number_of_acc_criteria + max(self.number_of_acc_criteria, 5)
         self.curr_amount_of_retries = 0
         self.methods = []
         self.user_story_txt = user_story

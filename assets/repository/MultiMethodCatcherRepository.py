@@ -2,7 +2,7 @@ from assets.llm.ChatGptTurboRepository import ChatGptTurboRepository
 from assets.llm.PalmLlmRepository import PalmLlmRepository
 
 from assets.repository.MethodCatcherRepository import MethodCatcherRepository
-from assets.repository.NlpRepository import NlpRepository
+from assets.repository.NlpWithChatGptTurboRepository import NlpWithChatGptTurboRepository
 
 
 class MultiMethodCatcherRepository(MethodCatcherRepository):
@@ -11,7 +11,7 @@ class MultiMethodCatcherRepository(MethodCatcherRepository):
     methodCatcherRepositories = []
 
     def setup(self, user_story, language, getAllMethodsAccepted=lambda: []):
-        nlpRepository = NlpRepository()
+        nlpRepository = NlpWithChatGptTurboRepository()
         llmRepository1 = PalmLlmRepository()
         llmRepository2 = ChatGptTurboRepository()
 
