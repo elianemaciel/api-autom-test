@@ -1,7 +1,7 @@
 import json
 
-from assets.components import Method
-from assets.llm.ChatGptTurboRepository import ChatGptTurboRepository
+from helpers.components import Method
+from utils.llm.ChatGptTurboRepository import ChatGptTurboRepository
 
 
 class PlnWithChatGptTurboRepository(ChatGptTurboRepository):

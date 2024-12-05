@@ -2,15 +2,17 @@ import json
 
 from openai import OpenAI
 
-from assets.components import Method
-from assets.repository.LLMRepository import LLMRepository
-from environment import SecretConfig
+from helpers.components import Method
+from repository.LLMRepository import LLMRepository
+import os
 
+from dotenv import load_dotenv
 
+load_dotenv()
 class ChatGptTurboRepository(LLMRepository):
 
     def __init__(self):
-        self.client = OpenAI(api_key=SecretConfig.OPEN_AI_API_KEY)
+        self.client = OpenAI(api_key=os.getenv(OPEN_AI_API_KEY))
 
     def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
         self.isActive = True

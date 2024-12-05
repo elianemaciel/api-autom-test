@@ -1,7 +1,7 @@
 import traceback
 
 from assets import convertStories
-from assets.repository.MethodCatcherRepository import MethodCatcherRepository
+from repository.MethodCatcherRepository import MethodCatcherRepository
 
 
 class NlpRepository(MethodCatcherRepository):

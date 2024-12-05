@@ -6,6 +6,11 @@ Towards a Test Case Generation Tool Based on Functional Requirements <https://dl
 - Recebe uma história de usuário e seu idioma
 - Retorna uma coleção de métodos
 
+
+### Crie um ambiente virtual
+1.```python3 -m venv nome_do_ambiente_virtual```
+2.```source nome_do_ambiente_virtual/bin/activate```
+
 ### Para instalação do projeto:
 1. ```pip install -r  .\requirements.txt```'
 2. ```python3 -m spacy download pt_core_news_md```

@@ -1,8 +1,8 @@
 import traceback
 
 from assets import convertStories
-from assets.llm.PlnWithChatGptTurboRepository import PlnWithChatGptTurboRepository
-from assets.repository.NlpRepository import NlpRepository
+from utils.llm.PlnWithChatGptTurboRepository import PlnWithChatGptTurboRepository
+from repository.NlpRepository import NlpRepository
 
 
 class NlpWithChatGptTurboRepository(NlpRepository):

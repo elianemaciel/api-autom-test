@@ -2,7 +2,7 @@ import threading
 import time
 import traceback
 
-from assets.repository.MultiMethodCatcherRepository import MultiMethodCatcherRepository
+from repository.MultiMethodCatcherRepository import MultiMethodCatcherRepository
 
 lock = threading.Lock()
 while_lock = threading.Lock()

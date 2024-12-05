@@ -1,8 +1,8 @@
-from assets.llm.ChatGptTurboRepository import ChatGptTurboRepository
-from assets.llm.PalmLlmRepository import PalmLlmRepository
+from utils.llm.ChatGptTurboRepository import ChatGptTurboRepository
+from utils.llm.PalmLlmRepository import PalmLlmRepository
 
-from assets.repository.MethodCatcherRepository import MethodCatcherRepository
-from assets.repository.NlpWithChatGptTurboRepository import NlpWithChatGptTurboRepository
+from repository.MethodCatcherRepository import MethodCatcherRepository
+from repository.NlpWithChatGptTurboRepository import NlpWithChatGptTurboRepository
 
 
 class MultiMethodCatcherRepository(MethodCatcherRepository):

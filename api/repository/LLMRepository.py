@@ -1,7 +1,7 @@
 import threading
 from abc import ABC
 
-from assets.repository.MethodCatcherRepository import MethodCatcherRepository
+from repository.MethodCatcherRepository import MethodCatcherRepository
 
 # from assets.ui.windows.insert_methods_info_page import InsertMethodsInfoWidget
 

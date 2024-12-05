@@ -7,3 +7,5 @@ environment/SecretConfig.py
 /api/build/app/
 /api/dist/
 /api/build/app_linux
+/myvenv
+__pycache__/*

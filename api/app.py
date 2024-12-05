@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 
-from assets import generator
-from assets.components import get_methods_from_test_cases, Method, Parameter, TestSet, ParamRange
+from helpers.generator import generate_tests
+from helpers.components import get_methods_from_test_cases, Method, Parameter, TestSet, ParamRange
 from assets.ui import MethodCatcherService
 
 app = Flask(__name__)
@@ -91,7 +91,7 @@ def generate_tests():
 
         # Process the user story
         for method in methods:
-            generator.generate_tests(method, directory)
+            generate_tests(method, directory)
 
         #Build response
         return jsonify("Success generating tests"), 200

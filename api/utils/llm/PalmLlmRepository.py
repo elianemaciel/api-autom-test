@@ -2,10 +2,10 @@ import json
 
 import google.generativeai as palm
 
-from assets.components import Method
-from assets.repository.LLMRepository import LLMRepository
-from environment import SecretConfig
-
+from helpers.components import Method
+from repository.LLMRepository import LLMRepository
+import os
+from dotenv import load_dotenv
 
 def _enrich_llm_request(user_stories, language):
     print('Idioma: ' + language)
@@ -91,7 +91,7 @@ def _extract_methods_from_result(result_json, language):
 class PalmLlmRepository(LLMRepository):
 
     def __init__(self):
-        palm.configure(api_key=SecretConfig.API_KEY)
+        palm.configure(api_key=os.getenv(API_KEY))
 
     def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
         self.isActive = language == "en"
