@@ -4,24 +4,51 @@ import traceback
 from assets import generator
 from assets.components import get_methods_from_test_cases, Method, Parameter, TestSet, ParamRange
 from assets.ui import MethodCatcherService
+from flasgger import Swagger
 
 app = Flask(__name__)
-
+app.config['SWAGGER'] = {
+    'title': 'API AutomTest Generator',
+    'uiversion': 3
+}
+swagger = Swagger(app)
 
 # Define a route for the API
-@app.route('/api/greet', methods=['GET'])
+@app.route('/api/health', methods=['GET'])
 @cross_origin()
-def greet():
-    """Endpoint for greeting."""
-    response = {
-        "message": "Hello, Welcome to the API!"
-    }
-    return jsonify(response)
+def health():
+    """
+    Endpoint Health Check
+    ---
+    responses:
+      200:
+        description: Retorna o status de saúde da API
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: ok
+    """
+    return {"status": "ok"}, 200
 
 
 @app.route('/api/generate_tests', methods=['POST'])
 @cross_origin()
 def generate_tests():
+    """
+    Endpoint Generate Tests - Gera casos de teste com base nas classes de equivalência fornecidas
+    ---
+    responses:
+      200:
+        description: Retorna os testes gerados com sucesso
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: ok
+    """
     try:
         # Get the JSON data from the request
         data = request.get_json()
@@ -106,6 +133,19 @@ def generate_tests():
 @app.route('/api/process_user_story', methods=['POST'])
 @cross_origin()
 def process_user_story():
+    """
+    Endpoint Process User Story - processa a user story e retorna os métodos identificados
+    ---
+    responses:
+      200:
+        description: Retorna os métodos identificados com sucesso
+        schema:
+          type: object
+          properties:
+            status:
+              type: string
+              example: ok
+    """
     try:
         # Get the JSON data from the request
         data = request.get_json()
