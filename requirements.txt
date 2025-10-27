@@ -3,4 +3,4 @@ flask_cors
 spacy
 Unidecode~=1.3.7
 openai==1.14.3
-google-generativeai
+google-generativeai==0.2.0

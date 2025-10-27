@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
-
+import traceback
 from assets import generator
 from assets.components import get_methods_from_test_cases, Method, Parameter, TestSet, ParamRange
 from assets.ui import MethodCatcherService
@@ -50,6 +50,7 @@ def generate_tests():
                             class_name=methodJson.get('className'),
                             output_type=methodJson.get('returnType')
             )
+            print(method)
             for parameter in methodJson.get('parameters'):
                 method.add_param_by_parameter(
                     Parameter(
@@ -66,7 +67,7 @@ def generate_tests():
                     outputJson.get('v2'),
                     outputJson.get('v3')
                 )
-
+                print('aqui')
                 testSet = TestSet(
                     name=equivClass.get('name'),
                     number_of_cases=equivClass.get('numberOfCases'),
@@ -112,6 +113,7 @@ def process_user_story():
         if data is None:
             return jsonify({'error': "Invalid Json format provided."}), 400
 
+        print(data)
         # Extract relevant fields
         lang = data.get('lang')
         user_story = data.get('userStory')
@@ -123,10 +125,10 @@ def process_user_story():
         if user_story is None or user_story == '':
             errorMsg = "Invalid body. Please provide the fields 'lang' and 'userStory' inside a json body"
             return jsonify({'error': errorMsg}), 400
-
+        print('primeiro')
         # Process the user story
         methods = MethodCatcherService.get(user_story, lang)
-
+        print('aquui')
         methods = get_methods_from_test_cases(methods)
 
         #Build response
@@ -141,6 +143,8 @@ def process_user_story():
 
     except Exception as e:
         # Handle any exceptions (e.g., invalid JSON format)
+        print(e)
+        traceback.print_exc()
         error_message = str(e)
         return jsonify({'error': error_message}), 400
 

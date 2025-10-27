@@ -6,11 +6,45 @@ Towards a Test Case Generation Tool Based on Functional Requirements <https://dl
 - Recebe uma história de usuário e seu idioma
 - Retorna uma coleção de métodos
 
-### Para instalação do projeto:
-1. ```pip install -r  .\requirements.txt```'
-2. ```python3 -m spacy download pt_core_news_md```
+## Instalação:
 
-### Para executar:
+### Virtualenv:
+
+#### Criação da Virtualenv:
+
+1. Windows
+```
+python -m venv myvenv
+```
+ou, se seu Python estiver como python3:
+```
+python3 -m venv myvenv
+```
+
+2. Linux / macOS
+```
+python3 -m venv myvenv
+```
+
+#### Ativação da Virtualenv:
+
+1. Windows:
+```
+  venv\Scripts\activate
+```
+
+2. Linux:
+```
+  source venv/bin/activate
+```
+
+### Instalação de dependências:
+
+```pip3 install -r  requirements.txt```
+
+```python3 -m spacy download pt_core_news_md```
+
+## Configuração de variáveis de ambiente:
 Primeiro, você precisa do arquivo SecretConfig.py no diretório `/environment` dentro do projeto. Esse diretório deve conter
 as chaves de API necessárias ao AutomTest. O conteúdo do arquivo deve ser algo semelhante ao apresentado abaixo:
 ```
@@ -18,6 +52,20 @@ API_KEY = "key_aqui"
 OPEN_AI_API_KEY = "outra_key_aqui"
 ```
 Uma vez tendo o arquivo de chaves configurado, execute o arquivo api/app.py
+
+
+## Executando local:
+
+1. Ative a virtualenv:
+```
+  source meu_projeto_env/bin/activate
+```
+2. Rodando o python:
+
+```
+ python3 app.py
+```
+
 
 ## Para construir arquivo .exe:
 Dentro do diretório 'api' rode: `pyinstaller app.spec`
