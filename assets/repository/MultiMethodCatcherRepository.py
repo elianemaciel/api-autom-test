@@ -1,5 +1,5 @@
-from assets.llm.ChatGptTurboRepository import ChatGptTurboRepository
-from assets.llm.PalmLlmRepository import PalmLlmRepository
+from app.repositories.llm.ChatGptTurboRepository import ChatGptTurboRepository
+from app.repositories.llm.PalmLlmRepository import PalmLlmRepository
 
 from assets.repository.MethodCatcherRepository import MethodCatcherRepository
 from assets.repository.NlpWithChatGptTurboRepository import NlpWithChatGptTurboRepository
