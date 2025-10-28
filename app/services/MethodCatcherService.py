@@ -10,15 +10,15 @@ while_lock = threading.Lock()
 class MethodCatcherService:
 
     def __init__(self, user_story_txt="", language="en", llm_name="chatgpt"):
-        user_story_txt = user_story_txt
-        language = language
-        method_catcher_repository = LlmCatcherRepositoryFactory.create(
+        self.user_story_txt = user_story_txt
+        self.language = language
+        self.method_catcher_repository = LlmCatcherRepositoryFactory.create(
             user_story=user_story_txt,
             language=language,
             llm_name=llm_name
         )
    
-    def get(self):        
+    def get(self):
         self._run_llm()
         return self.method_catcher_repository.get_caught_methods()
 

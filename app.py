@@ -3,7 +3,7 @@ from flask_cors import cross_origin
 import traceback
 from assets import generator
 from assets.components import get_methods_from_test_cases, Method, Parameter, TestSet, ParamRange
-from app.services import MethodCatcherService
+from app.services.MethodCatcherService import MethodCatcherService
 from flasgger import Swagger
 
 app = Flask(__name__)
