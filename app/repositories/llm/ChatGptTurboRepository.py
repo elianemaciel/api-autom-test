@@ -5,12 +5,16 @@ from openai import OpenAI
 from assets.components import Method
 from assets.repository.LLMRepository import LLMRepository
 from environment import SecretConfig
+from dotenv import load_dotenv
+import os
 
+# Carrega o arquivo .env
+load_dotenv()
 
 class ChatGptTurboRepository(LLMRepository):
 
     def __init__(self):
-        self.client = OpenAI(api_key=SecretConfig.OPEN_AI_API_KEY)
+        self.client = OpenAI(api_key=os.getenv('OPEN_AI_API_KEY'))
 
     def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
         self.isActive = True
@@ -27,7 +31,7 @@ class ChatGptTurboRepository(LLMRepository):
         request = self._enrich_llm_request(self.user_story_txt, super().get_lang())
 
         completion = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model=os.getenv('OPEN_AI_MODEL'),
             messages=[
                 {"role": "system",
                  "content": "You are an assistant that returns JSON output for the requested input"},

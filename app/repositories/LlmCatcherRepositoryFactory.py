@@ -1,16 +1,13 @@
 from app.repositories.LlmCatcherRepository import LlmCatcherRepository
 from app.repositories.llm.ChatGptTurboRepository import ChatGptTurboRepository
-from app.repositories.llm.PalmLlmRepository import PalmLlmRepository
 from app.repositories.llm.GeminiRepository import GeminiRepository
-from assets.repository.NlpWithChatGptTurboRepository import NlpWithChatGptTurboRepository
-
+from app.repositories.llm.LlamaRepository import LlamaRepository
 class LlmCatcherRepositoryFactory:
     
     LLM_MAP = {
-        "chatgpt": ChatGptTurboRepository,
-        "palm": PalmLlmRepository,
-        "nlp": NlpWithChatGptTurboRepository,
-        "gemini": GeminiRepository
+        "gpt": ChatGptTurboRepository,
+        "gemini": GeminiRepository,
+        "llama": LlamaRepository,
     }
     @staticmethod
     def create(user_story, language, llm_name, getAllMethodsAccepted=lambda: []):

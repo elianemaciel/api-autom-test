@@ -5,19 +5,20 @@ from openai import OpenAI
 from assets.components import Method
 from assets.repository.LLMRepository import LLMRepository
 from environment import SecretConfig
-from google import genai
+from groq import Groq
+from llama_api_client import LlamaAPIClient
 from dotenv import load_dotenv
 import os
 
 # Carrega o arquivo .env
 load_dotenv()
 
-class GeminiRepository(LLMRepository):
+class LlamaRepository(LLMRepository):
 
     def __init__(self):
-        self.client = genai.Client(api_key=os.getenv('GOOGLE_API_KEY'))
-
-
+        self.client = LlamaAPIClient(
+            api_key=os.getenv('LLAMA_API_KEY')  # This is the default and can be omitted
+        )
     def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
         self.isActive = True
         super().setup(user_story, language, getAllMethodsAccepted)
@@ -32,12 +33,21 @@ class GeminiRepository(LLMRepository):
     def get_methods_from_user_stories(self):
         request = self._enrich_llm_request(self.user_story_txt, super().get_lang())
 
-        response = self.client.models.generate_content(model="gemini-2.5-flash", contents=request)
-        result_content = response.text
+        completion = self.client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": request,
+                }
+            ],
+            model="Llama-4-Maverick-17B-128E-Instruct-FP8",
+        )
 
-        print("<gemini-1.5-flash>" + str(result_content))
+        result_content = completion.choices[0].message.content
+        print("<llama3>" + str(result_content))
 
-        result_json = result_content.replace("```json", '').replace("```", '')
+        # Remover possíveis marcações de bloco
+        result_json = result_content.replace("```json", '').replace("```", "").strip()
 
         return self._extract_methods_from_result(result_json, super().get_lang())
 
@@ -70,8 +80,8 @@ class GeminiRepository(LLMRepository):
                     new_method.add_param_by_arg(param_name, param_type)
                 methods.append(new_method)
 
-        except Exception as e:
-            print("Erro ao tentar gerar JSON a partir do resultado do Gemini:", e)
+        except:
+            print('Erro ao tentar gerar Json a partir do resultado do gpt-3.5-turbo.')
 
         return methods
 
