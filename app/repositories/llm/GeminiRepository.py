@@ -5,12 +5,18 @@ from openai import OpenAI
 from assets.components import Method
 from assets.repository.LLMRepository import LLMRepository
 from environment import SecretConfig
+from google import genai
+from dotenv import load_dotenv
+import os
 
+# Carrega o arquivo .env
+load_dotenv()
 
-class ChatGptTurboRepository(LLMRepository):
+class GeminiRepository(LLMRepository):
 
     def __init__(self):
-        self.client = OpenAI(api_key=SecretConfig.OPEN_AI_API_KEY)
+        self.client = genai.Client(api_key=os.getenv('GOOGLE_API_KEY'))
+
 
     def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
         self.isActive = True
@@ -26,17 +32,12 @@ class ChatGptTurboRepository(LLMRepository):
     def get_methods_from_user_stories(self):
         request = self._enrich_llm_request(self.user_story_txt, super().get_lang())
 
-        completion = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system",
-                 "content": "You are an assistant that returns JSON output for the requested input"},
-                {"role": "user", "content": request}
-            ]
-        )
-        print("<gpt-3.5-turbo>" + str(completion.choices[0].message.content))
-        result_content = completion.choices[0].message.content
-        result_json = result_content.replace("```json", '').replace('```', '')
+        response = self.client.models.generate_content(model="gemini-2.5-flash", contents=request)
+        result_content = response.text
+
+        print("<gemini-1.5-flash>" + str(result_content))
+
+        result_json = result_content.replace("```json", '').replace("```", '')
 
         return self._extract_methods_from_result(result_json, super().get_lang())
 
@@ -69,8 +70,8 @@ class ChatGptTurboRepository(LLMRepository):
                     new_method.add_param_by_arg(param_name, param_type)
                 methods.append(new_method)
 
-        except:
-            print('Erro ao tentar gerar Json a partir do resultado do gpt-3.5-turbo.')
+        except Exception as e:
+            print("Erro ao tentar gerar JSON a partir do resultado do Gemini:", e)
 
         return methods
 
