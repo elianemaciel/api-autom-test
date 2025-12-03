@@ -6,8 +6,7 @@ from assets.repository.LLMRepository import LLMRepository
 from google import genai
 from dotenv import load_dotenv
 import os
-import app.repositories.llm.prompts.PromptBuilder as PromptBuilder
-
+from app.repositories.llm.prompts.PromptBuilder import PromptBuilder
 # Carrega o arquivo .env
 load_dotenv()
 
@@ -75,7 +74,7 @@ class GeminiRepository(LLMRepository):
         return methods
 
     def _enrich_llm_request(self, user_stories, language):
-        builder = PromptBuilder("prompts")
+        builder = PromptBuilder()
 
         prompt = builder.enrich_llm_request(
             user_stories=user_stories,

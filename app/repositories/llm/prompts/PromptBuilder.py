@@ -4,7 +4,7 @@ import os
 class PromptBuilder:
 
     def __init__(self, prompts_dir="methods"):
-        self.prompts_dir = "prompts/" + prompts_dir
+        self.prompts_dir = "app/repositories/llm/prompts/" + prompts_dir
 
     def _load_prompt_file(self, language):
         lang_key = "en" if language == "en" else "pt"
@@ -19,10 +19,12 @@ class PromptBuilder:
 
     def enrich_llm_request(self, user_stories, language):
         prompt_data = self._load_prompt_file(language)
-
+        print(prompt_data)
         if "template" not in prompt_data:
             raise KeyError(f"Missing 'template' key in prompt file for language '{language}'")
 
+        print("Loaded prompt template:")
+        print(prompt_data)
         template = prompt_data["template"]
 
-        return template.format(user_stories=user_stories)
+        return template.replace("{user_stories}", user_stories)
