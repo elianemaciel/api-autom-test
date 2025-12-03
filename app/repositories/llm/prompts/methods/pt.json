@@ -1,0 +1,3 @@
+{
+  "template": "Você é um assistente que retorna JSON como saída para o input que vou fornecer.\nUse a História de Usuário com Critérios de Aceitação abaixo para sugerir métodos Java e um nome de classe. Os únicos tipos de dados permitidos são: int, String, float, double, char, boolean, Date.\nUse o seguinte formato JSON:\n[\n    {\n        \"metodo\": \"isMenorDeIdade\",\n        \"parametros\": [\n            {\n                \"nome\": \"codigoClasse\",\n                \"tipo\": \"String\"\n            }\n        ],\n        \"tipoRetorno\": \"boolean\",\n        \"nomeClasse\": \"VerificadorIdade\"\n    },\n    {\n        ...\n    }\n]\nA História de Usuário é a seguinte:\n{user_stories}"
+}

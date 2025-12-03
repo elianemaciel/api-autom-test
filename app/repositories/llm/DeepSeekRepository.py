@@ -4,20 +4,20 @@ from openai import OpenAI
 
 from assets.components import Method
 from assets.repository.LLMRepository import LLMRepository
-from environment import SecretConfig
-from groq import Groq
-from llama_api_client import LlamaAPIClient
+from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import app.repositories.llm.prompts.PromptBuilder as PromptBuilder
 
 # Carrega o arquivo .env
 load_dotenv()
 
-class LlamaRepository(LLMRepository):
+class DeepSeekRepository(LLMRepository):
 
     def __init__(self):
-        self.client = LlamaAPIClient(
-            api_key=os.getenv('LLAMA_API_KEY')  # This is the default and can be omitted
+        self.client = OpenAI(
+            api_key=os.getenv('DEEP_SEEK_KEY'),
+            base_url="https://api.deepseek.com"
         )
     def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
         self.isActive = True
@@ -40,11 +40,11 @@ class LlamaRepository(LLMRepository):
                     "content": request,
                 }
             ],
-            model="Llama-4-Maverick-17B-128E-Instruct-FP8",
+            model="deepseek-chat",
         )
 
         result_content = completion.choices[0].message.content
-        print("<llama3>" + str(result_content))
+        print("<deepseek>" + str(result_content))
 
         # Remover possíveis marcações de bloco
         result_json = result_content.replace("```json", '').replace("```", "").strip()
@@ -86,46 +86,10 @@ class LlamaRepository(LLMRepository):
         return methods
 
     def _enrich_llm_request(self, user_stories, language):
-        if language == 'en':
-            return 'You are an assistant that returns JSON output for the requested input.\n' \
-                   'Use the user story with acceptance criteria below to suggest Java methods and class name.' \
-                   'The valid data types are ONLY: int, String, float, double, char, boolean.\n' \
-                   ' Use the following json format:\n' \
-                   '[{\n' \
-                   '    "method": "isMinorAge",\n' \
-                   '   "parameters": [\n' \
-                   '       {\n' \
-                   '           "name": "classCode",\n' \
-                   '           "type": "String"\n' \
-                   '       }\n' \
-                   '   ],\n' \
-                   '    "returnType": "boolean",\n' \
-                   '    "className": "AgeVerifier"\n' \
-                   '},\n' \
-                   '{\n' \
-                   '...\n' \
-                   '}]\n' \
-                   'The user story is this:\n' \
-                   '' + user_stories
-        else:
-            return 'Você é um assistente que retorna JSON como saída para o input que vou fornecer.\n' \
-                   'Use a História de Usuário com Critérios de Aceitação abaixo pra sugerir métodos Java e ' \
-                   'um nome de classe. ' \
-                   'Os únicos tipos de dados permitidos são: int, String, float, double, char, boolean, Date.\n' \
-                   'Use o seguinte formato JSON:\n' \
-                   '[{\n' \
-                   '    "metodo": "isMenorDeIdade",\n' \
-                   '   "parametros": [\n' \
-                   '       {\n' \
-                   '           "nome": "codigoClasse",\n' \
-                   '           "tipo": "String"\n' \
-                   '       }\n' \
-                   '   ],\n' \
-                   '    "tipoRetorno": "boolean",\n' \
-                   '    "nomeClasse": "VerificadorIdade"\n' \
-                   '},\n' \
-                   '{\n' \
-                   '...\n' \
-                   '}]\n' \
-                   'A História de Usuário é a seguinte:\n' \
-                   '' + user_stories
+        builder = PromptBuilder("prompts")
+
+        prompt = builder.enrich_llm_request(
+            user_stories=user_stories,
+            language=language
+        )
+        return prompt

@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import cross_origin
 import traceback
-from assets import generator
+from app.services import generator
 from assets.components import get_methods_from_test_cases, Method, Parameter, TestSet, ParamRange
 from app.services.MethodCatcherService import MethodCatcherService
 from flasgger import Swagger
@@ -166,11 +166,9 @@ def process_user_story():
         if user_story is None or user_story == '':
             errorMsg = "Invalid body. Please provide the fields 'lang' and 'userStory' inside a json body"
             return jsonify({'error': errorMsg}), 400
-        print('primeiro')
         # Process the user story
         methodsService = MethodCatcherService(user_story, lang, selected_ia)
         methods = methodsService.get()
-        print('aquui')
         methods = get_methods_from_test_cases(methods)
 
         #Build response

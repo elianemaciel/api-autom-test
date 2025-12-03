@@ -1,13 +1,12 @@
 import json
 
-from openai import OpenAI
 
 from assets.components import Method
 from assets.repository.LLMRepository import LLMRepository
-from environment import SecretConfig
 from google import genai
 from dotenv import load_dotenv
 import os
+import app.repositories.llm.prompts.PromptBuilder as PromptBuilder
 
 # Carrega o arquivo .env
 load_dotenv()
@@ -76,46 +75,10 @@ class GeminiRepository(LLMRepository):
         return methods
 
     def _enrich_llm_request(self, user_stories, language):
-        if language == 'en':
-            return 'You are an assistant that returns JSON output for the requested input.\n' \
-                   'Use the user story with acceptance criteria below to suggest Java methods and class name.' \
-                   'The valid data types are ONLY: int, String, float, double, char, boolean.\n' \
-                   ' Use the following json format:\n' \
-                   '[{\n' \
-                   '    "method": "isMinorAge",\n' \
-                   '   "parameters": [\n' \
-                   '       {\n' \
-                   '           "name": "classCode",\n' \
-                   '           "type": "String"\n' \
-                   '       }\n' \
-                   '   ],\n' \
-                   '    "returnType": "boolean",\n' \
-                   '    "className": "AgeVerifier"\n' \
-                   '},\n' \
-                   '{\n' \
-                   '...\n' \
-                   '}]\n' \
-                   'The user story is this:\n' \
-                   '' + user_stories
-        else:
-            return 'Você é um assistente que retorna JSON como saída para o input que vou fornecer.\n' \
-                   'Use a História de Usuário com Critérios de Aceitação abaixo pra sugerir métodos Java e ' \
-                   'um nome de classe. ' \
-                   'Os únicos tipos de dados permitidos são: int, String, float, double, char, boolean, Date.\n' \
-                   'Use o seguinte formato JSON:\n' \
-                   '[{\n' \
-                   '    "metodo": "isMenorDeIdade",\n' \
-                   '   "parametros": [\n' \
-                   '       {\n' \
-                   '           "nome": "codigoClasse",\n' \
-                   '           "tipo": "String"\n' \
-                   '       }\n' \
-                   '   ],\n' \
-                   '    "tipoRetorno": "boolean",\n' \
-                   '    "nomeClasse": "VerificadorIdade"\n' \
-                   '},\n' \
-                   '{\n' \
-                   '...\n' \
-                   '}]\n' \
-                   'A História de Usuário é a seguinte:\n' \
-                   '' + user_stories
+        builder = PromptBuilder("prompts")
+
+        prompt = builder.enrich_llm_request(
+            user_stories=user_stories,
+            language=language
+        )
+        return prompt
