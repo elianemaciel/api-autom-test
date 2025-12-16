@@ -35,7 +35,7 @@ python3 -m venv myvenv
 
 2. Linux:
 ```
-  source venv/bin/activate
+  source myvenv/bin/activate
 ```
 
 ### Instalação de dependências:
@@ -58,7 +58,7 @@ Uma vez tendo o arquivo de chaves configurado, execute o arquivo api/app.py
 
 1. Ative a virtualenv:
 ```
-  source meu_projeto_env/bin/activate
+  source source myvenv/bin/activate
 ```
 2. Rodando o python:
 

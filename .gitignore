@@ -8,3 +8,4 @@ environment/SecretConfig.py
 /api/dist/
 /api/build/app_linux
 myvenv/*
+.env
