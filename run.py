@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from flask_cors import cross_origin
+from flask_cors import cross_origin, CORS
 import traceback
 from app.services import generator
 from assets.components import get_methods_from_test_cases, Method, Parameter, TestSet, ParamRange
@@ -7,6 +7,7 @@ from app.services.MethodCatcherService import MethodCatcherService
 from flasgger import Swagger
 
 app = Flask(__name__)
+CORS(app)
 app.config['SWAGGER'] = {
     'title': 'API AutomTest Generator',
     'uiversion': 3
