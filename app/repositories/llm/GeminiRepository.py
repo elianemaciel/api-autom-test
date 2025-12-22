@@ -1,25 +1,24 @@
 import json
-
+import os
+from dotenv import load_dotenv
+import google.generativeai as genai
 
 from assets.components import Method
 from assets.repository.LLMRepository import LLMRepository
-from google import genai
-from dotenv import load_dotenv
-import os
 from app.repositories.llm.prompts.PromptBuilder import PromptBuilder
-# Carrega o arquivo .env
+
 load_dotenv()
 
 class GeminiRepository(LLMRepository):
 
     def __init__(self):
-        self.client = genai.Client(api_key=os.getenv('GOOGLE_API_KEY'))
-
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model = genai.GenerativeModel("gemini-2.5-flash")
 
     def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
         self.isActive = True
         super().setup(user_story, language, getAllMethodsAccepted)
-
+    
     def compute_extra_methods(self):
         with super().lock:
             if self.isActive and not (self.curr_amount_of_retries - self.max_retries > 0 and len(self.methods) < self.min_amount_results):
@@ -30,13 +29,12 @@ class GeminiRepository(LLMRepository):
     def get_methods_from_user_stories(self):
         request = self._enrich_llm_request(self.user_story_txt, super().get_lang())
 
-        response = self.client.models.generate_content(model="gemini-2.5-flash", contents=request)
+        response = self.model.generate_content(request)
         result_content = response.text
 
-        print("<gemini-1.5-flash>" + str(result_content))
+        print("<gemini-2.5-flash>" + str(result_content))
 
         result_json = result_content.replace("```json", '').replace("```", '')
-
         return self._extract_methods_from_result(result_json, super().get_lang())
 
     def _extract_methods_from_result(self, result_json, language):
