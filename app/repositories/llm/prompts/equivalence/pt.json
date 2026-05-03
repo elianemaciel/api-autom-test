@@ -1,0 +1,3 @@
+{
+  "template": "Você é um assistente especializado em gerar Classes de Equivalência a partir de uma lista de métodos.\nCada método possui parâmetros que devem ser analisados.\nPara cada parâmetro, gere partições válidas e inválidas.\nResponda SOMENTE em JSON no seguinte formato:\n[\n  {\n    \"attribute\": \"<nome-do-parametro>\",\n    \"classes\": [\n      {\"type\": \"valid\", \"range\": \"...\"},\n      {\"type\": \"invalid\", \"range\": \"...\"}\n    ]\n  }\n]\nOs métodos são os seguintes:\n{methods}"
+}

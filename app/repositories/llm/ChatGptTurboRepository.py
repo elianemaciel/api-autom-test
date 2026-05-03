@@ -86,3 +86,14 @@ class ChatGptTurboRepository(LLMRepository):
             language=language
         )
         return prompt
+    
+    def chat_completion(self, prompt):
+        completion = self.client.chat.completions.create(
+            model=os.getenv('OPEN_AI_MODEL'),
+            messages=[
+                {"role": "system",
+                 "content": "You are an assistant that returns JSON output for the requested input"},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return completion.choices[0].message.content

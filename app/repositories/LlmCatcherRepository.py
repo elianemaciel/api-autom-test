@@ -14,3 +14,6 @@ class LlmCatcherRepository:
 
     def get_caught_methods(self):
         return self.llm_repository.get_caught_methods()
+    
+    def chat_completion(self, messages):
+        return self.llm_repository.chat_completion(messages)

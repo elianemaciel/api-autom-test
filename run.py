@@ -4,6 +4,7 @@ import traceback
 from app.services import generator
 from assets.components import get_methods_from_test_cases, Method, Parameter, TestSet, ParamRange
 from app.services.MethodCatcherService import MethodCatcherService
+from app.services.EquivalenceClassService import EquivalenceClassService
 from flasgger import Swagger
 
 app = Flask(__name__)
@@ -187,6 +188,36 @@ def process_user_story():
         traceback.print_exc()
         error_message = str(e)
         return jsonify({'error': error_message}), 400
+
+@app.route('/api/process_class_equivalence', methods=['POST'])
+@cross_origin()
+def process_class_equivalence():
+    try:
+        data = request.get_json()
+
+        if data is None:
+            return jsonify({'error': "Invalid Json format provided."}), 400
+
+        lang = data.get('lang')
+        methods = data.get('methods')
+        selected_ia = data.get('selectedIA')
+
+        if lang not in ['pt', 'en']:
+            return jsonify({'error': "Field 'lang' must be 'pt' or 'en'"}), 400
+
+        if not methods:
+            return jsonify({'error': "Field 'methods' is required"}), 400
+
+        service = EquivalenceClassService(methods, lang, selected_ia)
+        result = service.get()
+
+        # Aqui você pode fazer um parser caso queira transformar o JSON retornado pelo LLM em objetos
+        return jsonify(result), 200
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 400
+
 
 
 if __name__ == '__main__':
