@@ -37,6 +37,16 @@ class GeminiRepository(LLMRepository):
         result_json = result_content.replace("```json", '').replace("```", '')
         return self._extract_methods_from_result(result_json, super().get_lang())
 
+    def chat_completion(self, prompt):
+        response = self.model.generate_content(
+            prompt,
+            generation_config={
+                "temperature": 0.2,
+                "max_output_tokens": 700,
+            },
+        )
+        return response.text
+
     def _extract_methods_from_result(self, result_json, language):
         print('_extract_methods_from_result')
         methods = []

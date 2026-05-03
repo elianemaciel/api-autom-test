@@ -28,3 +28,11 @@ class PromptBuilder:
         template = prompt_data["template"]
 
         return template.replace("{user_stories}", user_stories)
+
+    def build_equivalence_prompt(self, method, language):
+        prompt_data = self._load_prompt_file(language)
+        if "template" not in prompt_data:
+            raise KeyError(f"Missing 'template' key in prompt file for language '{language}'")
+
+        method_json = json.dumps(method, ensure_ascii=False, separators=(",", ":"))
+        return prompt_data["template"].replace("{method}", method_json)

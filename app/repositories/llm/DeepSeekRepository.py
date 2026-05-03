@@ -51,6 +51,20 @@ class DeepSeekRepository(LLMRepository):
 
         return self._extract_methods_from_result(result_json, super().get_lang())
 
+    def chat_completion(self, prompt):
+        completion = self.client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ],
+            model="deepseek-chat",
+            max_tokens=700,
+            temperature=0.2,
+        )
+        return completion.choices[0].message.content
+
     def _extract_methods_from_result(self, result_json, language):
         print('_extract_methods_from_result')
         methods = []

@@ -1,3 +1,3 @@
 {
-  "template": "You are an assistant specialized in generating Equivalence Classes from a list of methods.\nEach method has parameters that must be analyzed.\nFor each parameter, generate valid and invalid partitions.\nReturn ONLY JSON in the following format:\n[\n  {\n    \"attribute\": \"<parameter-name>\",\n    \"classes\": [\n      {\"type\": \"valid\", \"range\": \"...\"},\n      {\"type\": \"invalid\", \"range\": \"...\"}\n    ]\n  }\n]\nThe methods are:\n{methods}"
+  "template": "Generate valid equivalence classes for ONE Java method.\nReturn ONLY JSON, without markdown, comments, or extra text.\nFor each parameter, generate only 1 simple valid partition.\nRequired format:\n[\n  {\"attribute\":\"<parameter-name>\",\"classes\":[{\"type\":\"valid\",\"range\":\"<range-or-values>\"}]}\n]\nUse short ranges. For boolean use true or false. For String use plain text. For char use characters separated by semicolon.\nMethod:\n{method}"
 }

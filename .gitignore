@@ -9,4 +9,4 @@ environment/SecretConfig.py
 /api/build/app_linux
 myvenv/*
 .env
-venv/*
+.venv/*
