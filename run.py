@@ -1,8 +1,8 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from flask_cors import cross_origin, CORS
 import traceback
-from app.services import generator
-from assets.components import get_methods_from_test_cases, Method, Parameter, TestSet, ParamRange
+from assets.components import get_methods_from_test_cases
+from app.services.GenerateTestsService import GenerateTestsService
 from app.services.MethodCatcherService import MethodCatcherService
 from app.services.EquivalenceClassService import EquivalenceClassService
 from flasgger import Swagger
@@ -52,84 +52,61 @@ def generate_tests():
               example: ok
     """
     try:
-        # Get the JSON data from the request
-        data = request.get_json()
+        result, status = GenerateTestsService().generate_tests_archive(request.get_json())
+        if status != 200:
+            return jsonify(result), status
 
-        if data is None:
-            return jsonify({'error': "Invalid Json format provided."}), 400
-
-        # Extract relevant fields
-        methodsJson = data.get('methods')
-        directory = data.get('directory')
-
-        if methodsJson is None or methodsJson is []:
-            errorMsg = "Invalid JSON body. Please provide a list of methods and a directory to save the result"
-            return jsonify({'error': errorMsg}), 400
-
-        #TODO: validar cada classe de equivalência fornecida: têm todos os campos necessários?
-        #TODO: directory é um local válido?
-
-        #Get methods from request body
-        methods = []
-        for methodJson in methodsJson:
-            method = Method(
-                            identifier=methodJson.get('identifier'),
-                            name=methodJson.get('name'),
-                            package_name=methodJson.get('packageName') if methodJson.get('packageName') else '',
-                            class_name=methodJson.get('className'),
-                            output_type=methodJson.get('returnType')
-            )
-            print(method)
-            for parameter in methodJson.get('parameters'):
-                method.add_param_by_parameter(
-                    Parameter(
-                        identifier=parameter.get('identifier'),
-                        name=parameter.get('name'),
-                        type_name=parameter.get('type')
-                    )
-                )
-            for equivClass in methodJson.get('equivClasses'):
-                outputJson = equivClass.get('expectedOutputRange')
-                outputRange = ParamRange(
-                    Parameter('saida_esperada', methodJson.get('returnType')),
-                    outputJson.get('v1'),
-                    outputJson.get('v2'),
-                    outputJson.get('v3')
-                )
-                print('aqui')
-                testSet = TestSet(
-                    name=equivClass.get('name'),
-                    number_of_cases=equivClass.get('numberOfCases'),
-                    expected_range=outputRange,
-                    identifier=equivClass.get('identifier'),
-                )
-
-                paramRangesJson = equivClass.get('acceptableParamRanges')
-                for paramRangeJson in paramRangesJson:
-                    param = method.findParamByIdentifier(paramRangeJson.get('param_id'))
-                    testSet.add_param_range(
-                        ParamRange(
-                            param,
-                            paramRangeJson.get('v1'),
-                            paramRangeJson.get('v2'),
-                            paramRangeJson.get('v3')
-                        )
-                    )
-                    method.add_testset(testSet)
-            if len(method.testsets) > 0:
-                methods.append(method)
-
-        # Process the user story
-        for method in methods:
-            generator.generate_tests(method, directory)
-
-        #Build response
-        return jsonify("Success generating tests"), 200
+        response = send_file(
+            result.get('buffer'),
+            mimetype=result.get('mimetype'),
+            as_attachment=True,
+            download_name=result.get('download_name')
+        )
+        response.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return response
 
     except Exception as e:
         # Handle any exceptions (e.g., invalid JSON format)
+        traceback.print_exc()
         error_message = str(e)
         return jsonify({'error': error_message}), 500
+
+
+@app.route('/api/generate_tests_llm', methods=['POST'])
+@cross_origin()
+def generate_tests_llm():
+    """
+    Endpoint Generate Tests LLM - recebe métodos/classes de equivalência e retorna testes em JSON
+    ---
+    responses:
+      200:
+        description: Retorna os testes gerados pelo LLM em JSON
+    """
+    try:
+        result, status = GenerateTestsService().generate_tests_with_llm(request.get_json())
+        return jsonify(result), status
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/generate_tests_file', methods=['POST'])
+@cross_origin()
+def generate_tests_file():
+    """
+    Endpoint legado - gera arquivos Java localmente sem LLM
+    ---
+    responses:
+      200:
+        description: Retorna sucesso após salvar os testes gerados em arquivo
+    """
+    try:
+        result, status = GenerateTestsService().generate_tests_file(request.get_json())
+        return jsonify(result), status
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/process_user_story', methods=['POST'])
