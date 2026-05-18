@@ -3,6 +3,7 @@ import json
 from app.repositories.llm.prompts.PromptBuilder import PromptBuilder
 from app.repositories.LlmCatcherRepositoryFactory import LlmCatcherRepositoryFactory
 
+
 class EquivalenceClassService:
 
     def __init__(self, methods, lang, selected_ia):

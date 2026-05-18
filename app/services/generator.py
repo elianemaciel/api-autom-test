@@ -27,6 +27,9 @@ def generate_Date(v1, v2, v3):
 
         time_between_dates = end_date - start_date
         days_between_dates = time_between_dates.days
+        if days_between_dates <= 0:
+            return str(start_date)
+
         random_number_of_days = random.randrange(days_between_dates)
         random_date = start_date + datetime.timedelta(days=random_number_of_days)
 

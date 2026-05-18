@@ -60,7 +60,7 @@ class DeepSeekRepository(LLMRepository):
                 }
             ],
             model="deepseek-chat",
-            max_tokens=700,
+            max_tokens=4096,
             temperature=0.2,
         )
         return completion.choices[0].message.content

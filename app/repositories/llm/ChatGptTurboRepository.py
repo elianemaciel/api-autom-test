@@ -95,6 +95,7 @@ class ChatGptTurboRepository(LLMRepository):
                  "content": "You are an assistant that returns JSON output for the requested input"},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.2
+            temperature=0.2,
+            max_tokens=4096
         )
         return completion.choices[0].message.content

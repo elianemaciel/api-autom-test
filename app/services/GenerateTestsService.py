@@ -1,9 +1,15 @@
 from io import BytesIO
+import re
 from zipfile import ZipFile, ZIP_DEFLATED
 
-from app.repositories.LlmCatcherRepositoryFactory import LlmCatcherRepositoryFactory
+from app.repositories.LlmCatcherRepositoryFactory import (
+    LlmCatcherRepositoryFactory
+)
 from app.services import generator
-from app.services.LlmTestCaseService import LlmTestCaseService
+from app.services.LlmTestCaseService import (
+    LlmResponseParseError,
+    LlmTestCaseService
+)
 from assets.components import Method, Parameter, TestSet, ParamRange
 
 
@@ -19,34 +25,19 @@ class GenerateTestsService:
             error_msg = "Invalid JSON body. Please provide a list of methods"
             return {'error': error_msg}, 400
 
-        methods = self._build_legacy_methods(methods_json)
-        generated_files = self._build_generated_files(methods)
+        try:
+            methods = self._build_legacy_methods(methods_json)
+            generated_files = self._build_generated_files(methods)
+        except ValueError as error:
+            return {'error': str(error)}, 400
 
         if not generated_files:
             return {'error': "No tests could be generated from the provided methods"}, 400
 
-        if len(generated_files) == 1:
-            file_name, content = next(iter(generated_files.items()))
-            file_buffer = BytesIO(content.encode('utf-8'))
-            file_buffer.seek(0)
-
-            return {
-                'buffer': file_buffer,
-                'download_name': file_name,
-                'mimetype': 'text/x-java-source'
-            }, 200
-
-        zip_buffer = BytesIO()
-        with ZipFile(zip_buffer, 'w', ZIP_DEFLATED) as zip_file:
-            for file_name, content in generated_files.items():
-                zip_file.writestr(file_name, content)
-        zip_buffer.seek(0)
-
-        return {
-            'buffer': zip_buffer,
-            'download_name': 'AutomTestGeneratedTests.zip',
-            'mimetype': 'application/zip'
-        }, 200
+        return self._build_file_response(
+            generated_files,
+            'AutomTestGeneratedTests.zip'
+        ), 200
 
     def generate_tests_file(self, data):
         if data is None:
@@ -78,7 +69,10 @@ class GenerateTestsService:
         )
         lang = data.get('lang', 'pt')
         selected_ia = data.get('selectedIA', 'gpt')
-        target_language = data.get('targetLanguage', data.get('language', 'java'))
+        target_language = data.get(
+            'targetLanguage',
+            data.get('language', 'java')
+        )
 
         if lang not in ['pt', 'en']:
             return {'error': "Field 'lang' must be 'pt' or 'en'"}, 400
@@ -86,33 +80,162 @@ class GenerateTestsService:
         if not methods or not isinstance(methods, list):
             return {'error': "Field 'methods' is required and must be a non-empty list"}, 400
 
-        if not selected_ia or selected_ia.lower() not in LlmCatcherRepositoryFactory.LLM_MAP:
+        if (not selected_ia
+                or selected_ia.lower() not in LlmCatcherRepositoryFactory.LLM_MAP):
             return {'error': "Field 'selectedIA' must be one of: gpt, gemini, deepseek"}, 400
 
         normalized_methods = self._normalize_methods_for_llm(methods, equivalence_classes)
         if not normalized_methods:
             return {'error': "Field 'methods' must contain valid method objects"}, 400
 
-        methods_without_equiv_classes = [
-            method.get('name') or method.get('identifier')
+        methods_with_equiv_classes = [
+            method
             for method in normalized_methods
-            if not method.get('equivClasses')
+            if method.get('equivClasses')
         ]
 
-        if methods_without_equiv_classes:
+        if not methods_with_equiv_classes:
             return {
-                'error': "Every method must include at least one equivalence class",
-                'methodsWithoutEquivalenceClasses': methods_without_equiv_classes
+                'error': "At least one method must include at least one equivalence class"
             }, 400
 
         service = LlmTestCaseService(
-            methods=normalized_methods,
+            methods=methods_with_equiv_classes,
             lang=lang,
             selected_ia=selected_ia,
             target_language=target_language
         )
 
-        return service.get(), 200
+        try:
+            generated_tests = service.get()
+            generated_files = self._build_llm_generated_files(generated_tests)
+
+            if not generated_files:
+                return {'error': "No test files could be generated from the LLM response"}, 502
+
+            return self._build_file_response(
+                generated_files,
+                'AutomTestGeneratedLlmTests.zip'
+            ), 200
+        except LlmResponseParseError as error:
+            return {
+                'error': str(error),
+                'rawResponse': error.raw_response
+            }, 502
+
+    def _build_file_response(self, generated_files, zip_file_name):
+        if len(generated_files) == 1:
+            file_name, content = next(iter(generated_files.items()))
+            file_buffer = BytesIO(content.encode('utf-8'))
+            file_buffer.seek(0)
+
+            return {
+                'buffer': file_buffer,
+                'download_name': file_name,
+                'mimetype': 'text/x-java-source'
+            }
+
+        zip_buffer = BytesIO()
+        with ZipFile(zip_buffer, 'w', ZIP_DEFLATED) as zip_file:
+            for file_name, content in generated_files.items():
+                zip_file.writestr(file_name, content)
+        zip_buffer.seek(0)
+
+        return {
+            'buffer': zip_buffer,
+            'download_name': zip_file_name,
+            'mimetype': 'application/zip'
+        }
+
+    def _build_llm_generated_files(self, generated_tests):
+        if isinstance(generated_tests, dict):
+            generated_tests = [generated_tests]
+
+        if not isinstance(generated_tests, list):
+            return {}
+
+        generated_files = {}
+        for test_class in generated_tests:
+            if not isinstance(test_class, dict):
+                continue
+
+            class_name = (
+                test_class.get('testClassName')
+                or f"{test_class.get('className', 'Generated')}Test"
+            )
+            file_name = f"{class_name}.java"
+            generated_files[file_name] = self._build_java_test_class(
+                class_name,
+                test_class
+            )
+
+        return {
+            file_name: content
+            for file_name, content in generated_files.items()
+            if content
+        }
+
+    def _build_java_test_class(self, class_name, test_class):
+        tests = test_class.get('tests') or []
+        test_methods = [
+            test.get('code')
+            for test in tests
+            if isinstance(test, dict) and test.get('code')
+        ]
+
+        if not test_methods:
+            return ''
+
+        package_name = test_class.get('packageName')
+        imports = test_class.get('imports') or []
+
+        lines = []
+        if package_name:
+            lines.extend([f"package {package_name};", ""])
+
+        for import_line in self._normalize_java_imports(imports):
+            lines.append(import_line)
+
+        if not any('org.junit' in import_line for import_line in lines):
+            lines.append("import org.junit.jupiter.api.Test;")
+
+        lines.extend(["", f"public class {class_name} {{"])
+        for test_method in test_methods:
+            lines.append("")
+            lines.append(self._indent_java_code(test_method, 4))
+        lines.append("}")
+
+        return "\n".join(lines)
+
+    def _normalize_java_imports(self, imports):
+        normalized_imports = []
+
+        for import_line in imports:
+            if not isinstance(import_line, str) or not import_line.strip():
+                continue
+
+            import_line = import_line.strip()
+            if not import_line.startswith('import '):
+                import_line = f"import {import_line}"
+            if not import_line.endswith(';'):
+                import_line = f"{import_line};"
+
+            if import_line not in normalized_imports:
+                normalized_imports.append(import_line)
+
+        return normalized_imports
+
+    def _indent_java_code(self, code, spaces):
+        prefix = ' ' * spaces
+        stripped_code = code.strip()
+
+        if stripped_code.startswith('public class ') or ' class ' in stripped_code[:80]:
+            return stripped_code
+
+        return "\n".join(
+            f"{prefix}{line}" if line.strip() else ""
+            for line in stripped_code.splitlines()
+        )
 
     def _build_generated_files(self, methods):
         generated_files = {}
@@ -161,7 +284,7 @@ class GenerateTestsService:
                 continue
 
             normalized_method = dict(method)
-            normalized_method['equivClasses'] = list(method.get('equivClasses') or [])
+            normalized_method['equivClasses'] = self._extract_method_equiv_classes(method)
             normalized_methods.append(normalized_method)
 
         if not equivalence_classes:
@@ -191,11 +314,50 @@ class GenerateTestsService:
 
             target_method = method_by_identifier.get(method_identifier) or method_by_name.get(method_name)
             if target_method is not None:
-                target_method.setdefault('equivClasses', []).append(equiv_class)
+                self._append_equiv_class(target_method, equiv_class)
             elif len(normalized_methods) == 1:
-                normalized_methods[0].setdefault('equivClasses', []).append(equiv_class)
+                self._append_equiv_class(normalized_methods[0], equiv_class)
 
         return normalized_methods
+
+    def _extract_method_equiv_classes(self, method):
+        equiv_classes = (
+            method.get('equivClasses')
+            or method.get('equivalenceClasses')
+            or method.get('classesEquivalence')
+            or []
+        )
+
+        if not isinstance(equiv_classes, list):
+            return []
+
+        return [
+            equiv_class
+            for equiv_class in equiv_classes
+            if isinstance(equiv_class, dict)
+        ]
+
+    def _append_equiv_class(self, method, equiv_class):
+        method.setdefault('equivClasses', [])
+
+        if any(self._is_same_equiv_class(existing, equiv_class)
+               for existing in method['equivClasses']):
+            return
+
+        method['equivClasses'].append(equiv_class)
+
+    def _is_same_equiv_class(self, first, second):
+        first_identifier = first.get('identifier')
+        second_identifier = second.get('identifier')
+
+        if first_identifier and second_identifier:
+            return first_identifier == second_identifier
+
+        return (
+            first.get('name') == second.get('name')
+            and first.get('expectedOutputRange') == second.get('expectedOutputRange')
+            and first.get('acceptableParamRanges') == second.get('acceptableParamRanges')
+        )
 
     def _build_legacy_methods(self, methods_json):
         methods = []
@@ -205,20 +367,20 @@ class GenerateTestsService:
                 name=method_json.get('name'),
                 package_name=method_json.get('packageName') if method_json.get('packageName') else '',
                 class_name=method_json.get('className'),
-                output_type=method_json.get('returnType')
+                output_type=self._normalize_type_name(method_json.get('returnType'))
             )
             for parameter in method_json.get('parameters') or []:
                 method.add_param_by_parameter(
                     Parameter(
                         identifier=parameter.get('identifier'),
                         name=parameter.get('name'),
-                        type_name=parameter.get('type')
+                        type_name=self._normalize_type_name(parameter.get('type'))
                     )
                 )
             for equiv_class in method_json.get('equivClasses') or []:
                 output_json = equiv_class.get('expectedOutputRange') or {}
                 output_range = ParamRange(
-                    Parameter('saida_esperada', method_json.get('returnType')),
+                    Parameter('saida_esperada', method.output_type),
                     output_json.get('v1'),
                     output_json.get('v2'),
                     output_json.get('v3')
@@ -231,18 +393,140 @@ class GenerateTestsService:
                 )
 
                 param_ranges_json = equiv_class.get('acceptableParamRanges') or []
-                for param_range_json in param_ranges_json:
-                    param = method.findParamByIdentifier(param_range_json.get('param_id'))
-                    test_set.add_param_range(
-                        ParamRange(
-                            param,
-                            param_range_json.get('v1'),
-                            param_range_json.get('v2'),
-                            param_range_json.get('v3')
-                        )
-                    )
+                for param_range in self._build_ordered_param_ranges(
+                    method,
+                    equiv_class,
+                    param_ranges_json
+                ):
+                    test_set.add_param_range(param_range)
                 method.add_testset(test_set)
             if len(method.testsets) > 0:
                 methods.append(method)
 
         return methods
+
+    def _build_ordered_param_ranges(self, method, equiv_class, param_ranges_json):
+        ranges_by_param_id = {
+            param_range.get('param_id'): param_range
+            for param_range in param_ranges_json
+            if isinstance(param_range, dict) and param_range.get('param_id')
+        }
+        ranges_by_param_name = {
+            param_range.get('paramName') or param_range.get('name'):
+            param_range
+            for param_range in param_ranges_json
+            if isinstance(param_range, dict)
+        }
+        ordered_ranges = []
+
+        for param in method.params:
+            param_range_json = (
+                ranges_by_param_id.get(param.identifier)
+                or ranges_by_param_name.get(param.name)
+            )
+
+            if not param_range_json:
+                raise ValueError(
+                    f"Missing range for parameter '{param.name}' "
+                    f"in equivalence class '{equiv_class.get('name')}'"
+                )
+
+            param_range = ParamRange(
+                param,
+                param_range_json.get('v1') or '',
+                param_range_json.get('v2') or '',
+                param_range_json.get('v3') or ''
+            )
+            self._normalize_param_range_for_generator(param_range)
+            self._validate_param_range_for_generator(
+                method,
+                equiv_class,
+                param_range
+            )
+            ordered_ranges.append(param_range)
+
+        return ordered_ranges
+
+    def _normalize_param_range_for_generator(self, param_range):
+        if param_range.param.type_name == 'Date':
+            if not self._is_date(param_range.v1):
+                param_range.v1 = '01-01-2024'
+            if not self._is_date(param_range.v2):
+                param_range.v2 = '31-12-2024'
+
+    def _validate_param_range_for_generator(self, method, equiv_class, param_range):
+        type_name = param_range.param.type_name
+        values = [param_range.v1, param_range.v2, param_range.v3]
+        non_empty_values = [value for value in values if value != '']
+
+        if not non_empty_values:
+            raise self._invalid_range_error(method, equiv_class, param_range)
+
+        if type_name == 'int':
+            valid = (
+                self._is_int(param_range.v1)
+                and self._is_int(param_range.v2)
+                and self._is_optional_number_list(param_range.v3, self._is_int)
+            ) or (
+                param_range.v1 == ''
+                and param_range.v2 == ''
+                and self._is_optional_number_list(param_range.v3, self._is_int)
+            )
+        elif type_name in ['double', 'float']:
+            valid = (
+                self._is_float(param_range.v1)
+                and self._is_float(param_range.v2)
+                and self._is_optional_number_list(param_range.v3, self._is_float)
+            ) or (
+                param_range.v1 == ''
+                and param_range.v2 == ''
+                and self._is_optional_number_list(param_range.v3, self._is_float)
+            )
+        elif type_name == 'Date':
+            valid = self._is_date(param_range.v1) and self._is_date(param_range.v2)
+        elif type_name == 'boolean':
+            valid = param_range.v1.lower() in ['true', 'false']
+        else:
+            valid = True
+
+        if not valid:
+            raise self._invalid_range_error(method, equiv_class, param_range)
+
+    def _invalid_range_error(self, method, equiv_class, param_range):
+        return ValueError(
+            "Invalid range for parameter "
+            f"'{param_range.param.name}' ({param_range.param.type_name}) "
+            f"in method '{method.name}', equivalence class "
+            f"'{equiv_class.get('name')}': "
+            f"v1='{param_range.v1}', v2='{param_range.v2}', v3='{param_range.v3}'"
+        )
+
+    def _normalize_type_name(self, type_name):
+        normalized_type = (type_name or '').strip().lower()
+
+        if normalized_type == 'string':
+            return 'String'
+        if normalized_type == 'date':
+            return 'Date'
+
+        return normalized_type
+
+    def _is_int(self, value):
+        return bool(re.fullmatch(r'-?\d+', value or ''))
+
+    def _is_float(self, value):
+        return bool(re.fullmatch(r'-?\d+(\.\d+)?', value or ''))
+
+    def _is_optional_number_list(self, value, validator):
+        if value == '':
+            return True
+
+        return all(
+            validator(item)
+            for item in value.replace(' ', '').split(';')
+            if item != ''
+        )
+
+    def _is_date(self, value):
+        parts = re.split(r'[-/]', value or '')
+        return len(parts) == 3 and all(part.isdigit() for part in parts)

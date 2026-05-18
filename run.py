@@ -15,6 +15,7 @@ app.config['SWAGGER'] = {
 }
 swagger = Swagger(app)
 
+
 # Define a route for the API
 @app.route('/api/health', methods=['GET'])
 @cross_origin()
@@ -84,7 +85,18 @@ def generate_tests_llm():
     """
     try:
         result, status = GenerateTestsService().generate_tests_with_llm(request.get_json())
-        return jsonify(result), status
+        if status != 200:
+            return jsonify(result), status
+
+        response = send_file(
+            result.get('buffer'),
+            mimetype=result.get('mimetype'),
+            as_attachment=True,
+            download_name=result.get('download_name')
+        )
+        response.headers['Access-Control-Expose-Headers'] = 'Content-Disposition'
+        return response
+
     except Exception as e:
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
@@ -153,7 +165,6 @@ def process_user_story():
         methods = methodsService.get()
         methods = get_methods_from_test_cases(methods)
 
-        #Build response
         response_data = []
 
         for method in methods:
@@ -169,6 +180,7 @@ def process_user_story():
         traceback.print_exc()
         error_message = str(e)
         return jsonify({'error': error_message}), 400
+
 
 @app.route('/api/process_class_equivalence', methods=['POST'])
 @cross_origin()
@@ -198,7 +210,6 @@ def process_class_equivalence():
     except Exception as e:
         traceback.print_exc()
         return jsonify({'error': str(e)}), 400
-
 
 
 if __name__ == '__main__':
