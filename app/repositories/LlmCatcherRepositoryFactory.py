@@ -1,13 +1,15 @@
 from app.repositories.LlmCatcherRepository import LlmCatcherRepository
 from app.repositories.llm.ChatGptTurboRepository import ChatGptTurboRepository
+from app.repositories.llm.ClaudeRepository import ClaudeRepository
 from app.repositories.llm.GeminiRepository import GeminiRepository
-from app.repositories.llm.DeepSeekRepository import DeepSeekRepository
+
+
 class LlmCatcherRepositoryFactory:
     
     LLM_MAP = {
         "gpt": ChatGptTurboRepository,
         "gemini": GeminiRepository,
-        "deepseek": DeepSeekRepository,
+        "claude": ClaudeRepository,
     }
     @staticmethod
     def create(user_story, language, llm_name, getAllMethodsAccepted=lambda: []):

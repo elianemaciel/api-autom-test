@@ -1,24 +1,26 @@
 import json
+import os
 
-from openai import OpenAI
+from anthropic import Anthropic
+from dotenv import load_dotenv
 
+from app.repositories.llm.prompts.PromptBuilder import PromptBuilder
 from assets.components import Method
 from assets.repository.LLMRepository import LLMRepository
-from openai import OpenAI
-from dotenv import load_dotenv
-import os
-from app.repositories.llm.prompts.PromptBuilder import PromptBuilder
 
-# Carrega o arquivo .env
 load_dotenv()
 
-class DeepSeekRepository(LLMRepository):
+
+class ClaudeRepository(LLMRepository):
 
     def __init__(self):
-        self.client = OpenAI(
-            api_key=os.getenv('DEEP_SEEK_KEY'),
-            base_url="https://api.deepseek.com"
+        self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        self.model = (
+            os.getenv("CLAUDE_MODEL")
+            or os.getenv("ANTHROPIC_MODEL")
+            or "claude-sonnet-4-20250514"
         )
+
     def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
         self.isActive = True
         super().setup(user_story, language, getAllMethodsAccepted)
@@ -32,54 +34,57 @@ class DeepSeekRepository(LLMRepository):
 
     def get_methods_from_user_stories(self):
         request = self._enrich_llm_request(self.user_story_txt, super().get_lang())
-
-        completion = self.client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": request,
-                }
-            ],
-            model="deepseek-chat",
+        result_content = self._create_message(
+            request,
+            system="You are an assistant that returns JSON output for the requested input"
         )
 
-        result_content = completion.choices[0].message.content
-        print("<deepseek>" + str(result_content))
+        print("<claude>" + str(result_content))
 
-        # Remover possíveis marcações de bloco
-        result_json = result_content.replace("```json", '').replace("```", "").strip()
-
+        result_json = result_content.replace("```json", "").replace("```", "").strip()
         return self._extract_methods_from_result(result_json, super().get_lang())
 
     def chat_completion(self, prompt):
-        completion = self.client.chat.completions.create(
+        return self._create_message(
+            prompt,
+            system="You are an assistant that returns valid JSON only."
+        )
+
+    def _create_message(self, prompt, system):
+        message = self.client.messages.create(
+            model=self.model,
+            max_tokens=4096,
+            temperature=0.2,
+            system=system,
             messages=[
                 {
                     "role": "user",
                     "content": prompt,
                 }
             ],
-            model="deepseek-chat",
-            max_tokens=4096,
-            temperature=0.2,
         )
-        return completion.choices[0].message.content
+
+        return "".join(
+            block.text
+            for block in message.content
+            if getattr(block, "type", None) == "text"
+        )
 
     def _extract_methods_from_result(self, result_json, language):
-        print('_extract_methods_from_result')
+        print("_extract_methods_from_result")
         methods = []
-        method_label = 'method' if language == 'en' else 'metodo'
-        returnType_label = 'returnType' if language == 'en' else 'tipoRetorno'
-        className_label = 'className' if language == 'en' else 'nomeClasse'
-        parameters_label = 'parameters' if language == 'en' else 'parametros'
-        name_label = 'name' if language == 'en' else 'nome'
-        type_label = 'type' if language == 'en' else 'tipo'
+        method_label = "method" if language == "en" else "metodo"
+        returnType_label = "returnType" if language == "en" else "tipoRetorno"
+        className_label = "className" if language == "en" else "nomeClasse"
+        parameters_label = "parameters" if language == "en" else "parametros"
+        name_label = "name" if language == "en" else "nome"
+        type_label = "type" if language == "en" else "tipo"
         try:
             data = json.loads(result_json)
             for method in data:
                 name = method[method_label].strip()
                 return_type = method[returnType_label].lower().strip()
-                class_name = method[className_label] if method[className_label].strip() else ''
+                class_name = method[className_label] if method[className_label].strip() else ""
 
                 new_method = Method(
                     name=name,
@@ -94,8 +99,8 @@ class DeepSeekRepository(LLMRepository):
                     new_method.add_param_by_arg(param_name, param_type)
                 methods.append(new_method)
 
-        except:
-            print('Erro ao tentar gerar Json a partir do resultado do gpt-3.5-turbo.')
+        except Exception as error:
+            print("Erro ao tentar gerar JSON a partir do resultado do Claude:", error)
 
         return methods
 

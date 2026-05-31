@@ -82,7 +82,7 @@ class GenerateTestsService:
 
         if (not selected_ia
                 or selected_ia.lower() not in LlmCatcherRepositoryFactory.LLM_MAP):
-            return {'error': "Field 'selectedIA' must be one of: gpt, gemini, deepseek"}, 400
+            return {'error': "Field 'selectedIA' must be one of: gpt, gemini, claude"}, 400
 
         normalized_methods = self._normalize_methods_for_llm(methods, equivalence_classes)
         if not normalized_methods:
