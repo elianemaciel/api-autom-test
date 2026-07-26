@@ -21,7 +21,7 @@ class EquivalenceClassService:
             method,
             self.lang
         )
-
+        print(prompt)
         llm_client = LlmCatcherRepositoryFactory.create(
             user_story="",
             language=self.lang,

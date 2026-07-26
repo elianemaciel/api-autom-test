@@ -109,6 +109,7 @@ class Method:
         self.output_type = output_type
         self.params = params if params is not None else []  # list of Parameters
         self.testsets = []  # list of TestSet
+        self.suggested_equivalence_classes = []
 
     def __eq__(self, other):
         if not isinstance(other, Method):
@@ -129,7 +130,8 @@ class Method:
             "nome": self.name,
             "nomeClasse": self.class_name,
             "tipoRetorno": self.output_type,
-            "parametros": parameters
+            "parametros": parameters,
+            "classesEquivalencia": self.suggested_equivalence_classes
         }
 
     def __str__(self):

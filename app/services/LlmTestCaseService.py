@@ -2,6 +2,7 @@ import ast
 import json
 import re
 
+from app.repositories.llm.prompts.PromptBuilder import PromptBuilder
 from app.repositories.LlmCatcherRepositoryFactory import LlmCatcherRepositoryFactory
 
 
@@ -18,6 +19,7 @@ class LlmTestCaseService:
         self.lang = lang
         self.selected_ia = selected_ia or "gpt"
         self.target_language = (target_language or "java").lower()
+        self.prompt_builder = PromptBuilder("tests-cases")  # pt.json e en.json em arquivos separados
 
     def get(self):
         prompt = self._build_prompt()
@@ -30,43 +32,13 @@ class LlmTestCaseService:
         return self._extract_json_response(response)
 
     def _build_prompt(self):
-        language_instruction = self._language_instruction()
         payload = json.dumps(self.methods, ensure_ascii=False, indent=2)
-
-        return f"""
-{language_instruction}
-
-Gere casos de teste unitários para os métodos informados usando as classes de equivalência recebidas.
-Use apenas os dados enviados; não invente métodos, classes ou parâmetros que não estejam no JSON.
-Para cada classe de equivalência, gere a quantidade de casos definida em numberOfCases.
-Considere expectedOutputRange como o comportamento esperado.
-
-Responda SOMENTE JSON válido, sem markdown, comentários ou texto extra.
-Formato obrigatório para Java:
-[
-  {{
-    "language": "java",
-    "className": "<nome-da-classe-testada>",
-    "packageName": "<pacote-ou-string-vazia>",
-    "testClassName": "<nome-da-classe-de-teste>",
-    "framework": "JUnit",
-    "imports": ["<imports necessários>"],
-    "tests": [
-      {{
-        "methodName": "<nome-do-metodo-de-teste>",
-        "targetMethod": "<nome-do-metodo-testado>",
-        "equivalenceClass": "<nome-da-classe-de-equivalencia>",
-        "input": {{"<parametro>": "<valor>"}},
-        "expected": "<valor-ou-condicao-esperada>",
-        "code": "<codigo Java completo do metodo de teste>"
-      }}
-    ]
-  }}
-]
-
-JSON de entrada:
-{payload}
-""".strip()
+        prompt = self.prompt_builder.build_equivalence_prompt(
+            self.methods,
+            self.lang
+        )
+        print(prompt)
+        return prompt
 
     def _language_instruction(self):
         if self.target_language == "java":

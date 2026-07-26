@@ -1,6 +1,7 @@
 import json
 import os
 
+
 class PromptBuilder:
 
     def __init__(self, prompts_dir="methods"):

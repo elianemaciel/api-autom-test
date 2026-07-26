@@ -7,9 +7,11 @@ from assets.repository.LLMRepository import LLMRepository
 from dotenv import load_dotenv
 import os
 from app.repositories.llm.prompts.PromptBuilder import PromptBuilder
+from app.repositories.llm.MethodResponseParser import extract_methods_from_result
 
 # Carrega o arquivo .env
 load_dotenv()
+
 
 class ChatGptTurboRepository(LLMRepository):
 
@@ -38,7 +40,7 @@ class ChatGptTurboRepository(LLMRepository):
                 {"role": "user", "content": request}
             ]
         )
-        print("<gpt-3.5-turbo>" + str(completion.choices[0].message.content))
+        print("<gpt-5.4-mini>" + str(completion.choices[0].message.content))
         result_content = completion.choices[0].message.content
         result_json = result_content.replace("```json", '').replace('```', '')
 
@@ -46,37 +48,11 @@ class ChatGptTurboRepository(LLMRepository):
 
     def _extract_methods_from_result(self, result_json, language):
         print('_extract_methods_from_result')
-        methods = []
-        method_label = 'method' if language == 'en' else 'metodo'
-        returnType_label = 'returnType' if language == 'en' else 'tipoRetorno'
-        className_label = 'className' if language == 'en' else 'nomeClasse'
-        parameters_label = 'parameters' if language == 'en' else 'parametros'
-        name_label = 'name' if language == 'en' else 'nome'
-        type_label = 'type' if language == 'en' else 'tipo'
         try:
-            data = json.loads(result_json)
-            for method in data:
-                name = method[method_label].strip()
-                return_type = method[returnType_label].lower().strip()
-                class_name = method[className_label] if method[className_label].strip() else ''
-
-                new_method = Method(
-                    name=name,
-                    class_name=class_name,
-                    package_name="",
-                    output_type=return_type,
-                    params=[])
-
-                for param in method[parameters_label]:
-                    param_name = param[name_label].strip()
-                    param_type = param[type_label].lower().strip()
-                    new_method.add_param_by_arg(param_name, param_type)
-                methods.append(new_method)
-
-        except:
+            return extract_methods_from_result(result_json, language)
+        except Exception:
             print('Erro ao tentar gerar Json a partir do resultado do gpt-3.5-turbo.')
-
-        return methods
+            return []
 
     def _enrich_llm_request(self, user_stories, language):
         builder = PromptBuilder()
@@ -96,6 +72,6 @@ class ChatGptTurboRepository(LLMRepository):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.2,
-            max_tokens=4096
+            max_completion_tokens=4096
         )
         return completion.choices[0].message.content

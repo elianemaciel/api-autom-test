@@ -108,14 +108,18 @@ class GenerateTestsService:
 
         try:
             generated_tests = service.get()
-            generated_files = self._build_llm_generated_files(generated_tests)
+            ia_suffix = self._normalize_file_suffix(selected_ia)
+            generated_files = self._build_llm_generated_files(
+                generated_tests,
+                ia_suffix
+            )
 
             if not generated_files:
                 return {'error': "No test files could be generated from the LLM response"}, 502
 
             return self._build_file_response(
                 generated_files,
-                'AutomTestGeneratedLlmTests.zip'
+                f'AutomTestGeneratedLlmTests-{ia_suffix}.zip'
             ), 200
         except LlmResponseParseError as error:
             return {
@@ -147,7 +151,7 @@ class GenerateTestsService:
             'mimetype': 'application/zip'
         }
 
-    def _build_llm_generated_files(self, generated_tests):
+    def _build_llm_generated_files(self, generated_tests, ia_suffix):
         if isinstance(generated_tests, dict):
             generated_tests = [generated_tests]
 
@@ -163,7 +167,7 @@ class GenerateTestsService:
                 test_class.get('testClassName')
                 or f"{test_class.get('className', 'Generated')}Test"
             )
-            file_name = f"{class_name}.java"
+            file_name = f"{class_name}-{ia_suffix}.java"
             generated_files[file_name] = self._build_java_test_class(
                 class_name,
                 test_class
@@ -174,6 +178,10 @@ class GenerateTestsService:
             for file_name, content in generated_files.items()
             if content
         }
+
+    def _normalize_file_suffix(self, value):
+        normalized = re.sub(r'[^a-zA-Z0-9_-]+', '-', str(value or 'ia'))
+        return normalized.strip('-_').lower() or 'ia'
 
     def _build_java_test_class(self, class_name, test_class):
         tests = test_class.get('tests') or []
