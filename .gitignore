@@ -10,3 +10,8 @@ environment/SecretConfig.py
 myvenv/*
 .env
 .venv/*
+.codex/*
+.venv
+.codex
+.agents
+__pycache__

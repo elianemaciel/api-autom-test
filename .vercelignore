@@ -1,0 +1,11 @@
+.git
+.agents
+.codex
+.vscode
+.venv
+myvenv
+__pycache__
+*.pyc
+.env
+environment/SecretConfig.py
+docs

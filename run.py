@@ -1,11 +1,17 @@
+import hmac
+import os
+import traceback
+
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file
 from flask_cors import cross_origin, CORS
-import traceback
 from assets.components import get_methods_from_test_cases
 from app.services.GenerateTestsService import GenerateTestsService
 from app.services.MethodCatcherService import MethodCatcherService
 from app.services.EquivalenceClassService import EquivalenceClassService
 from flasgger import Swagger
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -14,6 +20,34 @@ app.config['SWAGGER'] = {
     'uiversion': 3
 }
 swagger = Swagger(app)
+
+
+def get_configured_api_key():
+    return os.getenv('AUTOMTEST_API_KEY') or os.getenv('API_KEY')
+
+
+def get_request_api_key():
+    authorization = request.headers.get('Authorization', '')
+    if authorization.lower().startswith('bearer '):
+        return authorization[7:].strip()
+
+    return request.headers.get('X-API-Key', '').strip()
+
+
+@app.before_request
+def validate_api_key():
+    if request.method == 'OPTIONS' or not request.path.startswith('/api/'):
+        return None
+
+    configured_api_key = get_configured_api_key()
+    if not configured_api_key:
+        return jsonify({'error': 'API key is not configured on the server'}), 503
+
+    request_api_key = get_request_api_key()
+    if not request_api_key or not hmac.compare_digest(request_api_key, configured_api_key):
+        return jsonify({'error': 'Invalid or missing API key'}), 401
+
+    return None
 
 
 # Define a route for the API
