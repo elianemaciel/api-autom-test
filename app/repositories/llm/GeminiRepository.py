@@ -34,8 +34,6 @@ class GeminiRepository(LLMRepository):
         response = self.model.generate_content(request)
         result_content = response.text
 
-        print("<gemini-2.5-flash>" + str(result_content))
-
         result_json = result_content.replace("```json", '').replace("```", '')
         return self._extract_methods_from_result(result_json, super().get_lang())
 

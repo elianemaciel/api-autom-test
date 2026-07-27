@@ -178,7 +178,6 @@ def process_user_story():
         if data is None:
             return jsonify({'error': "Invalid Json format provided."}), 400
 
-        print(data)
         # Extract relevant fields
         lang = data.get('lang')
         user_story = data.get('userStory')
@@ -192,9 +191,6 @@ def process_user_story():
             errorMsg = "Invalid body. Please provide the fields 'lang' and 'userStory' inside a json body"
             return jsonify({'error': errorMsg}), 400
         # Process the user story
-        print('us ', user_story)
-        print('lang ', lang)
-        print('selected_ia ', selected_ia)
         methodsService = MethodCatcherService(user_story, lang, selected_ia)
         methods = methodsService.get()
         methods = get_methods_from_test_cases(methods)
@@ -210,7 +206,6 @@ def process_user_story():
 
     except Exception as e:
         # Handle any exceptions (e.g., invalid JSON format)
-        print(e)
         traceback.print_exc()
         error_message = str(e)
         return jsonify({'error': error_message}), 400

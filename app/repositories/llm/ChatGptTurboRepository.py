@@ -40,14 +40,12 @@ class ChatGptTurboRepository(LLMRepository):
                 {"role": "user", "content": request}
             ]
         )
-        print("<gpt-5.4-mini>" + str(completion.choices[0].message.content))
         result_content = completion.choices[0].message.content
         result_json = result_content.replace("```json", '').replace('```', '')
 
         return self._extract_methods_from_result(result_json, super().get_lang())
 
     def _extract_methods_from_result(self, result_json, language):
-        print('_extract_methods_from_result')
         try:
             return extract_methods_from_result(result_json, language)
         except Exception:
