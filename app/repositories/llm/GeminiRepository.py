@@ -1,0 +1,66 @@
+import json
+import os
+from dotenv import load_dotenv
+import google.generativeai as genai
+
+from assets.components import Method
+from assets.repository.LLMRepository import LLMRepository
+from app.repositories.llm.prompts.PromptBuilder import PromptBuilder
+from app.repositories.llm.MethodResponseParser import extract_methods_from_result
+
+load_dotenv()
+
+
+class GeminiRepository(LLMRepository):
+
+    def __init__(self):
+        genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+        self.model = genai.GenerativeModel("gemini-3.5-flash")
+
+    def setup(self, user_story, language="pt", getAllMethodsAccepted=lambda: []):
+        self.isActive = True
+        super().setup(user_story, language, getAllMethodsAccepted)
+
+    def compute_extra_methods(self):
+        with super().lock:
+            if self.isActive and not (self.curr_amount_of_retries - self.max_retries > 0 and len(self.methods) < self.min_amount_results):
+                new_suggestion = self.get_methods_from_user_stories()
+                self.filter_and_add_valid_suggestions(new_suggestion)
+                self.curr_amount_of_retries += 1
+
+    def get_methods_from_user_stories(self):
+        request = self._enrich_llm_request(self.user_story_txt, super().get_lang())
+
+        response = self.model.generate_content(request)
+        result_content = response.text
+
+        result_json = result_content.replace("```json", '').replace("```", '')
+        return self._extract_methods_from_result(result_json, super().get_lang())
+
+    def chat_completion(self, prompt):
+        response = self.model.generate_content(
+            prompt,
+            generation_config={
+                "temperature": 0.2,
+                "max_output_tokens": 8192,
+                "response_mime_type": "application/json",
+            },
+        )
+        return response.text
+
+    def _extract_methods_from_result(self, result_json, language):
+        print('_extract_methods_from_result')
+        try:
+            return extract_methods_from_result(result_json, language)
+        except Exception as e:
+            print("Erro ao tentar gerar JSON a partir do resultado do Gemini:", e)
+            return []
+
+    def _enrich_llm_request(self, user_stories, language):
+        builder = PromptBuilder()
+
+        prompt = builder.enrich_llm_request(
+            user_stories=user_stories,
+            language=language
+        )
+        return prompt

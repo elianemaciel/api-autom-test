@@ -1,0 +1,3 @@
+{
+  "template": "Generate valid equivalence classes for ONE Java method.\nReturn ONLY JSON, without markdown, comments, or extra text.\nFor each parameter, generate only 1 simple valid partition.\nRequired format:\n[\n  {\"attribute\":\"<parameter-name>\",\"classes\":[{\"type\":\"valid\",\"range\":\"<range-or-values>\"}]}\n]\nUse short ranges. For boolean use true or false. For String use plain text. For char use characters separated by semicolon.\nMethod:\n{method}"
+}

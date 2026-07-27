@@ -133,7 +133,7 @@ class UI_MainWindow(object):
         )
         btn_add_methods_info = AtMenuButton(
             id="INSERT_INFO",
-            text="Insert Methods Info",
+            text="Methods Info",
             height=63,
             do_when_clicked=lambda: PageManager.show_page(InsertMethodsInfoWidget.position, "INSERT_INFO")
         )
