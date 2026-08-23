@@ -1,6 +1,6 @@
 from urllib.parse import parse_qs
 
-from run import app
+from run import app as flask_app
 
 
 # Vercel's Python runtime looks for a WSGI-compatible variable.
@@ -18,4 +18,5 @@ class VercelPathMiddleware:
         return self.wrapped_app(environ, start_response)
 
 
-handler = VercelPathMiddleware(app)
+app = VercelPathMiddleware(flask_app)
+handler = app
