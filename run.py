@@ -50,6 +50,20 @@ def validate_api_key():
     return None
 
 
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({
+        'error': 'Route not found',
+        'path': request.path,
+        'method': request.method,
+        'vercelHeaders': {
+            key: value
+            for key, value in request.headers.items()
+            if key.lower().startswith('x-')
+        },
+    }), 404
+
+
 # Define a route for the API
 @app.route('/api/health', methods=['GET'])
 @cross_origin()
